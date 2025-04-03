@@ -1,6 +1,5 @@
-import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
+import javax.swing.*;
 
 public class GuiPlayground extends JFrame {
     private final JSplitPane splitPane;
@@ -15,7 +14,7 @@ public class GuiPlayground extends JFrame {
     private final JPanel inputPanel;
     private final JTextField textField;
     private final JButton sendButton;
-
+  
     public GuiPlayground() {
         setTitle("Chat Relay");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -82,27 +81,29 @@ public class GuiPlayground extends JFrame {
     }
 
     private void addChatMessage(String sender, String time, String messageText) {
-        JPanel messagePanel = new JPanel();
-        messagePanel.setLayout(new BoxLayout(messagePanel, BoxLayout.Y_AXIS));
-        messagePanel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-        messagePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        messagePanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
+        JPanel messagePane = new JPanel();
+        messagePane.setLayout(new BoxLayout(messagePane, BoxLayout.Y_AXIS));
+        messagePane.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
+        messagePane.setAlignmentX(Component.LEFT_ALIGNMENT);
+        messagePane.setMaximumSize(new Dimension(Integer.MAX_VALUE, 75));
 
         JLabel headerLabel = new JLabel(sender + " - " + time);
+        headerLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        headerLabel.setHorizontalAlignment(SwingConstants.LEFT);
         headerLabel.setFont(headerLabel.getFont().deriveFont(Font.BOLD));
-        messagePanel.add(headerLabel);
+        messagePane.add(headerLabel);
 
         JTextArea messageArea = new JTextArea(messageText);
         messageArea.setEditable(false);
         messageArea.setLineWrap(true);
         messageArea.setWrapStyleWord(true);
         messageArea.setBackground(null);
-        messagePanel.add(messageArea);
+        messagePane.add(messageArea);
 
         // Add some spacing
-        messagePanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        messagePane.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        messagesPanel.add(messagePanel);
+        messagesPanel.add(messagePane);
     }
 
     public static void main(String args[]) {
