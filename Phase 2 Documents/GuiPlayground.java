@@ -1,16 +1,16 @@
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 
-public class GuiPlayground extends javax.swing.JFrame {
+public class GuiPlayground extends JFrame {
     private final JSplitPane splitPane;
     private final JPanel leftPanel;
     private final JPanel rightPanel;
     private final JLabel nameLabel;
-    private final JList chats;
     private final JScrollPane privateChats;
     private final JScrollPane teamChats;
     private final JLabel chatInfo;
-    private final JList messages;
+    private final JPanel messagesPanel;  // Container for chat messages
     private final JScrollPane listOfMessages;
     private final JPanel inputPanel;
     private final JTextField textField;
@@ -21,27 +21,24 @@ public class GuiPlayground extends javax.swing.JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         splitPane = new JSplitPane();
-
         leftPanel = new JPanel();
         rightPanel = new JPanel();
 
         nameLabel = new JLabel("First Last");
-        chats = new JList<>();
         privateChats = new JScrollPane();
         teamChats = new JScrollPane();
 
         chatInfo = new JLabel("Team Name - Members List");
-        messages = new JList<>();
-        listOfMessages = new JScrollPane();
+        messagesPanel = new JPanel();
+        messagesPanel.setLayout(new BoxLayout(messagesPanel, BoxLayout.Y_AXIS));
+        listOfMessages = new JScrollPane(messagesPanel);
 
         inputPanel = new JPanel();
         textField = new JTextField();
         sendButton = new JButton("Send");
 
         setPreferredSize(new Dimension(1000, 1000));
-
         getContentPane().setLayout(new GridLayout());
-
         getContentPane().add(splitPane);
 
         splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
@@ -52,33 +49,63 @@ public class GuiPlayground extends javax.swing.JFrame {
         leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
         leftPanel.add(nameLabel);
         nameLabel.setPreferredSize(new Dimension(200, 50));
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
+        String[] names = {"Zoheb", "Talhah", "Shawn", "Kenny"};
+        for (String name : names) {
+            JButton nameButton = new JButton(name);
+            nameButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+            buttonPanel.add(nameButton);
+        }
+        privateChats.setViewportView(buttonPanel);
         leftPanel.add(privateChats);
-        privateChats.setViewportView(chats);
         leftPanel.add(teamChats);
-        teamChats.setViewportView(chats);
 
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
         rightPanel.add(chatInfo);
         chatInfo.setPreferredSize(new Dimension(600, 50));
         rightPanel.add(listOfMessages);
-        listOfMessages.setViewportView(messages);
         rightPanel.add(inputPanel);
 
         inputPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 75));
         inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.X_AXIS));
-
         inputPanel.add(textField);
         inputPanel.add(sendButton);
+
+        addChatMessage("Zoheb", "10:15 AM", "Hello!");
+        addChatMessage("You", "10:16 AM", "Hi!");
+        addChatMessage("Zoheb", "10:17 AM", "Is this a test?");
+        addChatMessage("You", "10:18 AM", "This is a test.");
 
         pack();
     }
 
-    public static void main(String args[]){
-        EventQueue.invokeLater(new Runnable(){
-            @Override
-            public void run(){
-                new GuiPlayground().setVisible(true);
-            }
-        });
+    private void addChatMessage(String sender, String time, String messageText) {
+        JPanel messagePanel = new JPanel();
+        messagePanel.setLayout(new BoxLayout(messagePanel, BoxLayout.Y_AXIS));
+        messagePanel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
+        messagePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        messagePanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
+
+        JLabel headerLabel = new JLabel(sender + " - " + time);
+        headerLabel.setFont(headerLabel.getFont().deriveFont(Font.BOLD));
+        messagePanel.add(headerLabel);
+
+        JTextArea messageArea = new JTextArea(messageText);
+        messageArea.setEditable(false);
+        messageArea.setLineWrap(true);
+        messageArea.setWrapStyleWord(true);
+        messageArea.setBackground(null);
+        messagePanel.add(messageArea);
+
+        // Add some spacing
+        messagePanel.add(Box.createRigidArea(new Dimension(0, 10)));
+
+        messagesPanel.add(messagePanel);
+    }
+
+    public static void main(String args[]) {
+        EventQueue.invokeLater(() -> new GuiPlayground().setVisible(true));
     }
 }
