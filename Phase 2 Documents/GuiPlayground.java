@@ -1,5 +1,6 @@
 import java.awt.*;
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicOptionPaneUI;
 
 public class GuiPlayground extends JFrame {
     private final JSplitPane splitPane;
@@ -51,12 +52,22 @@ public class GuiPlayground extends JFrame {
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
-        String[] names = {"Zoheb", "Talhah", "Shawn", "Kenny"};
-        for (String name : names) {
-            JButton nameButton = new JButton(name);
-            nameButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-            buttonPanel.add(nameButton);
-        }
+
+        JButton b = new JButton();
+        b.setLayout(new BasicOptionPaneUI.ButtonAreaLayout(true, 1));
+        JLabel label1 = new JLabel("Your");
+        JLabel label2 = new JLabel("Name");
+        b.add(label1);
+        b.add(label2);
+        buttonPanel.add(b);
+
+        // String[] names = {"Zoheb", "Talhah", "Shawn", "Kenny"};
+        // for (String name : names) {
+        //     // JButton nameButton = new JButton(name);
+        //     // nameButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        //     // buttonPanel.add(nameButton);
+        // }
+
         privateChats.setViewportView(buttonPanel);
         leftPanel.add(privateChats);
         leftPanel.add(teamChats);
