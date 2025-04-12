@@ -81,10 +81,10 @@ public class GuiPlayground extends JFrame {
         inputPanel.add(textField);
         inputPanel.add(sendButton);
 
-        addChatMessage("Zoheb", "10:15 AM", "Hello!");
-        addChatMessage("You", "10:16 AM", "Hi!");
-        addChatMessage("Zoheb", "10:17 AM", "Is this a test?");
-        addChatMessage("You", "10:18 AM", "This is a test.");
+        // addChatMessage("Zoheb", "10:15 AM", "Hello!");
+        // addChatMessage("You", "10:16 AM", "Hi!");
+        // addChatMessage("Zoheb", "10:17 AM", "Is this a test?");
+        // addChatMessage("You", "10:18 AM", "This is a test.");
 
         pack();
     }
