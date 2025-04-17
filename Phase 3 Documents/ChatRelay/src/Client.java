@@ -10,7 +10,10 @@ public class Client {
     private String userId;
     private Boolean isITAdmin;
 
-    public Client(String targetIp, String targetPort) {}
+    public Client(String targetIp, String targetPort) {
+        this.targetIP = targetIp;
+        this.targetPort = targetPort;
+    }
     
     public void login(String username, String password) {}
     public void sendMessage(String authorId, String chatId, String content) {}
