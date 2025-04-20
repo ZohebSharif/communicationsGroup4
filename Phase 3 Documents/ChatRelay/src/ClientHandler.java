@@ -12,7 +12,7 @@ public class ClientHandler implements Runnable {
     private ObjectInputStream inputStream;
     private ObjectOutputStream outputStream;
 
-    public ClientHandler(Socket socket, Server server) { // I dont think we need server here
+    public ClientHandler(Socket socket, Server server) {
         this.clientSocket = socket;
         try {
             InputStream inStream = clientSocket.getInputStream();
@@ -46,7 +46,18 @@ public class ClientHandler implements Runnable {
     
     @Override
     public void run() {
-        throw new UnsupportedOperationException("Unimplemented method 'run'");
+        try {
+            Packet checkLogin = (Packet) inputStream.readObject();
+
+            if (checkLogin.getActionType().equals(Packet.actionType.LOGIN)) {
+                String[] args = {"Success"};
+                Packet accept = new Packet(Packet.actionType.SUCCESS, args, "Client");
+                System.out.println("Got: " + accept.getActionType().toString());
+                outputStream.writeObject(accept);
+            }
+        } catch (IOException | ClassNotFoundException e) {
+
+        }
     }
     
 }

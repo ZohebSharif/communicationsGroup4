@@ -1,7 +1,11 @@
-import java.util.HashMap;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
 
 public class Server {
-    private HashMap<userId, ClientHandler> clients;
+    //private HashMap<userId, ClientHandler> clients;
+    private ArrayList<ClientHandler> clients; // Testing purposes
     private DBManager dbManager;
     private int port;
     private String IP;
@@ -11,7 +15,26 @@ public class Server {
         this.IP = IP;
     }
 
-    public void connect() {}
+    public void connect() {
+        ServerSocket server;
+
+        try {
+            server = new ServerSocket(port);
+            server.setReuseAddress(true);
+
+            while(true) {
+                Socket client = server.accept();
+
+                ClientHandler clientSock = new ClientHandler(client, this);
+
+                clients.add(clientSock);
+
+                new Thread(clientSock).start();
+            }
+        } catch (IOException e) {
+            
+        }
+    }
     public void disconnect() {}
     public void recievePacket(String clientId, Packet packet) {}
     public void sendErrorMessage(String userId, String errorMessage) {}

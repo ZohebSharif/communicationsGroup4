@@ -1,8 +1,8 @@
 public class DBManager {
     
-    private HashMap<String userId, User> users;
-    private HashMap<String chatId, Chat> chats;
-    private HashMap<String messageId, Message> messages;
+    private HashMap<userId, User> users;
+    private HashMap<chatId, Chat> chats;
+    private HashMap<messageId, Message> messages;
     private Server server;
     private String txtFilePath;
     private String userTxtFilename;
