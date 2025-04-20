@@ -20,6 +20,7 @@ public class Client {
     public Client(String targetIp, String targetPort) {
         this.targetIP = targetIp;
         this.targetPort = targetPort;
+        isConnected = false;
     }
 
     public void testLogin() {
@@ -35,6 +36,7 @@ public class Client {
             ObjectInputStream objectInStream = new ObjectInputStream(inputStream);
             Packet incoming = (Packet) objectInStream.readObject();
             if (incoming.getActionType().equals(Packet.actionType.SUCCESS)) {
+            	isConnected = true;
                 System.out.println("Packet Recieved");
             }
         } catch (IOException | NumberFormatException | ClassNotFoundException e) {
