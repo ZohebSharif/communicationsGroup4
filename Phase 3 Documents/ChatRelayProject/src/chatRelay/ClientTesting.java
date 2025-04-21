@@ -8,9 +8,13 @@ import chatRelay.Packet.actionType;
 
 public class ClientTesting {
 	@Test
-    public void testLogin() {
+    public static void testLogin() {
     	Client client = new Client("localhost", "1234");
     	client.testLogin();
     	
     }
+	
+	public static void main(String[] args) {
+		testLogin();
+	}
 }

@@ -13,6 +13,7 @@ public class ClientHandler implements Runnable {
     private String userId;
     private ObjectInputStream inputStream;
     private ObjectOutputStream outputStream;
+    private Server server; // Added
 
     public ClientHandler(Socket socket, Server server) {
         this.clientSocket = socket;
@@ -25,10 +26,37 @@ public class ClientHandler implements Runnable {
         } catch (IOException e) {
             e.printStackTrace(); // Better Message
         }
+        this.server = server; // Added
     }
 
-    public void start() {}
-    public void stop() {}
+    public void start() {
+    	try {
+            Packet checkLogin = (Packet) inputStream.readObject();
+
+            if (checkLogin.getActionType().equals(Packet.actionType.LOGIN)) {
+                String[] args = {"Success"};
+                Packet accept = new Packet(Packet.actionType.SUCCESS, args, "Client");
+                System.out.println("Got: " + accept.getActionType().toString());
+                outputStream.writeObject(accept);
+            }
+        } catch (IOException | ClassNotFoundException e) {
+
+        }
+    }
+    public void stop() {
+    	try {
+            Packet checkLogout = (Packet) inputStream.readObject();
+
+            if (checkLogout.getActionType().equals(Packet.actionType.LOGOUT)) {
+                String[] args = {"Success"};
+                Packet accept = new Packet(Packet.actionType.SUCCESS, args, "Client");
+                System.out.println("Got: " + accept.getActionType().toString());
+                outputStream.writeObject(accept);
+            }
+        } catch (IOException | ClassNotFoundException e) {
+        	
+        }
+    }
     public void setUserId(String userId) { // What is the use?
         this.userId = userId;
     }
@@ -48,17 +76,10 @@ public class ClientHandler implements Runnable {
     
     @Override
     public void run() {
-        try {
-            Packet checkLogin = (Packet) inputStream.readObject();
-
-            if (checkLogin.getActionType().equals(Packet.actionType.LOGIN)) {
-                String[] args = {"Success"};
-                Packet accept = new Packet(Packet.actionType.SUCCESS, args, "Client");
-                System.out.println("Got: " + accept.getActionType().toString());
-                outputStream.writeObject(accept);
-            }
-        } catch (IOException | ClassNotFoundException e) {
-
+        start();
+        
+        while(true) {
+        	
         }
     }
     

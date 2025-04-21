@@ -30,7 +30,7 @@ public class Server {
 
                 ClientHandler clientSock = new ClientHandler(client, this);
 
-                clients.add(clientSock);
+                //clients.add(clientSock);
 
                 new Thread(clientSock).start();
             }
