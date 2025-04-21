@@ -16,34 +16,49 @@ public class Client {
     private User[] users;
     private String userId;
     private Boolean isITAdmin;
+    
+    private ObjectOutputStream objectStream;
+    private ObjectInputStream objectInStream;
 
     public Client(String targetIp, String targetPort) {
         this.targetIP = targetIp;
         this.targetPort = targetPort;
         isConnected = false;
-    }
-
-    public void testLogin() {
+        
         try {
             socket = new Socket(targetIP, Integer.parseInt(targetPort));
             OutputStream outputStream = socket.getOutputStream();
-            ObjectOutputStream objectStream = new ObjectOutputStream(outputStream);
-            String[] args = {"new Login"};
-            Packet testPack = new Packet(Packet.actionType.LOGIN, args, "this.id");
-            objectStream.writeObject(testPack);
+            objectStream = new ObjectOutputStream(outputStream);
 
             InputStream inputStream = socket.getInputStream();
-            ObjectInputStream objectInStream = new ObjectInputStream(inputStream);
-            Packet incoming = (Packet) objectInStream.readObject();
-            if (incoming.getActionType().equals(Packet.actionType.SUCCESS)) {
-            	isConnected = true;
-                System.out.println("Packet Recieved");
-            }
-        } catch (IOException | NumberFormatException | ClassNotFoundException e) {
+            objectInStream = new ObjectInputStream(inputStream);
+        } catch (IOException | NumberFormatException e) {
+        	e.printStackTrace();
         }
     }
     
-    public void login(String username, String password) {}
+    public void startUp() { //Added
+    	
+    	GUI clientGUI = new GUI(this);
+    	
+    	new Thread(clientGUI).start();
+    	
+    	ClientInput input = new ClientInput(objectInStream, this);
+    	
+    	new Thread(input).start();
+    	
+    }
+    
+    public void login(String username, String password) {
+    	try {
+    		String[] args = {username, password};
+    		Packet loginPack = new Packet(Packet.actionType.LOGIN, args, "requesting");
+    		objectStream.writeObject(loginPack);
+    	} catch (IOException e) {
+    		e.printStackTrace();
+    	}
+    }
+    
     public void sendMessage(String authorId, String chatId, String content) {}
     public void createChat(String chatName, Boolean isPrivate) {}
     public void updateState() {}
@@ -52,4 +67,34 @@ public class Client {
     public void disableUser(String userId) {}
     public void saveChatToTxt(Chat chat) {}
     public void logout() {}
+    
+    private class ClientInput implements Runnable { // Added
+    	
+    	private ObjectInputStream inputStream;
+    	private Client client;
+    	
+    	public ClientInput(ObjectInputStream input, Client client) {
+    		this.inputStream = input;
+    		this.client = client;
+    	}
+
+		@Override
+		public void run() {
+			Packet incoming;
+			try {
+				while((incoming = (Packet) inputStream.readObject()) != null) {
+					if (incoming.getActionType().equals(Packet.actionType.SUCCESS)) {
+		            	client.isConnected = true;
+		                System.out.println("Packet Recieved");
+		            }
+//					switch(incoming.getActionType()) {
+//						// Parsing each Action Type
+//			            
+//					}
+				}
+			} catch (ClassNotFoundException | IOException e) {
+				e.printStackTrace();
+			}
+		}
+    }
 }

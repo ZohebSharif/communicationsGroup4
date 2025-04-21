@@ -10,7 +10,7 @@ public class ClientTesting {
 	@Test
     public static void testLogin() {
     	Client client = new Client("localhost", "1234");
-    	client.testLogin();
+    	client.startUp();
     	
     }
 	
