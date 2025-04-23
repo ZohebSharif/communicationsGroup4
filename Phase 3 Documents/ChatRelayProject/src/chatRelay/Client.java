@@ -52,7 +52,7 @@ public class Client {
     public void login(String username, String password) {
     	try {
     		String[] args = {username, password};
-    		Packet loginPack = new Packet(Packet.actionType.LOGIN, args, "requesting");
+    		Packet loginPack = new Packet(actionType.LOGIN, args, "requesting");
     		objectStream.writeObject(loginPack);
     	} catch (IOException e) {
     		e.printStackTrace();
@@ -83,7 +83,7 @@ public class Client {
 			Packet incoming;
 			try {
 				while((incoming = (Packet) inputStream.readObject()) != null) {
-					if (incoming.getActionType().equals(Packet.actionType.SUCCESS)) {
+					if (incoming.getActionType().equals(actionType.SUCCESS)) {
 		            	client.isConnected = true;
 		                System.out.println("Packet Recieved");
 		            }

@@ -33,9 +33,9 @@ public class ClientHandler implements Runnable {
     	try {
             Packet checkLogin = (Packet) inputStream.readObject();
 
-            if (checkLogin.getActionType().equals(Packet.actionType.LOGIN)) {
+            if (checkLogin.getActionType().equals(actionType.LOGIN)) {
                 String[] args = {"Success"};
-                Packet accept = new Packet(Packet.actionType.SUCCESS, args, "Client");
+                Packet accept = new Packet(actionType.SUCCESS, args, "Client");
                 System.out.println("Got: " + accept.getActionType().toString());
                 outputStream.writeObject(accept);
             }
@@ -47,9 +47,9 @@ public class ClientHandler implements Runnable {
     	try {
             Packet checkLogout = (Packet) inputStream.readObject();
 
-            if (checkLogout.getActionType().equals(Packet.actionType.LOGOUT)) {
+            if (checkLogout.getActionType().equals(actionType.LOGOUT)) {
                 String[] args = {"Success"};
-                Packet accept = new Packet(Packet.actionType.SUCCESS, args, "Client");
+                Packet accept = new Packet(actionType.SUCCESS, args, "Client");
                 System.out.println("Got: " + accept.getActionType().toString());
                 outputStream.writeObject(accept);
             }

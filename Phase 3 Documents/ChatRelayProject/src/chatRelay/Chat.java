@@ -18,6 +18,7 @@ public class Chat {
         this.chatters = new User[1];
         this.chatters[0] = chatOwner;
     }
+    
     // add a chatter
     public void addChatter(User user) {
         User[] newChatters = new User[chatters.length + 1];
@@ -27,6 +28,7 @@ public class Chat {
         newChatters[chatters.length] = user;
         chatters = newChatters;
     }
+    
     // remove a chatter
     public void removeChatter(User user) {
         if (chatters.length <= 1) {
@@ -40,12 +42,12 @@ public class Chat {
                 newChatters[index++] = chatters[i];
             }
         }
-        
         // only update if user was found and removed
         if (index == newChatters.length) {
             chatters = newChatters;
         }
     }
+    
     // add a message
     public void addMessage(Message msg) {
         Message[] newMessages = new Message[messages.length + 1];

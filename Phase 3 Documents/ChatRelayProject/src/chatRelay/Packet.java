@@ -4,10 +4,10 @@ import java.io.Serializable;
 import java.time.LocalTime;
 
 public class Packet implements Serializable{
-    enum actionType {LOGIN, SEND_MESSAGE, LOGOUT, // Added
-        GET_ALL_CHATS, GET_ALL_USERS, CREATE_CHAT, 
-        SUCCESS, ERROR, 
-        CREATE_USER, ENABLE_USER, DISABLE_USER}
+//    enum actionType {LOGIN, SEND_MESSAGE, LOGOUT, // Added
+//        GET_ALL_CHATS, GET_ALL_USERS, CREATE_CHAT, 
+//        SUCCESS, ERROR, 
+//        CREATE_USER, ENABLE_USER, DISABLE_USER}
 
     private static int count = 0;
     private String id;
