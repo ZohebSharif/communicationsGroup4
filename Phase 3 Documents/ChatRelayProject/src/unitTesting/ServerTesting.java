@@ -1,6 +1,8 @@
-package chatRelay;
+package unitTesting;
 
 import org.junit.jupiter.api.Test;
+
+import chatRelay.Server;
 
 public class ServerTesting {
     public static void testServerConnect() {
