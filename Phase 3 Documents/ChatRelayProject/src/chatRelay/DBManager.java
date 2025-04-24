@@ -108,7 +108,13 @@ public class DBManager {
 				boolean isPrivate = words[3] == "true" ? true : false;
 				String[] userIds = words[4].split(",");
 			
+				
+				
+				
 				AbstractUser owner = getUserById(ownerId);
+				AbstractUser[] users;
+				
+				
 				
 				
 				// *** add a condition to not add the owner twice
@@ -117,8 +123,10 @@ public class DBManager {
 				//create chat object, for each userid text get that from hashmap 
 //				and then link that relationship . 
 //				when you get a user you can also put their chat on their chat array
-				
-//				Chat newChat = new Chat();
+
+
+//    public Chat(AbstractUser chatOwner, String name, String id, AbstractUser[] users) {
+				Chat newChat = new Chat(owner, roomName, chatId, );
 //				users.put(userId, newUser);
 
 			}
