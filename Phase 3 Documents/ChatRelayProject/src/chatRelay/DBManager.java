@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 
+
+// PROBABLY CAN MAKE MORE THINGS PRIVATE
+
 public class DBManager {
 
 	// private HashMap<userId, User> users;
@@ -38,6 +41,11 @@ public class DBManager {
 		for (AbstractUser user : users.values()) {
 			System.out.println(user);
 		}
+		
+		System.out.println("\n\nTest 'getUserById'");
+		AbstractUser u1 = getUserById("1");
+		System.out.println(u1);
+		
 		
 	}
 
@@ -87,6 +95,38 @@ public class DBManager {
 		}
 	}
 
+	private void loadChats() {
+		try (Scanner scanner = new Scanner(new File(this.userTxtFilename))) {
+			while (scanner.hasNextLine()) {
+				String line = scanner.nextLine();
+				System.out.println(line);
+
+				String[] words = line.split("/");
+
+				String username = words[0];
+				String password = words[1];
+				String userId = words[2];
+				String firstName = words[3];
+				String lastName = words[4];
+				boolean isDisabled = words[5] == "true" ? true : false;
+				boolean isAdmin = words[6] == "true" ? true : false;
+
+				AbstractUser newUser;
+
+				if (isAdmin) {
+					newUser = new ITAdmin(username, password, userId, firstName, lastName, isDisabled, isAdmin);
+				} else {
+					newUser = new User(username, password, userId, firstName, lastName, isDisabled, isAdmin);
+				}
+
+				users.put(userId, newUser);
+
+			}
+			System.out.println("+++++++++++++++++++");
+		} catch (IOException e) {
+			System.out.println("Error loading users: " + e.getMessage());
+		}
+	}
 	private void loadAllFiles() {
 //		loadUsers();
 //		loadChats();
@@ -97,20 +137,22 @@ public class DBManager {
 	public void sendUserAllFreshData() {
 	}
 
-	// public User getUserById(String userId) {}
+	 public AbstractUser getUserById(String userId) {
+		 return users.get(userId);
+	 }
 	// public Chat getChatById(String chatId) {}
 	// public Message getMessageById(String messageId) {}
 	// public List<User> fetchAllUsers() {}
 	// public List<Chat> fetchAllChats() {}
 	// public List<Message> fetchAllMessages() {}
 	// public List<Chat> getChatsForUser(String userId) {}
-	public void writeNewUser(User user) {
+	private void writeNewUser(User user) {
 	}
 
-	public void writeNewChat(Chat chat) {
+	private void writeNewChat(Chat chat) {
 	}
 
-	public void writeNewMessage(Message message) {
+	private void writeNewMessage(Message message) {
 	}
 
 	// private User stringToUser(String userString) {}
