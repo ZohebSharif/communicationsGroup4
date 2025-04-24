@@ -1,19 +1,34 @@
 package chatRelay;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Chat {
     private static int count = 0;
     private String id;
-    private Message[] messages;
-    private User owner;
+    private List<Message> messages = new ArrayList<>(); 
+    private AbstractUser owner;
     private String roomName;
-    private User[] chatters;
+    private List<AbstractUser> chatters = new ArrayList<>();
     private Boolean isPrivate = false;
 
 // constructor takes in a user object and string for user
-    public Chat(User chatOwner, String name) {
+//    public Chat(User chatOwner, String name) {
+    
+
+    // TO DO:
+    // LIKE FOR ALL OTHER CLASSES - MAKE 2nd CONSTRUCTOR THAT DOESN"T TAKE IN AN ID
+    // TO ADDRESS 2 DIFFERENT FLOWS WE CREATE A USER OBJECT
+    // 1) LOADING IN AN OBJECT (already has an ID)
+    // 2) CREATING A RECORD (ID NEEDS TO BE GENERATED)
+    
+    public Chat(AbstractUser chatOwner, String name, String id, AbstractUser[] users) {
+//    	this.id = "CHAT_" + (++count);
+    	this.id = id;
+    	
+    	
         this.owner = chatOwner;
         this.roomName = name;
-        this.id = "CHAT_" + (++count);
         this.messages = new Message[0];
         this.chatters = new User[1];
         this.chatters[0] = chatOwner;

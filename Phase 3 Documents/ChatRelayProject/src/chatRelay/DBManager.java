@@ -17,6 +17,7 @@ public class DBManager {
 	// private HashMap<messageId, Message> messages;
 
 	private ConcurrentHashMap<String, AbstractUser> users = new ConcurrentHashMap<>();
+	private ConcurrentHashMap<String, Chat> chats= new ConcurrentHashMap<>();
 
 	private Server server;
 	private String txtFilePath;
@@ -101,23 +102,23 @@ public class DBManager {
 
 				String[] words = line.split("/");
 
-				String id = words[0];
+				String chatId = words[0];
 				String ownerId = words[1];
 				String roomName = words[2];
-				String isPrivate = words[3];
-				String userIds = words[4];
+				boolean isPrivate = words[3] == "true" ? true : false;
+				String[] userIds = words[4].split(",");
+			
+				AbstractUser owner = getUserById(ownerId);
+				
+				
+				// *** add a condition to not add the owner twice
 
 				
-				//create chat object, for each userid text get that from hashmap and then link that relationship . when you get a user you can also put their chat on their chat array
+				//create chat object, for each userid text get that from hashmap 
+//				and then link that relationship . 
+//				when you get a user you can also put their chat on their chat array
 				
-//				AbstractUser newUser;
-//
-//				if (isAdmin) {
-//					newUser = new ITAdmin(username, password, userId, firstName, lastName, isDisabled, isAdmin);
-//				} else {
-//					newUser = new User(username, password, userId, firstName, lastName, isDisabled, isAdmin);
-//				}
-//
+//				Chat newChat = new Chat();
 //				users.put(userId, newUser);
 
 			}

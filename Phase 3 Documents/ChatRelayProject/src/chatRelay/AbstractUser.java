@@ -1,5 +1,8 @@
 package chatRelay;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class AbstractUser {
     private static int count = 0;        // probably need to use atomic for potential concurrency issue?
     private String id;
@@ -9,7 +12,7 @@ public abstract class AbstractUser {
     private String password;
     private Boolean isDisabled = false;
     private Boolean isAdmin = false;
-    private Chat[] chats;
+    private List<Chat> chats = new ArrayList<>();
     
     // probably add a 2nd constructor that DOESN'T take in an ID - for when an admin creates a new user
 
