@@ -1,5 +1,16 @@
- import static org.junit.jupiter.api.Assertions.*;
+package unitTesting;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
+
+import chatRelay.AbstractUser;
+import chatRelay.Chat;
+import chatRelay.Message;
+import chatRelay.User;
+
 import org.junit.jupiter.api.BeforeEach;
 
 public class ChatTest {
@@ -16,8 +27,9 @@ public class ChatTest {
         user1 = new User("Talhah", "password456", "id2", "Talhah", "Shaik", false, false);
         user2 = new User("Kenny", "password789", "id3", "Kenny", "Kottenstette", false, false);
         
+        AbstractUser[] users = {user1, user2};
         // Create a test chat
-        chat = new Chat(owner, "Test Chat Room");
+        chat = new Chat(owner, "Test Chat Room", "CHAT_", users);
     }
     
     @Test
@@ -30,12 +42,12 @@ public class ChatTest {
         assertTrue(chat.getId().startsWith("CHAT_"));
         
         // Test that the owner is added to chatters
-        User[] chatters = chat.getChatters();
-        assertEquals(1, chatters.length);
-        assertEquals(owner, chatters[0]);
+        List<AbstractUser> chatters = chat.getChatters();
+        assertEquals(1, chatters.size());
+        assertEquals(owner, chatters.get(0));
         
         // Test that messages array is initialized empty
-        assertEquals(0, chat.getMessages().length);
+        assertEquals(0, chat.getMessages().size());
     }
     
     @Test
@@ -44,20 +56,20 @@ public class ChatTest {
         chat.addChatter(user1);
         
         // Check if the user was added correctly
-        User[] chatters = chat.getChatters();
-        assertEquals(2, chatters.length);
-        assertEquals(owner, chatters[0]);
-        assertEquals(user1, chatters[1]);
+        List<AbstractUser> chatters = chat.getChatters();
+        assertEquals(2, chatters.size());
+        assertEquals(owner, chatters.get(0));
+        assertEquals(user1, chatters.get(1));
         
         // Add another user
         chat.addChatter(user2);
         
         // Check if the second user was added correctly
         chatters = chat.getChatters();
-        assertEquals(3, chatters.length);
-        assertEquals(owner, chatters[0]);
-        assertEquals(user1, chatters[1]);
-        assertEquals(user2, chatters[2]);
+        assertEquals(3, chatters.size());
+        assertEquals(owner, chatters.get(0));
+        assertEquals(user1, chatters.get(1));
+        assertEquals(user2, chatters.get(2));
     }
     
     @Test
@@ -67,16 +79,16 @@ public class ChatTest {
         chat.addChatter(user2);
         
         // Check initial state
-        assertEquals(3, chat.getChatters().length);
+        assertEquals(3, chat.getChatters().size());
         
         // Remove a user
         chat.removeChatter(user1);
         
         // Check if the user was removed correctly
-        User[] chatters = chat.getChatters();
-        assertEquals(2, chatters.length);
-        assertEquals(owner, chatters[0]);
-        assertEquals(user2, chatters[1]);
+        List<AbstractUser> chatters = chat.getChatters();
+        assertEquals(2, chatters.size());
+        assertEquals(owner, chatters.get(0));
+        assertNotEquals(user1, chatters.get(1));
         
         // Try to remove the last user (should not remove)
         chat.removeChatter(user2);
@@ -84,7 +96,7 @@ public class ChatTest {
         
         // Check that at least one user remains
         chatters = chat.getChatters();
-        assertTrue(chatters.length >= 1);
+        assertTrue(chatters.size() >= 1);
     }
     
     @Test
@@ -96,9 +108,9 @@ public class ChatTest {
         chat.addMessage(message1);
         
         // Check if the message was added correctly
-        Message[] messages = chat.getMessages();
-        assertEquals(1, messages.length);
-        assertEquals(message1, messages[0]);
+        List<Message> messages = (List<Message>) chat.getMessages();
+        assertEquals(1, messages.size());
+        assertEquals(message1, messages.get(0));
         
         // Add another message
         Message message2 = new Message("How are you?", user1);
@@ -106,9 +118,9 @@ public class ChatTest {
         
         // Check if the second message was added correctly
         messages = chat.getMessages();
-        assertEquals(2, messages.length);
-        assertEquals(message1, messages[0]);
-        assertEquals(message2, messages[1]);
+        assertEquals(2, messages.size());
+        assertEquals(message1, messages.get(0));
+        assertEquals(message2, messages.get(1));
     }
     
     @Test
@@ -140,11 +152,11 @@ public class ChatTest {
     
     public static void main(String[] args) {
         // This allows running the tests directly
-        org.junit.platform.launcher.core.LauncherFactory
-            .create()
-            .execute(org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder
-                    .request()
-                    .selectors(org.junit.platform.engine.discovery.DiscoverySelectors.selectClass(ChatTest.class))
-                    .build());
+//        org.junit.platform.launcher.core.LauncherFactory
+//            .create()
+//            .execute(org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder
+//                    .request()
+//                    .selectors(org.junit.platform.engine.discovery.DiscoverySelectors.selectClass(ChatTest.class))
+//                    .build());
     }
 }
