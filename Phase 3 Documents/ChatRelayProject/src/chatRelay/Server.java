@@ -21,26 +21,26 @@ public class Server {
 
 	}
 
-//	public void connect() {
-//		ServerSocket server;
-//
-//		try {
-//			server = new ServerSocket(port);
-//			server.setReuseAddress(true);
-//
-//			while (true) {
-//				Socket client = server.accept();
-//
-//				ClientHandler clientSock = new ClientHandler(client, this);
-//
-//				// clients.add(clientSock);
-//
-//				new Thread(clientSock).start();
-//			}
-//		} catch (IOException e) {
-//
-//		}
-//	}
+	public void connect() {
+		ServerSocket server;
+
+		try {
+			server = new ServerSocket(port);
+			server.setReuseAddress(true);
+
+			while (true) {
+				Socket client = server.accept();
+
+				ClientHandler clientSock = new ClientHandler(client, this);
+
+				// clients.add(clientSock);
+
+				new Thread(clientSock).start();
+			}
+		} catch (IOException e) {
+
+		}
+	}
 
 	public void disconnect() {
 	}
