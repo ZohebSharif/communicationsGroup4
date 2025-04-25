@@ -12,6 +12,8 @@ import java.util.concurrent.ConcurrentHashMap;
 // PROBABLY CAN MAKE MORE THINGS PRIVATE
 
 public class DBManager {
+	private static final String DELIMITER = "387832874113725505240732075379113649"; // maybe make public for outgoing (or have client deal do the convert?)
+
 	private ConcurrentHashMap<String, AbstractUser> users = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<String, Chat> chats = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<String, Message> messages = new ConcurrentHashMap<>();
@@ -37,8 +39,7 @@ public class DBManager {
 		loadUsers(); // convert TXT strings into real User objects, put those into the hashmap
 		loadChats();
 		loadMessages();
-		
-		
+
 		for (AbstractUser user : users.values()) {
 			System.out.println(user);
 		}
@@ -47,6 +48,59 @@ public class DBManager {
 		AbstractUser u1 = getUserById("1");
 		System.out.println(u1);
 
+		System.out.println("\n\n\nCHECKING DB RELATIONSHIPS");
+
+		System.out.println("Total users loaded:    " + users.size());
+		System.out.println("Total chats loaded:    " + chats.size());
+		System.out.println("Total messages loaded: " + messages.size());
+
+		System.out.println("\n ---------------------------------------");
+
+		// Check each message has a valid author and chat
+		for (Message msg : messages.values()) {
+			if (msg.getSender() == null) {
+				System.out.println("!!! Message " + msg.getId() + " is missing an author.");
+			}
+			if (msg.getChat() == null) {
+				System.out.println("!!! Message " + msg.getId() + " is missing a chat.");
+			}
+		}
+
+		// Check all users referenced in chats actually exist
+		for (Chat chat : chats.values()) {
+			for (AbstractUser user : chat.getChatters()) {
+				if (!users.containsKey(user.getId())) {
+					System.out.println("!!! Chat " + chat.getId() + " includes unknown user: " + user.getId());
+				}
+			}
+		}
+
+		System.out.println("\n ---------------------------------------");
+		System.out.println(" ---------------------------------------");
+		System.out.println(" ---------------------------------------");
+		System.out.println("Messages: ");
+		for (Message msg : messages.values()) {
+			System.out.println("id: " + msg.getId() + ", createdAt: " + msg.getCreatedAt() + ", content: " + msg.getContent() + ", authorId "
+					+ msg.getSender().getId() + " chatId: " + msg.getChat().getId());
+		}
+
+		System.out.println("\n ---------------------------------------");
+		System.out.println(" ---------------------------------------");
+		System.out.println(" ---------------------------------------");
+		System.out.println("Users:");
+		for (AbstractUser user : users.values()) {
+			System.out.println("id: " + user.getId() + ", username: " + user.getUserName() + ", name: "
+					+ user.getFirstName() + " " + user.getLastName() + ", isAdmin: " + user.isAdmin() + ", isDisabled: " + user.isDisabled());
+		}
+
+		System.out.println("\n ---------------------------------------");
+		System.out.println(" ---------------------------------------");
+		System.out.println(" ---------------------------------------");
+		System.out.println("Chats:");
+		for (Chat chat : chats.values()) {
+			System.out.println("id: " + chat.getId() + ", roomName: " + chat.getRoomName() + ", ownerId: "
+					+ chat.getOwner().getId() + ", isPrivate: " + chat.isPrivate());
+		}
 	}
 
 // TESTER - TO DELETE
@@ -118,7 +172,7 @@ public class DBManager {
 				}
 
 				// Add to hashmap
-				Chat newChat = new Chat(owner, roomName, chatId, chatters);
+				Chat newChat = new Chat(owner, roomName, chatId, chatters, isPrivate);
 				chats.put(chatId, newChat);
 
 				// Add relationship on each User, to connect to this chat
@@ -146,27 +200,21 @@ public class DBManager {
 
 				String messageId = words[0];
 				long createdAt = Long.parseLong(words[1]);
-				String content = words[2];
+				String content = words[2].replace(DELIMITER, "/");
 				String authorId = words[3];
 				String chatId = words[4];
-				
+
 //				.txt format: id/createdAt/content/authorId/chatId				
-//				TODO : ESCAPE "/" CHARACTER STUFF
 
 				AbstractUser author = getUserById(authorId);
 				Chat chat = getChatById(chatId);
-				
-				
+
 				Message newMessage = new Message(messageId, createdAt, content, author, chat);
-			
+
 				chat.addMessage(newMessage);
 				author.addChat(chat);
-				
-				
-				
-				messages.put(messageId, newMessage);
-				
 
+				messages.put(messageId, newMessage);
 
 			}
 			System.out.println("end of loadMessages()\n");
@@ -186,6 +234,7 @@ public class DBManager {
 	public Chat getChatById(String chatId) {
 		return chats.get(chatId);
 	}
+
 	// public Chat getChatById(String chatId) {}
 	// public Message getMessageById(String messageId) {}
 	// public List<User> fetchAllUsers() {}
@@ -204,7 +253,11 @@ public class DBManager {
 	// private User stringToUser(String userString) {}
 	// private Chat stringToChat(String chatString) {}
 	// private Message StringToMessage(String messageString) {}
-	private void getSanitizedCharacter(String input, String output) {
+
+	private void getSanitizedString(String input, String output) {
+		// Don't use this function? just use .replace()
+		// ex for incoming messages from user into DB: str1.replace("/", [sLaSH])
+		// ex for loading messages from DB into memory: str1.replace("[sLaSH]", /)
 	}
 
 	public void addUserToChat(String userId) {

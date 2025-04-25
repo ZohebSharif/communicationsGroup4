@@ -10,7 +10,7 @@ public class Chat {
     private List<Message> messages; 
     private AbstractUser owner;
     private String roomName;
-    private Boolean isPrivate = false;
+    private Boolean isPrivate;
 
 // constructor takes in a user object and string for user
 //    public Chat(User chatOwner, String name) {
@@ -22,7 +22,7 @@ public class Chat {
     // 1) LOADING IN AN OBJECT (already has an ID)
     // 2) CREATING A RECORD (ID NEEDS TO BE GENERATED)
     
-    public Chat(AbstractUser chatOwner, String name, String id, List<AbstractUser> chatters) {
+    public Chat(AbstractUser chatOwner, String name, String id, List<AbstractUser> chatters, boolean isPrivate) {
 //    	this.id = "CHAT_" + (++count);
     	this.id = id;
     	
@@ -32,6 +32,7 @@ public class Chat {
         this.messages = new ArrayList<>();
         this.chatters = new ArrayList<>();
         this.chatters.add(chatOwner);
+        this.isPrivate = isPrivate;
     }
     
     // add a chatter
@@ -96,8 +97,8 @@ public class Chat {
         return roomName;
     }
     
-    public User getOwner() {
-        return (User) owner;
+    public AbstractUser getOwner() {
+        return owner;
     }
     
     public List<Message> getMessages() {
