@@ -6,6 +6,9 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+
+// TODO: Don't send passwords to frontend! 
+
 public class Server {
 	private HashMap<String, ClientHandler> clients;
 	// private ArrayList<ClientHandler> clients; // Testing purposes
@@ -21,26 +24,26 @@ public class Server {
 
 	}
 
-//	public void connect() {
-//		ServerSocket server;
-//
-//		try {
-//			server = new ServerSocket(port);
-//			server.setReuseAddress(true);
-//
-//			while (true) {
-//				Socket client = server.accept();
-//
-//				ClientHandler clientSock = new ClientHandler(client, this);
-//
-//				// clients.add(clientSock);
-//
-//				new Thread(clientSock).start();
-//			}
-//		} catch (IOException e) {
-//
-//		}
-//	}
+	public void connect() {
+		ServerSocket server;
+
+		try {
+			server = new ServerSocket(port);
+			server.setReuseAddress(true);
+
+			while (true) {
+				Socket client = server.accept();
+
+				ClientHandler clientSock = new ClientHandler(client, this);
+
+				// clients.add(clientSock);
+
+				new Thread(clientSock).start();
+			}
+		} catch (IOException e) {
+
+		}
+	}
 
 	public void disconnect() {
 	}
@@ -61,7 +64,7 @@ public class Server {
 		int port = 1337;
 		String IP = "127.0.0.1";
 
-		System.out.println("Server.java's main() fired");
+		System.out.println("Server.java's main() fired\n");
 		Server server = new Server(port, IP);
 	}
 }
