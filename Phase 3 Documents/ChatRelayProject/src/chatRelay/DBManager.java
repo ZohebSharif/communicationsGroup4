@@ -12,13 +12,9 @@ import java.util.concurrent.ConcurrentHashMap;
 // PROBABLY CAN MAKE MORE THINGS PRIVATE
 
 public class DBManager {
-
-	// private HashMap<userId, User> users;
-	// private HashMap<chatId, Chat> chats;
-	// private HashMap<messageId, Message> messages;
-
 	private ConcurrentHashMap<String, AbstractUser> users = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<String, Chat> chats = new ConcurrentHashMap<>();
+	private ConcurrentHashMap<String, Message> messages = new ConcurrentHashMap<>();
 
 	private Server server; // maybe not needed?
 	private String txtFilePath;
@@ -40,6 +36,9 @@ public class DBManager {
 
 		loadUsers(); // convert TXT strings into real User objects, put those into the hashmap
 		loadChats();
+		loadMessages();
+		
+		
 		for (AbstractUser user : users.values()) {
 			System.out.println(user);
 		}
@@ -133,7 +132,7 @@ public class DBManager {
 			}
 			System.out.println("end of loadChats()\n");
 		} catch (IOException e) {
-			System.out.println("Error loading users: " + e.getMessage());
+			System.out.println("Error loading chats: " + e.getMessage());
 		}
 	}
 
@@ -151,34 +150,28 @@ public class DBManager {
 				String authorId = words[3];
 				String chatId = words[4];
 				
+//				.txt format: id/createdAt/content/authorId/chatId				
 //				TODO : ESCAPE "/" CHARACTER STUFF
 
-//				id/createdAt/content/authorId/chatId
+				AbstractUser author = getUserById(authorId);
+				Chat chat = getChatById(chatId);
+				
+				
+				Message newMessage = new Message(messageId, createdAt, content, author, chat);
+			
+				chat.addMessage(newMessage);
+				author.addChat(chat);
+				
+				
+				
+				messages.put(messageId, newMessage);
+				
 
-//				// TODO: Consider that this is adding the owner to chatters
-//				AbstractUser owner = getUserById(ownerId);
-//				List<AbstractUser> chatters = new ArrayList<>();
-//				for (String userId : userIds) {
-//					AbstractUser u = getUserById(userId);
-//					chatters.add(u);
-//				}
-//
-//				// Add to hashmap
-//				Chat newChat = new Chat(owner, roomName, chatId, chatters);
-//				chats.put(chatId, newChat);
-//
-//				// Add relationship on each User, to connect to this chat
-//				// TODO: POSSIBLE ALTERNATIVE - MAKE ADDCHATTERS() AS A SETTER
-//				// TO PREVENT ANOTHER LOOP HERE?
-//				for (String userId : userIds) {
-//					AbstractUser u = getUserById(userId);
-//					u.addChat(newChat);
-//				}
 
 			}
-			System.out.println("end of loadChats()\n");
+			System.out.println("end of loadMessages()\n");
 		} catch (IOException e) {
-			System.out.println("Error loading users: " + e.getMessage());
+			System.out.println("Error loading messages: " + e.getMessage());
 		}
 	}
 

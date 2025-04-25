@@ -6,10 +6,10 @@ import java.util.List;
 public class Chat {
     private static int count = 0;
     private String id;
+    private List<AbstractUser> chatters;
     private List<Message> messages; 
     private AbstractUser owner;
     private String roomName;
-    private List<AbstractUser> chatters;
     private Boolean isPrivate = false;
 
 // constructor takes in a user object and string for user
@@ -76,6 +76,7 @@ public class Chat {
 //        newMessages[messages.length] = msg;
 //        messages = newMessages;
     	messages.add(msg);
+    	return;
     }
     // change privacy to provided state
     public void changePrivacy(Boolean newState) {
