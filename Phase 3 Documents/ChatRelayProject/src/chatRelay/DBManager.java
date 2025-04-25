@@ -18,7 +18,7 @@ public class DBManager {
 	// private HashMap<messageId, Message> messages;
 
 	private ConcurrentHashMap<String, AbstractUser> users = new ConcurrentHashMap<>();
-	private ConcurrentHashMap<String, Chat> chats= new ConcurrentHashMap<>();
+	private ConcurrentHashMap<String, Chat> chats = new ConcurrentHashMap<>();
 
 	private Server server; // maybe not needed?
 	private String txtFilePath;
@@ -109,23 +109,19 @@ public class DBManager {
 				String roomName = words[2];
 				boolean isPrivate = words[3].equals("true") ? true : false;
 				String[] userIds = words[4].split(",");
-			
-				
-				
-				
+
+				// TODO: Consider that this is adding the owner to chatters
 				AbstractUser owner = getUserById(ownerId);
 				List<AbstractUser> chatters = new ArrayList<>();
 				for (String userId : userIds) {
 					AbstractUser u = getUserById(userId);
 					chatters.add(u);
 				}
-				
 
 				// Add to hashmap
 				Chat newChat = new Chat(owner, roomName, chatId, chatters);
 				chats.put(chatId, newChat);
 
-				
 				// Add relationship on each User, to connect to this chat
 				// TODO: POSSIBLE ALTERNATIVE - MAKE ADDCHATTERS() AS A SETTER
 				// TO PREVENT ANOTHER LOOP HERE?
@@ -133,7 +129,7 @@ public class DBManager {
 					AbstractUser u = getUserById(userId);
 					u.addChat(newChat);
 				}
-				
+
 			}
 			System.out.println("end of loadChats()\n");
 		} catch (IOException e) {
@@ -141,10 +137,49 @@ public class DBManager {
 		}
 	}
 
-	private void loadAllFiles() {
-//		loadUsers();
-//		loadChats();
-//		loadMessages();
+	private void loadMessages() {
+		try (Scanner scanner = new Scanner(new File(this.messageTxtFilename))) {
+			while (scanner.hasNextLine()) {
+				String line = scanner.nextLine();
+				System.out.println(line);
+
+				String[] words = line.split("/");
+
+				String messageId = words[0];
+				long createdAt = Long.parseLong(words[1]);
+				String content = words[2];
+				String authorId = words[3];
+				String chatId = words[4];
+				
+//				TODO : ESCAPE "/" CHARACTER STUFF
+
+//				id/createdAt/content/authorId/chatId
+
+//				// TODO: Consider that this is adding the owner to chatters
+//				AbstractUser owner = getUserById(ownerId);
+//				List<AbstractUser> chatters = new ArrayList<>();
+//				for (String userId : userIds) {
+//					AbstractUser u = getUserById(userId);
+//					chatters.add(u);
+//				}
+//
+//				// Add to hashmap
+//				Chat newChat = new Chat(owner, roomName, chatId, chatters);
+//				chats.put(chatId, newChat);
+//
+//				// Add relationship on each User, to connect to this chat
+//				// TODO: POSSIBLE ALTERNATIVE - MAKE ADDCHATTERS() AS A SETTER
+//				// TO PREVENT ANOTHER LOOP HERE?
+//				for (String userId : userIds) {
+//					AbstractUser u = getUserById(userId);
+//					u.addChat(newChat);
+//				}
+
+			}
+			System.out.println("end of loadChats()\n");
+		} catch (IOException e) {
+			System.out.println("Error loading users: " + e.getMessage());
+		}
 	}
 
 	// public User checkLoginCredentials(String username, String password) {}
@@ -155,6 +190,9 @@ public class DBManager {
 		return users.get(userId);
 	}
 
+	public Chat getChatById(String chatId) {
+		return chats.get(chatId);
+	}
 	// public Chat getChatById(String chatId) {}
 	// public Message getMessageById(String messageId) {}
 	// public List<User> fetchAllUsers() {}
