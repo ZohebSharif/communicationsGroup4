@@ -25,6 +25,11 @@ public abstract class AbstractUser {
     	this.isDisabled = isDisabled;
     	this.isAdmin = isAdmin;
     }
+    
+    public void addChat(Chat chat) {
+    	chats.add(chat);
+    	return;
+    }
 
     public String getFirstName() {return firstName;}
     public String getLastName() {return lastName;}

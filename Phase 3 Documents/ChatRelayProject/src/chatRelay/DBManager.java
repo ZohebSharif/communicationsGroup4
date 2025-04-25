@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,7 +20,7 @@ public class DBManager {
 	private ConcurrentHashMap<String, AbstractUser> users = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<String, Chat> chats= new ConcurrentHashMap<>();
 
-	private Server server;
+	private Server server; // maybe not needed?
 	private String txtFilePath;
 	private String userTxtFilename;
 	private String chatTxtFilename;
@@ -38,6 +39,7 @@ public class DBManager {
 //		print(messageTxtFilename);
 
 		loadUsers(); // convert TXT strings into real User objects, put those into the hashmap
+		loadChats();
 		for (AbstractUser user : users.values()) {
 			System.out.println(user);
 		}
@@ -74,8 +76,8 @@ public class DBManager {
 				String userId = words[2];
 				String firstName = words[3];
 				String lastName = words[4];
-				boolean isDisabled = words[5] == "true" ? true : false;
-				boolean isAdmin = words[6] == "true" ? true : false;
+				boolean isDisabled = words[5].equals("true") ? true : false;
+				boolean isAdmin = words[6].equals("true") ? true : false;
 
 				AbstractUser newUser;
 
@@ -88,14 +90,14 @@ public class DBManager {
 				users.put(userId, newUser);
 
 			}
-			System.out.println("+++++++++++++++++++");
+			System.out.println("end of loadUsers()\n");
 		} catch (IOException e) {
 			System.out.println("Error loading users: " + e.getMessage());
 		}
 	}
 
 	private void loadChats() {
-		try (Scanner scanner = new Scanner(new File(this.userTxtFilename))) {
+		try (Scanner scanner = new Scanner(new File(this.chatTxtFilename))) {
 			while (scanner.hasNextLine()) {
 				String line = scanner.nextLine();
 				System.out.println(line);
@@ -105,32 +107,35 @@ public class DBManager {
 				String chatId = words[0];
 				String ownerId = words[1];
 				String roomName = words[2];
-				boolean isPrivate = words[3] == "true" ? true : false;
+				boolean isPrivate = words[3].equals("true") ? true : false;
 				String[] userIds = words[4].split(",");
 			
 				
 				
 				
 				AbstractUser owner = getUserById(ownerId);
-				AbstractUser[] users;
+				List<AbstractUser> chatters = new ArrayList<>();
+				for (String userId : userIds) {
+					AbstractUser u = getUserById(userId);
+					chatters.add(u);
+				}
 				
-				
-				
-				
-				// *** add a condition to not add the owner twice
+
+				// Add to hashmap
+				Chat newChat = new Chat(owner, roomName, chatId, chatters);
+				chats.put(chatId, newChat);
 
 				
-				//create chat object, for each userid text get that from hashmap 
-//				and then link that relationship . 
-//				when you get a user you can also put their chat on their chat array
-
-
-//    public Chat(AbstractUser chatOwner, String name, String id, AbstractUser[] users) {
-				Chat newChat = new Chat(owner, roomName, chatId, );
-//				users.put(userId, newUser);
-
+				// Add relationship on each User, to connect to this chat
+				// TODO: POSSIBLE ALTERNATIVE - MAKE ADDCHATTERS() AS A SETTER
+				// TO PREVENT ANOTHER LOOP HERE?
+				for (String userId : userIds) {
+					AbstractUser u = getUserById(userId);
+					u.addChat(newChat);
+				}
+				
 			}
-			System.out.println("+++++++++++++++++++");
+			System.out.println("end of loadChats()\n");
 		} catch (IOException e) {
 			System.out.println("Error loading users: " + e.getMessage());
 		}

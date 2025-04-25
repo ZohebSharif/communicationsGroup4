@@ -61,7 +61,7 @@ public class Server {
 		int port = 1337;
 		String IP = "127.0.0.1";
 
-		System.out.println("Server.java's main() fired");
+		System.out.println("Server.java's main() fired\n");
 		Server server = new Server(port, IP);
 	}
 }

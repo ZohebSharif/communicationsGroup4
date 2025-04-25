@@ -22,7 +22,7 @@ public class Chat {
     // 1) LOADING IN AN OBJECT (already has an ID)
     // 2) CREATING A RECORD (ID NEEDS TO BE GENERATED)
     
-    public Chat(AbstractUser chatOwner, String name, String id, AbstractUser[] users) {
+    public Chat(AbstractUser chatOwner, String name, String id, List<AbstractUser> chatters) {
 //    	this.id = "CHAT_" + (++count);
     	this.id = id;
     	
