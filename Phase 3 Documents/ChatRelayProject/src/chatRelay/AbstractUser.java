@@ -35,11 +35,13 @@ public abstract class AbstractUser {
     public String getLastName() {return lastName;}
     public String getUserName() {return username;}
     public String getId() {return id;}
+    public String getPassword() {return password;}
     public List<Chat> getChats() {return chats;}
     
 	public String toString() {
 		return "UserId=" + id + ", " + firstName + " " + lastName + " (" + username + "), Admin: " + isAdmin;
 	}
+	
 	
 	public boolean isAdmin() {
 		return this.isAdmin;

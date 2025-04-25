@@ -6,6 +6,9 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+
+// TODO: Don't send passwords to frontend! 
+
 public class Server {
 	private HashMap<String, ClientHandler> clients;
 	// private ArrayList<ClientHandler> clients; // Testing purposes

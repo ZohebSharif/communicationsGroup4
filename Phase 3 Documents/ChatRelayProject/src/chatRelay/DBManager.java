@@ -12,7 +12,8 @@ import java.util.concurrent.ConcurrentHashMap;
 // PROBABLY CAN MAKE MORE THINGS PRIVATE
 
 public class DBManager {
-	private static final String DELIMITER = "387832874113725505240732075379113649"; // maybe make public for outgoing (or have client deal do the convert?)
+	private static final String DELIMITER = "498928918204"; // maybe make public for outgoing (or have client deal do
+															// the convert?)
 
 	private ConcurrentHashMap<String, AbstractUser> users = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<String, Chat> chats = new ConcurrentHashMap<>();
@@ -30,11 +31,6 @@ public class DBManager {
 		this.userTxtFilename = filepath + userTxtFilename; // username/password/id/firstName/lastName/isDisabled/isAdmin
 		this.chatTxtFilename = filepath + chatTxtFilename; // id/owner/roomName/[userId1, userId2, userId3]/isPrivate
 		this.messageTxtFilename = filepath + messageTxtFilename; // id/createdAt/content/authorId/chatId
-
-//TESTING
-//		print(userTxtFilename);
-//		print(chatTxtFilename);
-//		print(messageTxtFilename);
 
 		loadUsers(); // convert TXT strings into real User objects, put those into the hashmap
 		loadChats();
@@ -80,8 +76,8 @@ public class DBManager {
 		System.out.println(" ---------------------------------------");
 		System.out.println("Messages: ");
 		for (Message msg : messages.values()) {
-			System.out.println("id: " + msg.getId() + ", createdAt: " + msg.getCreatedAt() + ", content: " + msg.getContent() + ", authorId "
-					+ msg.getSender().getId() + " chatId: " + msg.getChat().getId());
+			System.out.println("id: " + msg.getId() + ", createdAt: " + msg.getCreatedAt() + ", content: "
+					+ msg.getContent() + ", authorId " + msg.getSender().getId() + " chatId: " + msg.getChat().getId());
 		}
 
 		System.out.println("\n ---------------------------------------");
@@ -89,8 +85,9 @@ public class DBManager {
 		System.out.println(" ---------------------------------------");
 		System.out.println("Users:");
 		for (AbstractUser user : users.values()) {
-			System.out.println("id: " + user.getId() + ", username: " + user.getUserName() + ", name: "
-					+ user.getFirstName() + " " + user.getLastName() + ", isAdmin: " + user.isAdmin() + ", isDisabled: " + user.isDisabled());
+			System.out.println("id: " + user.getId() + ", username: " + user.getUserName() + ", password:"
+					+ user.getPassword() + ", name: " + user.getFirstName() + " " + user.getLastName() + ", isAdmin: "
+					+ user.isAdmin() + ", isDisabled: " + user.isDisabled());
 		}
 
 		System.out.println("\n ---------------------------------------");
@@ -101,18 +98,31 @@ public class DBManager {
 			System.out.println("id: " + chat.getId() + ", roomName: " + chat.getRoomName() + ", ownerId: "
 					+ chat.getOwner().getId() + ", isPrivate: " + chat.isPrivate());
 		}
-	}
 
-// TESTER - TO DELETE
-	private void print(String fullPath) {
-		try (Scanner scanner = new Scanner(new File(fullPath))) {
-			while (scanner.hasNextLine()) {
-				String line = scanner.nextLine();
-				System.out.println(line);
-			}
-			System.out.println("+++++++++++++++++++");
-		} catch (IOException e) {
-			System.out.println("Error reading file: " + e.getMessage());
+		
+// SERVER SHOULD DO THIS BELOW?
+// Work on the user flows for each scenarios next		
+		
+		System.out.println(" ---------------------------------------");
+		System.out.println("Good login:");
+
+		// try both valid/invalid usernames/passwords
+		AbstractUser validUser1 = checkLoginCredentials("kenkot", "asdf");
+		System.out.println(validUser1);
+
+		if (validUser1 != null && !validUser1.isDisabled()) {
+			System.out.println("we can proceed");
+		}
+
+		System.out.println("\nBad login:");
+
+		AbstractUser invalidUser1 = checkLoginCredentials("kenkot", "WRONG PASSWORD");
+		System.out.println(invalidUser1);
+
+		if (invalidUser1 != null && !invalidUser1.isDisabled()) {
+			System.out.println("we can proceed");
+		} else {
+			System.out.println("we can't proceed");
 		}
 	}
 
@@ -262,6 +272,27 @@ public class DBManager {
 
 	public void addUserToChat(String userId) {
 	}
-	// public Boolean usernameExists(String name) {}
+
+	public AbstractUser getUserByUsername(String username) {
+		for (AbstractUser user : users.values()) {
+			if (user.getUserName().equalsIgnoreCase(username)) {
+				return user;
+			}
+		}
+		return null;
+	}
+
+	public AbstractUser checkLoginCredentials(String username, String password) {
+		AbstractUser user = getUserByUsername(username);
+
+		if (user.getPassword().equals(password)) {
+			return user;
+		}
+		return null;
+	}
+
+//	 public Boolean usernameExists(String name) {
+//		 
+//	 }
 	// private Boolean validUsername(String name) {}
 }
