@@ -17,6 +17,8 @@ public abstract class AbstractUser {
     // probably add a 2nd constructor that DOESN'T take in an ID - for when an admin creates a new user
 
     public AbstractUser(String username, String password, String id, String firstname, String lastname, boolean isDisabled, boolean isAdmin  ) {
+    	++count;
+
     	this.username = username;
     	this.password = password;
     	this.id = id;

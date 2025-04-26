@@ -24,6 +24,8 @@ public class Chat {
 
     // when loading in data from the .txt file (reads in an ID)
     public Chat(AbstractUser chatOwner, String name, String id, List<AbstractUser> chatters, boolean isPrivate) {
+    	++count; // needed to keep count synced
+    	
     	this.owner = chatOwner;
     	this.roomName = name;
         this.id = id;
