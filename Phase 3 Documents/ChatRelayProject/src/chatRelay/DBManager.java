@@ -13,8 +13,9 @@ import java.util.concurrent.ConcurrentHashMap;
 // PROBABLY CAN MAKE MORE THINGS PRIVATE
 
 public class DBManager {
-	private static final String ESCAPED_SLASH = "498928918204"; // maybe make public for outgoing (or have client deal do
-															// the convert?)
+	private static final String ESCAPED_SLASH = "498928918204"; // maybe make public for outgoing (or have client deal
+																// do
+	// the convert?)
 
 	private ConcurrentHashMap<String, AbstractUser> users = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<String, Chat> chats = new ConcurrentHashMap<>();
@@ -36,15 +37,20 @@ public class DBManager {
 		loadUsers(); // convert TXT strings into real User objects, put those into the hashmap
 		loadChats();
 		loadMessages();
-		
+
 //---------------------		
-		
-writeNewMessage("This is a test message from constructor!", "1", "1");
-writeNewMessage("ANOOTHER MESSAGE!", "1", "1");
-writeNewMessage("!!!DANGEROUS / I JUST ADDED A SLASH!", "1", "1");
-		
-		
+
+		writeNewMessage("This is a test message from constructor!", "1", "1");
+		writeNewMessage("ANOOTHER MESSAGE!", "1", "1");
+		writeNewMessage("!!!DANGEROUS / I JUST ADDED A SLASH!", "1", "1");
+
 //----------------------		
+
+		String[] chatterIds = { "1", "2" };
+		writeNewChat("1", "writeNewChat() testing!", chatterIds, false);
+		writeNewChat("1", "writeNewChat() / with a backslash!!", chatterIds, false);
+
+//		---------------------
 
 		for (AbstractUser user : users.values()) {
 			System.out.println(user);
@@ -134,8 +140,6 @@ writeNewMessage("!!!DANGEROUS / I JUST ADDED A SLASH!", "1", "1");
 			System.out.println("we can't proceed");
 		}
 
-		
-		
 //writeNewMessage("This is a test message from constructor!", "1", "1");
 //writeNewMessage("ANOOTHER MESSAGE!", "1", "1");
 
@@ -272,14 +276,47 @@ writeNewMessage("!!!DANGEROUS / I JUST ADDED A SLASH!", "1", "1");
 	private void writeNewUser(User user) {
 	}
 
-	private void writeNewChat(Chat chat) {
+	private void writeNewChat(String ownerId, String roomName, String[] chatterIds, boolean isPrivate) {
+		AbstractUser owner = getUserById(ownerId);
+		String sanitizedRoomName = roomName.replace("/", ESCAPED_SLASH); // a "/" inside content will break the DB
+
+//		consider using a setter to avoid 2nd loop?
+
+		List<AbstractUser> chatters = new ArrayList<>();
+		for (String chatterId : chatterIds) {
+			AbstractUser chatter = getUserById(chatterId);
+			chatters.add(chatter);
+		}
+
+		Chat newChat = new Chat(owner, sanitizedRoomName, chatters, isPrivate);
+		chats.put(newChat.getId(), newChat);
+
+		// add relationship
+		for (AbstractUser user : chatters) {
+			user.addChat(newChat);
+		}
+
+		// write new chat to file
+		try {
+			File file = new File(this.chatTxtFilename);
+
+			FileWriter writer = new FileWriter(file, true); // true is append mode!
+			writer.write(newChat.toString() + "\n");
+			writer.close();
+		} catch (IOException e) {
+			System.out.println("Error writing new chat: " + e.getMessage());
+			e.printStackTrace();
+		}
+
+		// TODO: BROADCAST!
+
 	}
 
 //	private void writeNewMessage(String content, AbstractUser author, Chat chat) {
 	private void writeNewMessage(String content, String authorId, String chatId) {
 		AbstractUser author = getUserById(authorId);
 		Chat chat = getChatById(chatId);
-		
+
 		String sanitizedContent = content.replace("/", ESCAPED_SLASH); // a "/" inside content will break the DB
 		Message newMessage = new Message(sanitizedContent, author, chat);
 

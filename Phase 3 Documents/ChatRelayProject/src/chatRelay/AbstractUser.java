@@ -40,6 +40,7 @@ public abstract class AbstractUser {
     public String getPassword() {return password;}
     public List<Chat> getChats() {return chats;}
     
+    // used to get string to write record to .txt DB
 	public String toString() {
 		return "UserId=" + id + ", " + firstName + " " + lastName + " (" + username + "), Admin: " + isAdmin;
 	}

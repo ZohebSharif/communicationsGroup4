@@ -15,14 +15,19 @@ public class Chat {
 
     // constructor for new chats, doesnt take in an ID (needs to create unique id)
     // used for when users make new chats
-    public Chat(AbstractUser chatOwner, String name) {
+    //TODO : consider using a setter to add chatters to prevent having to do 2nd loop?
+    public Chat(AbstractUser chatOwner, String name, List<AbstractUser> chatters, boolean isPrivate) {
         this.id =  String.valueOf(++count);
         this.owner = chatOwner;
         this.roomName = name;
-        this.chatters.add(chatOwner);
+        this.chatters = chatters;
+        this.isPrivate = isPrivate;
+        
+//        this.chatters.add(chatOwner);
     }
 
     // when loading in data from the .txt file (reads in an ID)
+    //TODO : consider using a setter to add chatters to prevent having to do 2nd loop?
     public Chat(AbstractUser chatOwner, String name, String id, List<AbstractUser> chatters, boolean isPrivate) {
     	++count; // needed to keep count synced
     	
@@ -64,7 +69,13 @@ public class Chat {
    
     // get as text format for the DB .txt file
     public String toString() {
-        return "Chat [id=" + id + ", roomName=" + roomName + ", owner=" + owner.getUserName() + ", private=" + isPrivate + ", chatters=" + chatters.size() + "]";
+    	List<String> chatterIds = new ArrayList<>();
+    	
+    	for (AbstractUser chatter : chatters) {
+    		chatterIds.add(chatter.getId());
+    	}
+    	
+    	return id + "/" + owner.getId() + "/" + roomName + "/" + String.valueOf(isPrivate) + "/" + String.join(",", chatterIds);
     }
     
     // getters
