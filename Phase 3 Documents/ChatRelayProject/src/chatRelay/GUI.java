@@ -9,47 +9,20 @@ import java.awt.event.FocusEvent;
 import javax.swing.*;
 
 public class GUI extends JFrame implements Runnable {
-    private final JSplitPane splitPane;
-    private final JPanel leftPanel;
-    private final JPanel rightPanel;
-    private final JLabel nameLabel;
-    private final JScrollPane privateChats;
-    private final JScrollPane teamChats;
-    private final JLabel chatInfo;
-    private final JPanel messagesPanel;  // Container for chat messages
-    private final JScrollPane listOfMessages;
-    private final JPanel inputPanel;
-    private final JTextField textField;
-    private final JButton sendButton;
     private Client client;
 
     public GUI(Client client) {
     	this.client = client;
-        setTitle("Chat Relay");
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-
-        splitPane = new JSplitPane();
-        leftPanel = new JPanel();
-        rightPanel = new JPanel();
-
-        nameLabel = new JLabel();
-        privateChats = new JScrollPane();
-        teamChats = new JScrollPane();
-
-        chatInfo = new JLabel();
-        messagesPanel = new JPanel();
-        messagesPanel.setLayout(new BoxLayout(messagesPanel, BoxLayout.Y_AXIS));
-        listOfMessages = new JScrollPane(messagesPanel);
-
-        inputPanel = new JPanel();
-        textField = new JTextField();
-        sendButton = new JButton("Send");
     }
 
 	@Override
 	public void run() {
 		loginPane();
-		buildGUI();
+		if (client.getAdminStatus()) {
+			buildITGUI();
+		} else {
+			buildUserGUI();
+		}
 	}
 	
 	private void loginPane() {
@@ -158,38 +131,195 @@ public class GUI extends JFrame implements Runnable {
         frame.setVisible(true);
 	}
 	
-	private void buildGUI() {
-		setPreferredSize(new Dimension(1000, 1000));
-        getContentPane().setLayout(new GridLayout());
-        getContentPane().add(splitPane);
+	private void buildUserGUI() {
+        JFrame frame = new JFrame("Chat Application");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(900, 600);
+        frame.setLayout(new BorderLayout());
 
-        splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
-        splitPane.setDividerLocation(200);
-        splitPane.setRightComponent(rightPanel);
-        splitPane.setLeftComponent(leftPanel);
+        // Top Panel (User name and Chat title)
+        JPanel topPanel = new JPanel(new BorderLayout());
+        JLabel userLabel = new JLabel("Full Name"); // Updated with information
+        JButton addButton = new JButton("+"); // Opens create chat dialog
+        JPanel userInfoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        userInfoPanel.add(userLabel);
+        userInfoPanel.add(addButton);
 
+        JLabel chatTitleLabel = new JLabel("Team/Chat Name • Member List", SwingConstants.CENTER); // Updated with information
+        topPanel.add(userInfoPanel, BorderLayout.WEST);
+        topPanel.add(chatTitleLabel, BorderLayout.CENTER);
+
+        frame.add(topPanel, BorderLayout.NORTH);
+
+        // Left Panel (Private Chats and Group Chats)
+        JPanel leftPanel = new JPanel();
         leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
-        leftPanel.add(nameLabel);
-        nameLabel.setPreferredSize(new Dimension(200, 50));
 
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
+        // Private Chats title
+        JLabel privateChatsTitle = new JLabel("Private Chats");
+        leftPanel.add(privateChatsTitle);
 
-        privateChats.setViewportView(buttonPanel);
-        leftPanel.add(privateChats);
-        leftPanel.add(teamChats);
+        // Private Chats list (in a scroll pane)
+        JPanel privateChatsList = new JPanel();
+        privateChatsList.setLayout(new BoxLayout(privateChatsList, BoxLayout.Y_AXIS));
+        for (int i = 0; i < 4; i++) {
+            JButton chatButton = new JButton("<html>Name<br>Members List<br>Last Message Time</html>"); // Updated with information
+            privateChatsList.add(chatButton);
+        }
+        JScrollPane privateScroll = new JScrollPane(privateChatsList);
+        privateScroll.setPreferredSize(new Dimension(200, 150));
+        leftPanel.add(privateScroll);
 
-        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-        rightPanel.add(chatInfo);
-        chatInfo.setPreferredSize(new Dimension(600, 50));
-        rightPanel.add(listOfMessages);
-        rightPanel.add(inputPanel);
+        // Group Chats title
+        JLabel groupChatsTitle = new JLabel("Group Chats");
+        leftPanel.add(groupChatsTitle);
 
-        inputPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 75));
-        inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.X_AXIS));
-        inputPanel.add(textField);
-        inputPanel.add(sendButton);
+        // Group Chats list (in a scroll pane)
+        JPanel groupChatsList = new JPanel();
+        groupChatsList.setLayout(new BoxLayout(groupChatsList, BoxLayout.Y_AXIS));
+        for (int i = 0; i < 3; i++) {
+            JButton groupButton = new JButton("<html>Name<br>Members List<br>Last Message Time</html>"); // Updated with information
+            groupChatsList.add(groupButton);
+        }
+        JScrollPane groupScroll = new JScrollPane(groupChatsList);
+        groupScroll.setPreferredSize(new Dimension(200, 150));
+        leftPanel.add(groupScroll);
 
-        pack();
+        // Right Panel (Chat messages)
+        JPanel rightPanel = new JPanel();
+        rightPanel.setLayout(new BorderLayout());
+
+        // Chat messages list
+        JPanel chatMessagesPanel = new JPanel();
+        chatMessagesPanel.setLayout(new BoxLayout(chatMessagesPanel, BoxLayout.Y_AXIS));
+        for (int i = 0; i < 7; i++) { // Updated with information
+            JPanel messagePanel = new JPanel(new BorderLayout());
+            JLabel messageLabel = new JLabel("<html>Name • Time<br>Message</html>"); // Updated with information
+            messagePanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+            messagePanel.add(messageLabel, BorderLayout.CENTER);
+            chatMessagesPanel.add(messagePanel);
+        }
+        JScrollPane chatScroll = new JScrollPane(chatMessagesPanel);
+        rightPanel.add(chatScroll, BorderLayout.CENTER);
+
+        // Message input area
+        JPanel messageInputPanel = new JPanel(new BorderLayout());
+        JTextField messageField = new JTextField();
+        JButton sendButton = new JButton("Send");
+        messageInputPanel.add(messageField, BorderLayout.CENTER);
+        messageInputPanel.add(sendButton, BorderLayout.EAST);
+        rightPanel.add(messageInputPanel, BorderLayout.SOUTH);
+
+        // Split Pane (Left - Right)
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, rightPanel);
+        splitPane.setDividerLocation(250);
+        frame.add(splitPane, BorderLayout.CENTER);
+
+        // Show frame
+        frame.setVisible(true);
+	}
+	
+	public void buildITGUI() {
+		JFrame frame = new JFrame("Chat Application - IT Admin View");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(900, 600);
+        frame.setLayout(new BorderLayout());
+
+        // Top Panel (Role, User name and Chat title)
+        JPanel topPanel = new JPanel(new BorderLayout());
+
+        JPanel userInfoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JLabel fullNameLabel = new JLabel("Full Name");
+        JButton addButton = new JButton("+");
+        fullNameLabel.setForeground(Color.RED);
+        userInfoPanel.add(fullNameLabel);
+        userInfoPanel.add(addButton);
+
+        JLabel chatTitleLabel = new JLabel("Team/Chat Name • Member List", SwingConstants.CENTER);
+
+        topPanel.add(userInfoPanel, BorderLayout.CENTER);
+        topPanel.add(chatTitleLabel, BorderLayout.SOUTH);
+
+        frame.add(topPanel, BorderLayout.NORTH);
+
+        // Left Panel (IT Badge + Private + Group Chats)
+        JPanel leftPanel = new JPanel();
+        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
+
+        // IT Badge
+        JLabel badgeLabel = new JLabel("IT Badge");
+        badgeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        leftPanel.add(badgeLabel);
+
+        // Private Chats Title
+        JLabel privateChatsTitle = new JLabel("Private Chats");
+        privateChatsTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+        leftPanel.add(privateChatsTitle);
+
+        // Private Chats list
+        JPanel privateChatsList = new JPanel();
+        privateChatsList.setLayout(new BoxLayout(privateChatsList, BoxLayout.Y_AXIS));
+        for (int i = 0; i < 6; i++) {
+            JButton chatButton = new JButton("<html>Name<br>Members List<br>Last Message Time</html>");
+            if (i == 2 || i == 3) { // Access to all users - special
+                chatButton.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
+            }
+            privateChatsList.add(chatButton);
+        }
+        JScrollPane privateScroll = new JScrollPane(privateChatsList);
+        privateScroll.setPreferredSize(new Dimension(200, 200));
+        leftPanel.add(privateScroll);
+
+        // Group Chats Title
+        JLabel groupChatsTitle = new JLabel("Group Chats");
+        groupChatsTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+        leftPanel.add(groupChatsTitle);
+
+        // Group Chats list
+        JPanel groupChatsList = new JPanel();
+        groupChatsList.setLayout(new BoxLayout(groupChatsList, BoxLayout.Y_AXIS));
+        for (int i = 0; i < 3; i++) {
+            JButton groupButton = new JButton("<html>Name<br>Members List<br>Last Message Time</html>");
+            if (i == 2) { // Access to all chats - special
+                groupButton.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
+            }
+            groupChatsList.add(groupButton);
+        }
+        JScrollPane groupScroll = new JScrollPane(groupChatsList);
+        groupScroll.setPreferredSize(new Dimension(200, 150));
+        leftPanel.add(groupScroll);
+
+        // Right Panel (Chat messages)
+        JPanel rightPanel = new JPanel();
+        rightPanel.setLayout(new BorderLayout());
+
+        // Chat messages list
+        JPanel chatMessagesPanel = new JPanel();
+        chatMessagesPanel.setLayout(new BoxLayout(chatMessagesPanel, BoxLayout.Y_AXIS));
+        for (int i = 0; i < 7; i++) {
+            JPanel messagePanel = new JPanel(new BorderLayout());
+            JLabel messageLabel = new JLabel("<html>Name • Time<br>Message</html>");
+            messagePanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+            messagePanel.add(messageLabel, BorderLayout.CENTER);
+            chatMessagesPanel.add(messagePanel);
+        }
+        JScrollPane chatScroll = new JScrollPane(chatMessagesPanel);
+        rightPanel.add(chatScroll, BorderLayout.CENTER);
+
+        // Message input area
+        JPanel messageInputPanel = new JPanel(new BorderLayout());
+        JTextField messageField = new JTextField();
+        JButton sendButton = new JButton("Send");
+        messageInputPanel.add(messageField, BorderLayout.CENTER);
+        messageInputPanel.add(sendButton, BorderLayout.EAST);
+        rightPanel.add(messageInputPanel, BorderLayout.SOUTH);
+
+        // Split Pane (Left - Right)
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, rightPanel);
+        splitPane.setDividerLocation(250);
+        frame.add(splitPane, BorderLayout.CENTER);
+
+        // Show frame
+        frame.setVisible(true);
 	}
 }
