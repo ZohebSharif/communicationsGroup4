@@ -14,8 +14,18 @@ public abstract class AbstractUser {
     private Boolean isAdmin = false;
     private List<Chat> chats = new ArrayList<>();
     
-    // probably add a 2nd constructor that DOESN'T take in an ID - for when an admin creates a new user
-
+    // dones't take in id (this is when Admin creates a new user) 
+    public AbstractUser(String username, String password, String firstname, String lastname, boolean isDisabled, boolean isAdmin  ) {
+    	this.id = String.valueOf(++count);
+    	this.username = username;
+    	this.password = password;
+    	this.firstName = firstname;
+    	this.lastName = lastname;
+    	this.isDisabled = isDisabled;
+    	this.isAdmin = isAdmin;
+    }
+    
+    // when user is read in from db .txt
     public AbstractUser(String username, String password, String id, String firstname, String lastname, boolean isDisabled, boolean isAdmin  ) {
     	++count;
 

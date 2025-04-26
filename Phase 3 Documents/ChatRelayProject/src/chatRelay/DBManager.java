@@ -10,7 +10,8 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 
-// PROBABLY CAN MAKE MORE THINGS PRIVATE
+// TODO: Consider writing to DB first, and then create the object in memory
+// TODO: Consider concurrency/thread blocking stuff
 
 public class DBManager {
 	private static final String ESCAPED_SLASH = "498928918204"; // maybe make public for outgoing (or have client deal
@@ -273,7 +274,27 @@ public class DBManager {
 	// public List<Chat> fetchAllChats() {}
 	// public List<Message> fetchAllMessages() {}
 	// public List<Chat> getChatsForUser(String userId) {}
-	private void writeNewUser(User user) {
+
+	private void writeNewUser(String username, String password, String firstname, String lastname, boolean isDisabled,
+			boolean isAdmin) {
+		// TODO: consider if "/" char is ever used
+		
+		AbstractUser newUser;
+
+		if (isAdmin) {
+			newUser = new ITAdmin(username, password, firstname, lastname, isDisabled, isAdmin);
+		} else {
+			newUser = new User(username, password, firstname, lastname, isDisabled, isAdmin);
+		}
+
+		users.put(newUser.getId(), newUser);
+		
+		
+		//
+		//
+		// 1) make user.toString()
+		// 2) write to DB
+		
 	}
 
 	private void writeNewChat(String ownerId, String roomName, String[] chatterIds, boolean isPrivate) {
