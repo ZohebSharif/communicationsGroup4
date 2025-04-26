@@ -1,7 +1,5 @@
 package chatRelay;
 
-import java.time.LocalDateTime;
-
 public class Message {
 	private static int count = 0;
 	private String id;
@@ -36,11 +34,13 @@ public class Message {
 		return this.chat;
 	}
 
+    // changes to user to reflect UML
 	public AbstractUser getSender() {
 		return this.author;
 	}
 
+    // message (from: username at: time)
 	public String toString() {
-		return "";
+		return content + " (from: " + author.getUserName() + " at: " + createdAt + ")";
 	}
 }
