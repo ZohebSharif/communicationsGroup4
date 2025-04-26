@@ -10,6 +10,16 @@ public class Message {
 	private AbstractUser author;
 	private Chat chat;
 
+	public Message(String content, AbstractUser author)
+	{
+	
+			this.id = String.valueOf(++count);
+			this.createdAt = System.currentTimeMillis(); // unix miliseconds
+			this.content = content;
+			this.author = author;
+			this.chat = null; // chat is set later
+		
+	}
 	public Message(String id, long createdAt, String content, AbstractUser author, Chat chat) {
 		this.id = id;
 		this.createdAt = createdAt;
