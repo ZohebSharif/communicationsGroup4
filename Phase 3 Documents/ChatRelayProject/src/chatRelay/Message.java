@@ -10,16 +10,24 @@ public class Message {
 	private AbstractUser author;
 	private Chat chat;
 
-	public Message(String content, AbstractUser author) {
+	// used when a user submits a new message
+	public Message(String content, AbstractUser author, Chat chat) {
 		this.id = String.valueOf(++count);
 		this.createdAt = System.currentTimeMillis(); // unix miliseconds
 		this.content = content;
 		this.author = author;
-		this.chat = null; // chat is set later
+
+		this.chat = chat;
+		
+		System.out.println("Message constructor 1 fired");
 
 	}
-
+	
+    // used when loading in all Messages from the DB
 	public Message(String id, long createdAt, String content, AbstractUser author, Chat chat) {
+		++count; // important so class count doesn't start at 0 after loading in all Messages
+		
+		
 		this.id = id;
 		this.createdAt = createdAt;
 		this.content = content;
@@ -44,13 +52,13 @@ public class Message {
 		return this.chat;
 	}
 
-	// changes to user to reflect UML
 	public AbstractUser getSender() {
 		return this.author;
 	}
 
-	// message (from: username at: time)
+// used to get String needed to save to .txt DB file
 	public String toString() {
-		return content + " (from: " + author.getUserName() + " at: " + createdAt + ")";
+
+		return id + "/" + createdAt + "/" + content + "/" + author.getId() + "/" + chat.getId();
 	}
 }

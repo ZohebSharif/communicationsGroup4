@@ -59,8 +59,8 @@ public class Chat {
         this.isPrivate = newState;
     }
     
-    // return string representation of chat
-    // this will be used for logging by admin
+   
+    // get as text format for the DB .txt file
     public String toString() {
         return "Chat [id=" + id + ", roomName=" + roomName + ", owner=" + owner.getUserName() + ", private=" + isPrivate + ", chatters=" + chatters.size() + "]";
     }

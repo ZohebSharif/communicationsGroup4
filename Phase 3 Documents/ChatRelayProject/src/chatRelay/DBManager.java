@@ -3,6 +3,7 @@ package chatRelay;
 import java.io.File;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,14 @@ public class DBManager {
 		loadUsers(); // convert TXT strings into real User objects, put those into the hashmap
 		loadChats();
 		loadMessages();
+		
+//---------------------		
+		
+writeNewMessage("This is a test message from constructor!", "1", "1");
+writeNewMessage("ANOOTHER MESSAGE!", "1", "1");
+		
+		
+//----------------------		
 
 		for (AbstractUser user : users.values()) {
 			System.out.println(user);
@@ -99,10 +108,9 @@ public class DBManager {
 					+ chat.getOwner().getId() + ", isPrivate: " + chat.isPrivate());
 		}
 
-		
 // SERVER SHOULD DO THIS BELOW?
 // Work on the user flows for each scenarios next		
-		
+
 		System.out.println(" ---------------------------------------");
 		System.out.println("Good login:");
 
@@ -124,6 +132,14 @@ public class DBManager {
 		} else {
 			System.out.println("we can't proceed");
 		}
+
+		
+		
+//writeNewMessage("This is a test message from constructor!", "1", "1");
+//writeNewMessage("ANOOTHER MESSAGE!", "1", "1");
+
+		System.out.println(getChatById("1").getMessages().size());
+
 	}
 
 	private void loadUsers() {
@@ -257,7 +273,32 @@ public class DBManager {
 	private void writeNewChat(Chat chat) {
 	}
 
-	private void writeNewMessage(Message message) {
+//	private void writeNewMessage(String content, AbstractUser author, Chat chat) {
+	private void writeNewMessage(String content, String authorId, String chatId) {
+		AbstractUser author = getUserById(authorId);
+		Chat chat = getChatById(chatId);
+
+		Message newMessage = new Message(content, author, chat);
+
+		chat.addMessage(newMessage);
+		messages.put(newMessage.getId(), newMessage);
+
+		// blocking an issue?
+		try {
+			File file = new File(this.messageTxtFilename);
+
+			FileWriter writer = new FileWriter(file, true); // true puts it in 'append' mode
+			writer.write(newMessage.toString() + "\n"); // Add newline for each message
+			writer.close();
+
+		} catch (IOException e) {
+			System.out.println("Error writing new message: " + e.getMessage());
+			e.printStackTrace();
+		}
+
+		// broadcasting should happen now, where everyone with access
+//		o this message's chat will receive this data
+
 	}
 
 	// private User stringToUser(String userString) {}
