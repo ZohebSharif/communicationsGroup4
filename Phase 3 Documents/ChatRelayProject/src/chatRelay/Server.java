@@ -8,7 +8,6 @@ import java.util.HashMap;
 
 public class Server {
 	private HashMap<String, ClientHandler> clients;
-	// private ArrayList<ClientHandler> clients; // Testing purposes
 	private DBManager dbManager;
 	private int port;
 	private String IP;

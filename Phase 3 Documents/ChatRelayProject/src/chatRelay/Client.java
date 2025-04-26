@@ -1,19 +1,23 @@
 package chatRelay;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.List;
 
 public class Client {
     private Socket socket;
     private Boolean isConnected;
     private String targetIP;
     private String targetPort;
-    private Chat[] chats;
-    private User[] users;
+    private List<Chat> chats;
+    private List<AbstractUser> users;
     private String userId;
     private Boolean isITAdmin;
     
@@ -24,7 +28,6 @@ public class Client {
         this.targetIP = targetIp;
         this.targetPort = targetPort;
         isConnected = false;
-        
         try {
             socket = new Socket(targetIP, Integer.parseInt(targetPort));
             OutputStream outputStream = socket.getOutputStream();
@@ -50,23 +53,100 @@ public class Client {
     }
     
     public void login(String username, String password) {
+		Packet login = new Packet(actionType.LOGIN, new String[] {username, password}, "requesting");
     	try {
-    		String[] args = {username, password};
-    		Packet loginPack = new Packet(actionType.LOGIN, args, "requesting");
-    		objectStream.writeObject(loginPack);
+    		objectStream.writeObject(login);
     	} catch (IOException e) {
     		e.printStackTrace();
     	}
     }
     
-    public void sendMessage(String authorId, String chatId, String content) {}
-    public void createChat(String chatName, Boolean isPrivate) {}
+    public void sendMessage(String authorId, String chatId, String content) {
+    	Packet sendMessage = new Packet(actionType.SEND_MESSAGE, new String[] {authorId, chatId, content}, userId);
+    	try {
+    		objectStream.writeObject(sendMessage);
+    	} catch (IOException e) {
+    		e.printStackTrace();
+    	}
+    }
+    public void createChat(String chatName, Boolean isPrivate) {
+    	Packet createChat = new Packet(actionType.CREATE_CHAT, new String[] {chatName, isPrivate.toString()}, userId);
+    	try {
+    		objectStream.writeObject(createChat);
+    	} catch (IOException e) {
+    		e.printStackTrace();
+    	}
+    }
     public void updateState() {}
-    public void createUser(String username, String password, String firstname, String lastname, Boolean isAdmin) {}
-    public void enableUser(String userId) {}
-    public void disableUser(String userId) {}
-    public void saveChatToTxt(Chat chat) {}
-    public void logout() {}
+    public void createUser(String username, String password, String firstname, String lastname, Boolean isAdmin) {
+    	if (isAdmin) {
+    		Packet createUser = new Packet(actionType.CREATE_USER, new String[] {username, password, firstname, lastname}, userId);
+    		try {
+        		objectStream.writeObject(createUser);
+        	} catch (IOException e) {
+        		e.printStackTrace();
+        	}
+    	}
+    }
+    public void enableUser(String userId) {
+    	if (isITAdmin) {
+    		Packet enableUser = new Packet(actionType.ENABLE_USER, new String[] {userId}, this.userId);
+    		try {
+        		objectStream.writeObject(enableUser);
+        	} catch (IOException e) {
+        		e.printStackTrace();
+        	}
+    	}
+    }
+    public void disableUser(String userId) {
+    	if (isITAdmin) {
+    		Packet disableUser = new Packet(actionType.DISABLE_USER, new String[] {userId}, this.userId);
+    		try {
+        		objectStream.writeObject(disableUser);
+        	} catch (IOException e) {
+        		e.printStackTrace();
+        	}
+    	}
+    }
+    public void saveChatToTxt(Chat chat) {
+    	if (isITAdmin) {
+    		String fileName = "chat_logs_" + chat.getRoomName() +".txt";
+
+            try {
+                String downloadsPath = System.getProperty("user.home") + File.separator + "Downloads";
+                File file = new File(downloadsPath, fileName);
+
+                FileWriter fileWriter = new FileWriter(file);
+                BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+                bufferedWriter.write(chat.toString());
+                bufferedWriter.close();
+            } catch (IOException e) {
+            	e.printStackTrace();
+            }
+    	}
+    }
+    public void logout() {
+    	Packet logout = new Packet(actionType.LOGOUT, new String[] {}, userId);
+    	try {
+    		objectStream.writeObject(logout);
+    	} catch (IOException e) {
+    		e.printStackTrace();
+    	}
+    }
+    
+    public Boolean getAdminStatus() { // Added
+    	return isITAdmin;
+    }
+    
+    // Made for getting Users for Create Chat in GUI
+//    private void getUsers() {
+//    	Packet getUsers = new Packet(actionType.GET_ALL_USERS, new String[] {}, userId);
+//    	try {
+//    		objectStream.writeObject(getUsers);
+//    	} catch (IOException e) {
+//    		e.printStackTrace();
+//    	}
+//    }
     
     private class ClientInput implements Runnable { // Added
     	
@@ -83,14 +163,47 @@ public class Client {
 			Packet incoming;
 			try {
 				while((incoming = (Packet) inputStream.readObject()) != null) {
-					if (incoming.getActionType().equals(actionType.SUCCESS)) {
-		            	client.isConnected = true;
-		                System.out.println("Packet Recieved");
-		            }
-//					switch(incoming.getActionType()) {
-//						// Parsing each Action Type
-//			            
-//					}
+					switch(incoming.getActionType()) {
+						// Parsing each Action Type
+						case LOGIN -> {
+							client.isConnected = true;
+			            	userId = incoming.getActionArguments()[0]; // Get this UserId when requesting a login
+			            	isITAdmin = Boolean.valueOf(incoming.getActionArguments()[1]); //refine with DBManger
+			                break;
+						}
+						case SEND_MESSAGE -> {
+							// Need to fill based on DB Manager
+			                break;
+						}
+						case GET_ALL_CHATS -> {
+							// Need to fill based on DB Manager
+			                break;
+						}
+						case GET_ALL_USERS -> {
+							// Need to fill based on DB Manager
+			                break;
+						}
+						case CREATE_CHAT -> {
+							// Need to fill based on DB Manager
+			                break;
+						}
+						case CREATE_USER -> {
+							// Need to fill based on DB Manager
+			                break;
+						}
+						case ENABLE_USER -> {
+							// Need to fill based on DB Manager
+			                break;
+						}
+						case DISABLE_USER -> {
+							// Need to fill based on DB Manager
+			                break;
+						}
+						default -> {
+							// Need to fill based on DB Manager
+			                break;
+						}
+					}
 				}
 			} catch (ClassNotFoundException | IOException e) {
 				e.printStackTrace();
