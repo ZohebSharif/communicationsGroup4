@@ -10,7 +10,7 @@ public abstract class AbstractUser {
     private String lastName;
     private String username;
     private String password;
-    private Boolean isDisabled = false;
+    private Boolean isDisabled;
     private Boolean isAdmin = false;
     private List<Chat> chats = new ArrayList<>();
     
@@ -25,17 +25,31 @@ public abstract class AbstractUser {
     	this.isDisabled = isDisabled;
     	this.isAdmin = isAdmin;
     }
+    
+    public void addChat(Chat chat) {
+    	chats.add(chat);
+    	return;
+    }
 
     public String getFirstName() {return firstName;}
     public String getLastName() {return lastName;}
     public String getUserName() {return username;}
     public String getId() {return id;}
+    public String getPassword() {return password;}
     public List<Chat> getChats() {return chats;}
     
 	public String toString() {
 		return "UserId=" + id + ", " + firstName + " " + lastName + " (" + username + "), Admin: " + isAdmin;
 	}
+	
+	
+	public boolean isAdmin() {
+		return this.isAdmin;
+	}
 
+	public boolean isDisabled() {
+		return this.isDisabled;
+	}
     public void CreateChat(User[] users) {}
     public void addUserToChat(User user) {}
     public void sendMessage() {}

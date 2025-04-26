@@ -6,6 +6,9 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+
+// TODO: Don't send passwords to frontend! 
+
 public class Server {
 	private HashMap<String, ClientHandler> clients;
 	private DBManager dbManager;
@@ -60,7 +63,7 @@ public class Server {
 		int port = 1337;
 		String IP = "127.0.0.1";
 
-		System.out.println("Server.java's main() fired");
+		System.out.println("Server.java's main() fired\n");
 		Server server = new Server(port, IP);
 	}
 }

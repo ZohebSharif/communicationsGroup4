@@ -1,17 +1,18 @@
 package unitTesting;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import chatRelay.AbstractUser;
 import chatRelay.Chat;
 import chatRelay.Message;
 import chatRelay.User;
-
-import org.junit.jupiter.api.BeforeEach;
 
 public class ChatTest {
     
@@ -22,101 +23,122 @@ public class ChatTest {
     
     @BeforeEach
     public void setUp() {
-        // Create test users
+        // make test users
         owner = new User("Zoheb", "password123", "id1", "Zoheb", "Sharif", false, false);
         user1 = new User("Talhah", "password456", "id2", "Talhah", "Shaik", false, false);
         user2 = new User("Kenny", "password789", "id3", "Kenny", "Kottenstette", false, false);
         
-        AbstractUser[] users = {user1, user2};
-        // Create a test chat
-        chat = new Chat(owner, "Test Chat Room", "CHAT_", users);
+        // make test chat
+        chat = new Chat(owner, "Test Chat Room");
     }
     
     @Test
     public void testChatConstructor() {
-        // Test that the chat is initialized correctly
+        // now, test that chat was created successfully
         assertEquals("Test Chat Room", chat.getRoomName());
         assertEquals(owner, chat.getOwner());
         assertFalse(chat.isPrivate());
         assertNotNull(chat.getId());
         assertTrue(chat.getId().startsWith("CHAT_"));
         
-        // Test that the owner is added to chatters
+        // test owner is a chatter
         List<AbstractUser> chatters = chat.getChatters();
         assertEquals(1, chatters.size());
         assertEquals(owner, chatters.get(0));
         
-        // Test that messages array is initialized empty
+        // test that messages start as empty
         assertEquals(0, chat.getMessages().size());
     }
     
     @Test
+    public void testSecondConstructor() {
+        // test creation of chat using second constructor
+        User[] users = {owner, user1};
+        Chat chat2 = new Chat(owner, "Another Chat", "CHAT_TEST", users);
+        
+        // check that chat is initialized correctly
+        assertEquals("Another Chat", chat2.getRoomName());
+        assertEquals(owner, chat2.getOwner());
+        assertEquals("CHAT_TEST", chat2.getId());
+        
+        // test users were added correctly
+        List<AbstractUser> chatters = chat2.getChatters();
+        assertEquals(2, chatters.size());
+        assertTrue(chatters.contains(owner));
+        assertTrue(chatters.contains(user1));
+    }
+    
+    @Test
     public void testAddChatter() {
-        // Add a user to the chat
+        //  add new user to chat
         chat.addChatter(user1);
         
-        // Check if the user was added correctly
+        // check is user was actually added
         List<AbstractUser> chatters = chat.getChatters();
         assertEquals(2, chatters.size());
         assertEquals(owner, chatters.get(0));
         assertEquals(user1, chatters.get(1));
         
-        // Add another user
+        // add another user
         chat.addChatter(user2);
         
-        // Check if the second user was added correctly
+        // check if this other user was added successfully
         chatters = chat.getChatters();
         assertEquals(3, chatters.size());
         assertEquals(owner, chatters.get(0));
         assertEquals(user1, chatters.get(1));
         assertEquals(user2, chatters.get(2));
+        
+        // try adding the same user twice (duplication prevention)
+        chat.addChatter(user1);
+        assertEquals(3, chat.getChatters().size());
     }
     
     @Test
     public void testRemoveChatter() {
-        // Add users to the chat
+        // add users to chat
         chat.addChatter(user1);
         chat.addChatter(user2);
         
-        // Check initial state
+        // check initial state
         assertEquals(3, chat.getChatters().size());
         
-        // Remove a user
+        // remove user
         chat.removeChatter(user1);
         
-        // Check if the user was removed correctly
+        // check if user was removed correctly
         List<AbstractUser> chatters = chat.getChatters();
         assertEquals(2, chatters.size());
         assertEquals(owner, chatters.get(0));
-        assertNotEquals(user1, chatters.get(1));
+        assertEquals(user2, chatters.get(1));
         
-        // Try to remove the last user (should not remove)
+        // remove last user (shouldn't remove)
         chat.removeChatter(user2);
         chat.removeChatter(owner);
         
-        // Check that at least one user remains
+        // check that one user is still there (owner)
         chatters = chat.getChatters();
         assertTrue(chatters.size() >= 1);
     }
     
     @Test
     public void testAddMessage() {
-        // Create a test message
+        // create test message
         Message message1 = new Message("Hello, world!", owner);
         
-        // Add the message to the chat
+        // add message
         chat.addMessage(message1);
         
-        // Check if the message was added correctly
-        List<Message> messages = (List<Message>) chat.getMessages();
+        //check is message was added
+        List<Message> messages = chat.getMessages();
         assertEquals(1, messages.size());
         assertEquals(message1, messages.get(0));
         
-        // Add another message
+        // add message
         Message message2 = new Message("How are you?", user1);
         chat.addMessage(message2);
         
-        // Check if the second message was added correctly
+        // check if message was added
         messages = chat.getMessages();
         assertEquals(2, messages.size());
         assertEquals(message1, messages.get(0));
@@ -125,24 +147,24 @@ public class ChatTest {
     
     @Test
     public void testChangePrivacy() {
-        // Check initial state
+        // check initial state
         assertFalse(chat.isPrivate());
         
-        // Change privacy to true
+        // make public
         chat.changePrivacy(true);
         assertTrue(chat.isPrivate());
         
-        // Change privacy back to false
+        // make private
         chat.changePrivacy(false);
         assertFalse(chat.isPrivate());
     }
     
     @Test
     public void testToString() {
-        // Test the toString method
+        // test toString
         String chatString = chat.toString();
         
-        // Verify that the string contains important information
+        // verify toString contains vital information
         assertTrue(chatString.contains(chat.getId()));
         assertTrue(chatString.contains("Test Chat Room"));
         assertTrue(chatString.contains(owner.getUserName()));
@@ -151,12 +173,12 @@ public class ChatTest {
     }
     
     public static void main(String[] args) {
-        // This allows running the tests directly
-//        org.junit.platform.launcher.core.LauncherFactory
-//            .create()
-//            .execute(org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder
-//                    .request()
-//                    .selectors(org.junit.platform.engine.discovery.DiscoverySelectors.selectClass(ChatTest.class))
-//                    .build());
+        // allow tests to run
+        org.junit.platform.launcher.core.LauncherFactory
+            .create()
+            .execute(org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder
+                    .request()
+                    .selectors(org.junit.platform.engine.discovery.DiscoverySelectors.selectClass(ChatTest.class))
+                    .build());
     }
 }
