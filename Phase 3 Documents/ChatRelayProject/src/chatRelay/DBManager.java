@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 // PROBABLY CAN MAKE MORE THINGS PRIVATE
 
 public class DBManager {
-	private static final String DELIMITER = "498928918204"; // maybe make public for outgoing (or have client deal do
+	private static final String ESCAPED_SLASH = "498928918204"; // maybe make public for outgoing (or have client deal do
 															// the convert?)
 
 	private ConcurrentHashMap<String, AbstractUser> users = new ConcurrentHashMap<>();
@@ -41,6 +41,7 @@ public class DBManager {
 		
 writeNewMessage("This is a test message from constructor!", "1", "1");
 writeNewMessage("ANOOTHER MESSAGE!", "1", "1");
+writeNewMessage("!!!DANGEROUS / I JUST ADDED A SLASH!", "1", "1");
 		
 		
 //----------------------		
@@ -226,7 +227,8 @@ writeNewMessage("ANOOTHER MESSAGE!", "1", "1");
 
 				String messageId = words[0];
 				long createdAt = Long.parseLong(words[1]);
-				String content = words[2].replace(DELIMITER, "/");
+//				String content = words[2].replace(ESCAPED_SLASH, "/"); // have client replace escaped char instead
+				String content = words[2];
 				String authorId = words[3];
 				String chatId = words[4];
 
@@ -277,8 +279,9 @@ writeNewMessage("ANOOTHER MESSAGE!", "1", "1");
 	private void writeNewMessage(String content, String authorId, String chatId) {
 		AbstractUser author = getUserById(authorId);
 		Chat chat = getChatById(chatId);
-
-		Message newMessage = new Message(content, author, chat);
+		
+		String sanitizedContent = content.replace("/", ESCAPED_SLASH); // a "/" inside content will break the DB
+		Message newMessage = new Message(sanitizedContent, author, chat);
 
 		chat.addMessage(newMessage);
 		messages.put(newMessage.getId(), newMessage);
