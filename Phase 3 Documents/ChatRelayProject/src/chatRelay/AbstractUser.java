@@ -52,7 +52,7 @@ public abstract class AbstractUser {
     
     // used to get string to write record to .txt DB
 	public String toString() {
-		return "UserId=" + id + ", " + firstName + " " + lastName + " (" + username + "), Admin: " + isAdmin;
+		return username + "/" + password + "/" + id + "/" + firstName + "/" + lastName + "/" + String.valueOf(isDisabled) + "/" + String.valueOf(isAdmin);
 	}
 	
 	
@@ -67,3 +67,5 @@ public abstract class AbstractUser {
     public void addUserToChat(User user) {}
     public void sendMessage() {}
 }
+
+

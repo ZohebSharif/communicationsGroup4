@@ -53,6 +53,16 @@ public class DBManager {
 
 //		---------------------
 
+		writeNewUser("zohsha", "asdf", "zoheb", "sharif", false, true);
+		writeNewUser("talsha", "asdf", "talhah", "shaik", false, true);
+		
+		// ---------------------
+
+		
+		
+		
+		
+		
 		for (AbstractUser user : users.values()) {
 			System.out.println(user);
 		}
@@ -277,8 +287,11 @@ public class DBManager {
 
 	private void writeNewUser(String username, String password, String firstname, String lastname, boolean isDisabled,
 			boolean isAdmin) {
-		// TODO: consider if "/" char is ever used
-		
+		// TODO: consider if "/" char is ever used. Have server reject the packet if
+		// anything except password has a "/".
+
+//		String sanitizedPassword = password.replace("/", ESCAPED_SLASH);		
+
 		AbstractUser newUser;
 
 		if (isAdmin) {
@@ -288,13 +301,17 @@ public class DBManager {
 		}
 
 		users.put(newUser.getId(), newUser);
-		
-		
-		//
-		//
-		// 1) make user.toString()
-		// 2) write to DB
-		
+
+		try {
+			File file = new File(this.userTxtFilename);
+			FileWriter writer = new FileWriter(file, true); // append mode
+			writer.write(newUser.toString() + "\n");
+			writer.close();
+		} catch (IOException e) {
+			System.out.println("Error writing new user: " + e.getMessage());
+			e.printStackTrace();
+		}
+
 	}
 
 	private void writeNewChat(String ownerId, String roomName, String[] chatterIds, boolean isPrivate) {
@@ -398,3 +415,5 @@ public class DBManager {
 //	 }
 	// private Boolean validUsername(String name) {}
 }
+
+

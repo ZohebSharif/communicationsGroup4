@@ -1,4 +1,12 @@
-1/1/general chat/false/1
+1/1/general chat/true/1
 2/1/private chat/true/1,2
 3/1/writeNewChat() testing!/false/1,2
 4/1/writeNewChat() 498928918204 with a backslash!!/false/1,2
+5/1/writeNewChat() testing!/false/1,2
+6/1/writeNewChat() 498928918204 with a backslash!!/false/1,2
+7/1/writeNewChat() testing!/false/1,2
+8/1/writeNewChat() 498928918204 with a backslash!!/false/1,2
+9/1/writeNewChat() testing!/false/1,2
+10/1/writeNewChat() 498928918204 with a backslash!!/false/1,2
+11/1/writeNewChat() testing!/false/1,2
+12/1/writeNewChat() 498928918204 with a backslash!!/false/1,2
