@@ -56,6 +56,7 @@ public class Server {
 
 	private void handleLogin(String clientId, Packet packet) {
 		// TODO: VERIFY CREDENTIALS
+		// dbManager.checkLoginCredentials()
 		sendSuccessMessage(clientId, "Login successful");
 		clients.put(clientId, getClientHandlerById(clientId)); // after successful login
 	}
@@ -75,13 +76,12 @@ public class Server {
 	public void sendSuccessMessage(String userId, String successMessage) {
 	}
 
-
 	private ClientHandler getClientHandlerById(String userId) {
 		return clients.get(userId);
 	}
 
 	// instead get active userids living on clienthandler??
-	public void sendPacketToUsers(Packet packet, String[] userIds) { 
+	public void sendPacketToUsers(Packet packet, String[] userIds) {
 		for (String userId : userIds) {
 			ClientHandler client = clients.get(userId);
 			if (client != null) {
@@ -103,5 +103,3 @@ public class Server {
 //		server.connect();
 	}
 }
-
-

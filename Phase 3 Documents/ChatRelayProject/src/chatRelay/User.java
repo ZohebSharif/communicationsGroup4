@@ -1,5 +1,7 @@
 package chatRelay;
 
+
+
 public class User extends AbstractUser {
     
     //constructor for loading from file (has ID)

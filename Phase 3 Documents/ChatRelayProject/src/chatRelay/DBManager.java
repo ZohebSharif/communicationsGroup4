@@ -56,6 +56,9 @@ public class DBManager {
 		writeNewUser("zohsha", "asdf", "zoheb", "sharif", false, true);
 		writeNewUser("talsha", "asdf", "talhah", "shaik", false, true);
 		
+		// PASSWORD W/ BACKSLASH
+		writeNewUser("biljoe", "asdf/", "bill", "joe", false, true);
+		
 		// ---------------------
 
 		
@@ -133,7 +136,7 @@ public class DBManager {
 		System.out.println("Good login:");
 
 		// try both valid/invalid usernames/passwords
-		AbstractUser validUser1 = checkLoginCredentials("kenkot", "asdf");
+		AbstractUser validUser1 = checkLoginCredentials("biljoe", "asdf/");
 		System.out.println(validUser1);
 
 		if (validUser1 != null && !validUser1.isDisabled()) {
@@ -289,15 +292,17 @@ public class DBManager {
 			boolean isAdmin) {
 		// TODO: consider if "/" char is ever used. Have server reject the packet if
 		// anything except password has a "/".
+		
+		// TODO: ENSURE USERNAMES ARE UNIQUE
 
-//		String sanitizedPassword = password.replace("/", ESCAPED_SLASH);		
+		String sanitizedPassword = password.replace("/", ESCAPED_SLASH);		
 
 		AbstractUser newUser;
 
 		if (isAdmin) {
-			newUser = new ITAdmin(username, password, firstname, lastname, isDisabled, isAdmin);
+			newUser = new ITAdmin(username, sanitizedPassword, firstname, lastname, isDisabled, isAdmin);
 		} else {
-			newUser = new User(username, password, firstname, lastname, isDisabled, isAdmin);
+			newUser = new User(username, sanitizedPassword, firstname, lastname, isDisabled, isAdmin);
 		}
 
 		users.put(newUser.getId(), newUser);
@@ -404,7 +409,7 @@ public class DBManager {
 	public AbstractUser checkLoginCredentials(String username, String password) {
 		AbstractUser user = getUserByUsername(username);
 
-		if (user.getPassword().equals(password)) {
+		if (user.getPassword().replace(ESCAPED_SLASH, "/").equals(password)) {
 			return user;
 		}
 		return null;
