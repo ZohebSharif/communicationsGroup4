@@ -36,6 +36,7 @@ public class Packet implements Serializable{
     public actionType getActionType() {
         return acType;
     }
+    
     public String[] getActionArguments() {
         return actionArgs;
     }

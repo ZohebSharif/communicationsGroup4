@@ -54,18 +54,35 @@ public class Server {
 		}
 	}
 
-	private void handleLogin(String clientId, Packet packet) {
-		// TODO: VERIFY CREDENTIALS
-		// dbManager.checkLoginCredentials()
-		sendSuccessMessage(clientId, "Login successful");
-		clients.put(clientId, getClientHandlerById(clientId)); // after successful login
-	}
+	
+	// done inside clienthandler now.
+	
+//	private void handleLogin(String clientId, Packet packet) {
+//		String[] args = packet.getActionArguments();
+//		String username = args[0];
+//		String password = args[1];
+//
+//		AbstractUser user = dbManager.checkLoginCredentials(username, password);
+//
+//		if (user == null) {
+////			sendErrorMessage()
+//			return;
+//		}
+//
+//		ClientHandler client = clients.get(clientId);
+//
+////		clients.put(user.getId(), client)
+//
+//		sendSuccessMessage(clientId, "Login successful");
+//
+//		clients.put(clientId, clients.get(clientId)); // after successful login
+//	}
 
 	private void handleSendMessage(String clientId, Packet packet) {
 		// TODO: parse packet arguments and broadcast message to intended users
 	}
 
-	private void handleLogout(String clientId) {
+	public void handleLogout(String clientId) {
 		clients.remove(clientId);
 		System.out.println(clientId + " logged out and removed from clients.");
 	}
@@ -74,10 +91,6 @@ public class Server {
 	}
 
 	public void sendSuccessMessage(String userId, String successMessage) {
-	}
-
-	private ClientHandler getClientHandlerById(String userId) {
-		return clients.get(userId);
 	}
 
 	// instead get active userids living on clienthandler??
@@ -90,7 +103,12 @@ public class Server {
 		}
 	}
 
-	public void disconnect() {
+	public DBManager getDBManager() {
+		return this.dbManager;
+	}
+	
+	public void addClient(String userId, ClientHandler ch) {
+		clients.put(userId, ch);
 	}
 
 	public static void main(String[] args) {
