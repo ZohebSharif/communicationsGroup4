@@ -5,43 +5,41 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Chat {
-    private static int count = 0;
+    private static int count = 0; // probably make atomic
     private String id;
+    private List<AbstractUser> chatters = new ArrayList<>();
     private List<Message> messages = new ArrayList<>(); 
-    private User owner;
+    private AbstractUser owner;
     private String roomName;
-    private List<User> chatters = new ArrayList<>();
-    private Boolean isPrivate = false;
+    private Boolean isPrivate;
 
-    // constructor for new chats, doesnt take in an ID
+    // constructor for new chats, doesnt take in an ID (needs to create unique id)
     // used for when users make new chats
-    public Chat(User chatOwner, String name) {
-        this.id = "CHAT_" + (++count);
+    public Chat(AbstractUser chatOwner, String name) {
+        this.id =  String.valueOf(++count);
         this.owner = chatOwner;
         this.roomName = name;
         this.chatters.add(chatOwner);
     }
-    // constructor for new chats, takes in an ID
-    public Chat(User chatOwner, String name, String id, User[] users) {
+
+    // when loading in data from the .txt file (reads in an ID)
+    public Chat(AbstractUser chatOwner, String name, String id, List<AbstractUser> chatters, boolean isPrivate) {
+    	this.owner = chatOwner;
+    	this.roomName = name;
         this.id = id;
-        this.owner = chatOwner;
-        this.roomName = name;
-        if (users != null) {
-            this.chatters.addAll(Arrays.asList(users));
-        } else {
-            this.chatters.add(chatOwner);
-        }
+        this.chatters = chatters;
+        this.isPrivate = isPrivate;
     }
     
     // add chatter
-    public void addChatter(User user) {
+    public void addChatter(AbstractUser user) {
         if (!chatters.contains(user)) {
             chatters.add(user);
         }
     }
     
     // remove chatter
-    public void removeChatter(User user) {
+    public void removeChatter(AbstractUser user) {
         if (chatters.size() <= 1) {
             return; // cannot remove only user
         }
@@ -76,7 +74,7 @@ public class Chat {
         return roomName;
     }
     
-    public User getOwner() {
+    public AbstractUser getOwner() {
         return owner;
     }
     
@@ -84,7 +82,7 @@ public class Chat {
         return messages;
     }
     
-    public List<User> getChatters() {
+    public List<AbstractUser> getChatters() {
         return chatters;
     }
     

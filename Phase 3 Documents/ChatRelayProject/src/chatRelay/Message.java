@@ -10,6 +10,15 @@ public class Message {
 	private AbstractUser author;
 	private Chat chat;
 
+	public Message(String content, AbstractUser author) {
+		this.id = String.valueOf(++count);
+		this.createdAt = System.currentTimeMillis(); // unix miliseconds
+		this.content = content;
+		this.author = author;
+		this.chat = null; // chat is set later
+
+	}
+
 	public Message(String id, long createdAt, String content, AbstractUser author, Chat chat) {
 		this.id = id;
 		this.createdAt = createdAt;
@@ -26,20 +35,21 @@ public class Message {
 	public String getId() {
 		return this.id;
 	}
-	
+
 	public String getContent() {
 		return this.content;
 	}
+
 	public Chat getChat() {
 		return this.chat;
 	}
 
-    // changes to user to reflect UML
+	// changes to user to reflect UML
 	public AbstractUser getSender() {
 		return this.author;
 	}
 
-    // message (from: username at: time)
+	// message (from: username at: time)
 	public String toString() {
 		return content + " (from: " + author.getUserName() + " at: " + createdAt + ")";
 	}
