@@ -20,6 +20,7 @@ public class Chat {
         this.owner = chatOwner;
         this.roomName = name;
         this.chatters.add(chatOwner);
+        this.isPrivate = true;
     }
 
     // when loading in data from the .txt file (reads in an ID)
