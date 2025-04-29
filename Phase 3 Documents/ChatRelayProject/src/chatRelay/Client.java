@@ -41,7 +41,10 @@ public class Client {
         	e.printStackTrace();
         }
     }
-    
+    public Boolean getIsConnected()
+    {
+    	return isConnected;
+    }
     public void startUp() { //Added
     	
     	GUI clientGUI = new GUI(this);
