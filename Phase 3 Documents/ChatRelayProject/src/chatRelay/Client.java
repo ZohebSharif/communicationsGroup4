@@ -21,6 +21,7 @@ public class Client {
     private List<AbstractUser> users;
     private String userId;
     private Boolean isITAdmin;
+    private AbstractUser thisUser;
     
     private ObjectOutputStream objectStream;
     private ObjectInputStream objectInStream;
@@ -143,12 +144,24 @@ public class Client {
     	}
     }
     
+    public AbstractUser getThisUser() {
+    	return thisUser;
+    }
+    
     public Boolean getAdminStatus() { // Added
     	return isITAdmin;
     }
     
+    public List<Chat> getChats() {
+    	return chats;
+    }
+    
+    public List<AbstractUser> getUsers() {
+    	return users;
+    }
+    
      //Made for getting Users for Create Chat in GUI
-    public void getUsers() {
+    public void getAllUsers() {
     	Packet getUsers = new Packet(actionType.GET_ALL_USERS, new String[] {}, userId);
     	try {
     		objectStream.writeObject(getUsers);
