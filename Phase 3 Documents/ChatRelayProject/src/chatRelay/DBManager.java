@@ -157,21 +157,26 @@ public class DBManager {
 	}
 
 	// Retrieve all users because they need to see the user list to add people to a Chat
+//	public String[] fetchAllUsers() {
 //	public List<AbstractUser> fetchAllUsers() {
-	public String[] fetchAllUsers() {
-		String[] allUsersStringed = 
-		return new ArrayList<>(users.values());
+	public ArrayList<String> fetchAllUsers() {
+		ArrayList<String> stringedUsers = new ArrayList<>();
+		for(AbstractUser user : users.values()) {
+			stringedUsers.add(user.toStringClient());
+		}
+		return stringedUsers;
 	}
+	
 
 	
-	public List<Chat> fetchChats(AbstractUser user) {
-		if (user.isAdmin()) {
-			
-		} else {
-			return user.getChats();
-		}
-		
-	}
+//	public List<Chat> fetchChats(AbstractUser user) {
+//		if (user.isAdmin()) {
+//			
+//		} else {
+//			return user.getChats();
+//		}
+//		
+//	}
 	
 	
 	// Retrieve only chats the user has access to

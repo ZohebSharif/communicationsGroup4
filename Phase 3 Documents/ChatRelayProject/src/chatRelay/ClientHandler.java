@@ -6,6 +6,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ClientHandler implements Runnable {
@@ -95,9 +96,10 @@ public class ClientHandler implements Runnable {
 			Packet packet = (Packet) inputStream.readObject();
 
 			if (packet.getActionType() == actionType.LOGIN) {
-				String[] args = packet.getActionArguments();
-				String username = args[0];
-				String password = args[1];
+//				String[] args = packet.getActionArguments();
+				ArrayList<String> args = packet.getActionArguments();
+				String username = args.get(0);
+				String password = args.get(1);
 
 				System.out.println("username: " + username + " password: " + password);
 
@@ -113,14 +115,17 @@ public class ClientHandler implements Runnable {
 					// send packet response
 					// 1 packet with everything? or send multiple packets?
 
-					List<AbstractUser> allUsers = server.getDBManager().fetchAllUsers();
-					List<Chat> filteredChats = server.getDBManager().fetchAllChats(userId);
 
-					List<Message> filteredMessages;
+					System.out.println("allUsersStringed Packet created/sent");
+					ArrayList<String> allUsersStringed = server.getDBManager().fetchAllUsers();
+					System.out.println("allUsersStringed: " + allUsersStringed);
+					Packet usersPacket = new Packet(actionType.GET_ALL_USERS, allUsersStringed, "SERVER");
+					sendPacket(usersPacket);
 
-					
-					
-					
+//					List<Chat> filteredChats = server.getDBManager().fetchAllChats(userId);
+//
+//					List<Message> filteredMessages;
+
 //					client.sendPacket(usersPacket);
 //					client.sendPacket(chatsPacket);
 //					client.sendPacket(messagesPacket);

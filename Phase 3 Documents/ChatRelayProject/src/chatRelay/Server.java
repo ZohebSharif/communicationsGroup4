@@ -23,11 +23,8 @@ public class Server {
 //		this.dbManager = new DBManager("./src/chatRelay/dbFiles/development/", "Users.txt", "Chats.txt",
 //				"Messages.txt");
 
-		
-		
-		//use this version why running from terminal
-		this.dbManager = new DBManager("./chatRelay/dbFiles/development/", "Users.txt", "Chats.txt",
-				"Messages.txt");
+		// use this version why running from terminal
+		this.dbManager = new DBManager("./chatRelay/dbFiles/development/", "Users.txt", "Chats.txt", "Messages.txt");
 	}
 
 	public void connect() {
@@ -46,7 +43,6 @@ public class Server {
 
 	public void receivePacket(String clientId, Packet packet) {
 
-
 		System.out.println("Server.receivePacket() fired");
 		switch (packet.getActionType()) {
 //		case LOGIN:
@@ -63,9 +59,8 @@ public class Server {
 		}
 	}
 
-	
 	// done inside clienthandler now.
-	
+
 //	private void handleLogin(String clientId, Packet packet) {
 //		String[] args = packet.getActionArguments();
 //		String username = args[0];
@@ -74,13 +69,14 @@ public class Server {
 //		AbstractUser user = dbManager.checkLoginCredentials(username, password);
 //
 //		if (user == null) {
-////			sendErrorMessage()
+	////			sendErrorMessage()
+
 //			return;
 //		}
 //
 //		ClientHandler client = clients.get(clientId);
 //
-////		clients.put(user.getId(), client)
+	////		clients.put(user.getId(), client)
 //
 //		sendSuccessMessage(clientId, "Login successful");
 //
@@ -115,12 +111,17 @@ public class Server {
 	public DBManager getDBManager() {
 		return this.dbManager;
 	}
-	
+
 	public void addClient(String userId, ClientHandler ch) {
 		clients.put(userId, ch);
 	}
 
 	public static void main(String[] args) {
+
+// commands to compile + run
+//Src % javac chatRelay/*.java
+//Src % java chatRelay.Server
+//Src % java chatRelay.BasicClient
 		int port = 1337;
 		String IP = "127.0.0.1";
 
