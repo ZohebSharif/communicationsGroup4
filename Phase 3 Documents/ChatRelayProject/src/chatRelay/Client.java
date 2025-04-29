@@ -16,6 +16,7 @@ public class Client {
     private Boolean isConnected;
     private String targetIP;
     private String targetPort;
+    
     private List<Chat> chats;
     private List<AbstractUser> users;
     private String userId;
@@ -61,23 +62,27 @@ public class Client {
     	}
     }
     
-    public void sendMessage(String authorId, String chatId, String content) {
-    	Packet sendMessage = new Packet(actionType.SEND_MESSAGE, new String[] {authorId, chatId, content}, userId);
+    public void sendMessage(String chatId, String content) {
+    	Packet sendMessage = new Packet(actionType.SEND_MESSAGE, new String[] {content, chatId}, userId);
     	try {
     		objectStream.writeObject(sendMessage);
     	} catch (IOException e) {
     		e.printStackTrace();
     	}
     }
+    
     public void createChat(String chatName, Boolean isPrivate) {
-    	Packet createChat = new Packet(actionType.CREATE_CHAT, new String[] {chatName, isPrivate.toString()}, userId);
+    	Packet createChat = new Packet(actionType.CREATE_CHAT, new String[] {users.toString(), chatName}, userId); 
+    	// TODO: Users should parse into a list with slashes EX: "userId/userId2/userId3"
     	try {
     		objectStream.writeObject(createChat);
     	} catch (IOException e) {
     		e.printStackTrace();
     	}
     }
+    
     public void updateState() {}
+    
     public void createUser(String username, String password, String firstname, String lastname, Boolean isAdmin) {
     	if (isAdmin) {
     		Packet createUser = new Packet(actionType.CREATE_USER, new String[] {username, password, firstname, lastname}, userId);
@@ -88,6 +93,7 @@ public class Client {
         	}
     	}
     }
+    
     public void enableUser(String userId) {
     	if (isITAdmin) {
     		Packet enableUser = new Packet(actionType.ENABLE_USER, new String[] {userId}, this.userId);
@@ -98,6 +104,7 @@ public class Client {
         	}
     	}
     }
+    
     public void disableUser(String userId) {
     	if (isITAdmin) {
     		Packet disableUser = new Packet(actionType.DISABLE_USER, new String[] {userId}, this.userId);
@@ -108,6 +115,7 @@ public class Client {
         	}
     	}
     }
+    
     public void saveChatToTxt(Chat chat) {
     	if (isITAdmin) {
     		String fileName = "chat_logs_" + chat.getRoomName() +".txt";
@@ -125,6 +133,7 @@ public class Client {
             }
     	}
     }
+    
     public void logout() {
     	Packet logout = new Packet(actionType.LOGOUT, new String[] {}, userId);
     	try {
@@ -138,15 +147,24 @@ public class Client {
     	return isITAdmin;
     }
     
-    // Made for getting Users for Create Chat in GUI
-//    private void getUsers() {
-//    	Packet getUsers = new Packet(actionType.GET_ALL_USERS, new String[] {}, userId);
-//    	try {
-//    		objectStream.writeObject(getUsers);
-//    	} catch (IOException e) {
-//    		e.printStackTrace();
-//    	}
-//    }
+     //Made for getting Users for Create Chat in GUI
+    public void getUsers() {
+    	Packet getUsers = new Packet(actionType.GET_ALL_USERS, new String[] {}, userId);
+    	try {
+    		objectStream.writeObject(getUsers);
+    	} catch (IOException e) {
+    		e.printStackTrace();
+    	}
+    }
+    
+    public void getAllChats() {
+    	Packet getChats = new Packet(actionType.GET_ALL_CHATS, new String[] {}, userId);
+    	try {
+    		objectStream.writeObject(getChats);
+    	} catch (IOException e) {
+    		e.printStackTrace();
+    	}
+    }
     
     private class ClientInput implements Runnable { // Added
     	
@@ -167,41 +185,82 @@ public class Client {
 						// Parsing each Action Type
 						case LOGIN -> {
 							client.isConnected = true;
-			            	userId = incoming.getActionArguments()[0]; // Get this UserId when requesting a login
-			            	isITAdmin = Boolean.valueOf(incoming.getActionArguments()[1]); //refine with DBManger
+			            	userId = incoming.getActionArguments()[1]; // Get this UserId when requesting a login
+			            	isITAdmin = Boolean.valueOf(incoming.getActionArguments()[2]); //refine with DBManger
 			                break;
 						}
 						case SEND_MESSAGE -> {
 							// Need to fill based on DB Manager
+							// Does not require admin
 			                break;
 						}
 						case GET_ALL_CHATS -> {
 							// Need to fill based on DB Manager
+							// Does require admin
 			                break;
 						}
 						case GET_ALL_USERS -> {
-							// Need to fill based on DB Manager
+							for (String line : incoming.getActionArguments()) {
+								String[] words = line.split("/");
+
+								String username = words[0];
+								String password = words[1];
+								String userId = words[2];
+								String firstName = words[3];
+								String lastName = words[4];
+								boolean isDisabled = words[5].equals("true") ? true : false;
+								boolean isAdmin = words[6].equals("true") ? true : false;
+
+								AbstractUser newUser;
+
+								if (isAdmin) {
+									newUser = new ITAdmin(username, password, userId, firstName, lastName, isDisabled, isAdmin);
+								} else {
+									newUser = new User(username, password, userId, firstName, lastName, isDisabled, isAdmin);
+								}
+								users.add(newUser);
+							}
 			                break;
 						}
 						case CREATE_CHAT -> {
 							// Need to fill based on DB Manager
+							// Does not require admin
 			                break;
 						}
 						case CREATE_USER -> {
 							// Need to fill based on DB Manager
+							// Does require admin
 			                break;
 						}
 						case ENABLE_USER -> {
 							// Need to fill based on DB Manager
+							// Does require admin
 			                break;
 						}
 						case DISABLE_USER -> {
 							// Need to fill based on DB Manager
+							// Does require admin
 			                break;
+						}
+						case ERROR -> {
+							// Need to fill based on DB Manager
+							// Does not require admin
+			                break;
+						}
+						case LOGOUT -> {
+							// Need to fill based on DB Manager
+							// Does not require admin
+							break;
+						}
+						case SUCCESS -> { 
+							// Need to fill based on DB Manager
+							// Does not require admin
+							break;
 						}
 						default -> {
 							// Need to fill based on DB Manager
-			                break;
+							// Does not require admin
+							break;
 						}
 					}
 				}
