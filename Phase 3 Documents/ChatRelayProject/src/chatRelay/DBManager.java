@@ -39,6 +39,10 @@ public class DBManager {
 		loadChats();
 		loadMessages();
 
+	}
+
+	private void tester() {
+
 //---------------------		
 
 		writeNewMessage("This is a test message from constructor!", "1", "1");
@@ -156,35 +160,34 @@ public class DBManager {
 
 	}
 
-	// Retrieve all users because they need to see the user list to add people to a Chat
+	// Retrieve all users because they need to see the user list to add people to a
+	// Chat
 	public ArrayList<String> fetchAllUsers() {
 		ArrayList<String> stringedUsers = new ArrayList<>();
-		for(AbstractUser user : users.values()) {
+		for (AbstractUser user : users.values()) {
 			stringedUsers.add(user.toStringClient());
 		}
 		return stringedUsers;
 	}
-	
-	// Retrieve ONLY Chats that User has access too 
+
+	// Retrieve ONLY Chats that User has access too
 	public ArrayList<String> fetchAllChats(AbstractUser user) {
 		ArrayList<String> stringedChats = new ArrayList<>();
-		
+
 //		give admin everything
 		if (user.isAdmin()) {
 			for (Chat chat : chats.values()) {
 				stringedChats.add(chat.toString());
 			}
-		}
-		else {
+		} else {
 			for (Chat chat : user.getChats()) {
 				stringedChats.add(chat.toString());
 			}
 		}
-		
+
 		return stringedChats;
 	}
-	
-	
+
 	// Retrieve only chats the user has access to
 //	public List<Chat> fetchAllChats(String userId) {
 //		List<Chat> filteredChats = new ArrayList<>();

@@ -126,6 +126,8 @@ public class Server {
 		String IP = "127.0.0.1";
 
 		System.out.println("Server.java's main() fired\n");
+		System.out.println("NOTE: Database is currently sensitive. Each .txt file needs 1 blank line under the last record");
+
 		Server server = new Server(port, IP);
 
 		server.connect();

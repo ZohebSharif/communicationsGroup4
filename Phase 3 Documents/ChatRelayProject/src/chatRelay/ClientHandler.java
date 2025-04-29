@@ -138,7 +138,7 @@ public class ClientHandler implements Runnable {
 
 					ArrayList<String> allChatsStringed = server.getDBManager().fetchAllChats(user);
 					Packet chatsPacket = new Packet(actionType.GET_ALL_CHATS, allChatsStringed, "SERVER");
-					System.out.println("allChatsStringed: " + allChatsStringed);
+					System.out.println("\n\nallChatsStringed: " + allChatsStringed);
 					sendPacket(chatsPacket);
 //
 //					List<Message> filteredMessages;

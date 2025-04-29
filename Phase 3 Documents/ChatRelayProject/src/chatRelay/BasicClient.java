@@ -113,7 +113,8 @@ public class BasicClient {
 
 	public static void main(String[] args) {
 		BasicClient client = new BasicClient("127.0.0.1", 1337);
-		client.login("chrsmi", "asdf");
+//		client.login("chrsmi", "asdf");
+		client.login("biljoe", "asdf/");
 		client.listen();
 	}
 }
