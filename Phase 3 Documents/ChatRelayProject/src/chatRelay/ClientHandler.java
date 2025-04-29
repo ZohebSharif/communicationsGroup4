@@ -134,18 +134,17 @@ public class ClientHandler implements Runnable {
 //					TODO: sort chats/messages by timestamp? 
 //					TODO: Add timestamps on Chats (filter by name is good too though)? 
 					
-					
+					System.out.println(user.getAllChatIds());
 
 					ArrayList<String> allChatsStringed = server.getDBManager().fetchAllChats(user);
 					Packet chatsPacket = new Packet(actionType.GET_ALL_CHATS, allChatsStringed, "SERVER");
 					System.out.println("\n\nallChatsStringed: " + allChatsStringed);
 					sendPacket(chatsPacket);
-//
-//					List<Message> filteredMessages;
 
-//					client.sendPacket(usersPacket);
-//					client.sendPacket(chatsPacket);
-//					client.sendPacket(messagesPacket);
+					ArrayList<String> allMessagesStringed = server.getDBManager().fetchAllMessages(user);
+					Packet messagesPacket = new Packet(actionType.GET_ALL_MESSAGES, allMessagesStringed, "SERVER");
+					System.out.println("\n\nallMessagesStringed: " + allMessagesStringed);
+					sendPacket(messagesPacket);
 
 				} else {
 //					server.sendErrorMessage("Invalid login");

@@ -170,7 +170,7 @@ public class DBManager {
 		return stringedUsers;
 	}
 
-	// Retrieve ONLY Chats that User has access too
+	// Retrieve ONLY Chats that User has access too. Admin gets all though
 	public ArrayList<String> fetchAllChats(AbstractUser user) {
 		ArrayList<String> stringedChats = new ArrayList<>();
 
@@ -188,28 +188,26 @@ public class DBManager {
 		return stringedChats;
 	}
 
-	// Retrieve only chats the user has access to
-//	public List<Chat> fetchAllChats(String userId) {
-//		List<Chat> filteredChats = new ArrayList<>();
-//
-//		for (Chat chat : chats.values()) {
-//			// check if owner
-//			if (chat.getOwner().getId().equals(userId)) {
-//				filteredChats.add(chat);
-//				continue;
-//			}
-//
-//			// check if user is a chatter and should have access
-//			for (AbstractUser chatter : chat.getChatters()) {
-//				if (chatter.getId().equals(userId)) {
-//					filteredChats.add(chat);
-//					break;
-//				}
-//			}
-//		}
-//
-//		return filteredChats;
-//	}
+	// Retrieve  Messages that User has access too. Admin gets all though
+	public ArrayList<String> fetchAllMessages(AbstractUser user) {
+		ArrayList<String> stringedMessages = new ArrayList<>();
+
+//		give admin everything
+		if (user.isAdmin()) {
+			for (Message message: messages.values()) {
+				stringedMessages.add(message.toString());
+			}
+		} else {
+			for (Chat chat : user.getChats()) {
+				
+				for (Message message : chat.getMessages()) {
+					stringedMessages.add(message.toString());
+				}
+			}
+		}
+
+		return stringedMessages;
+	}
 
 	private void loadUsers() {
 		try (Scanner scanner = new Scanner(new File(this.userTxtFilename))) {
@@ -308,7 +306,7 @@ public class DBManager {
 				Message newMessage = new Message(messageId, createdAt, content, author, chat);
 
 				chat.addMessage(newMessage);
-				author.addChat(chat);
+//				author.addChat(chat);
 
 				messages.put(messageId, newMessage);
 

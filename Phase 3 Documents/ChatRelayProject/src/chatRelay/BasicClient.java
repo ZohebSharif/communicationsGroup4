@@ -100,7 +100,7 @@ public class BasicClient {
 					}
 					case GET_ALL_USERS -> System.out.println("Handled GET_ALL_USERS");
 					case GET_ALL_CHATS -> System.out.println("Handled GET_ALL_CHATS");
-//					case GET_ALL_MESSAGES -> System.out.println("Handled GET_ALL_MESSAGES");
+					case GET_ALL_MESSAGES -> System.out.println("Handled GET_ALL_MESSAGES");
 					default -> System.out.println("Unhandled packet type: " + incoming.getActionType());
 				}
 			}
