@@ -115,6 +115,14 @@ public class ClientHandler implements Runnable {
 					// send packet response
 					// 1 packet with everything? or send multiple packets?
 
+					
+					
+					
+					
+					// Send user their ID + info too
+					
+					
+					
 
 					System.out.println("allUsersStringed Packet created/sent");
 					ArrayList<String> allUsersStringed = server.getDBManager().fetchAllUsers();
@@ -122,7 +130,16 @@ public class ClientHandler implements Runnable {
 					Packet usersPacket = new Packet(actionType.GET_ALL_USERS, allUsersStringed, "SERVER");
 					sendPacket(usersPacket);
 
-//					List<Chat> filteredChats = server.getDBManager().fetchAllChats(userId);
+					
+//					TODO: sort chats/messages by timestamp? 
+//					TODO: Add timestamps on Chats (filter by name is good too though)? 
+					
+					
+
+					ArrayList<String> allChatsStringed = server.getDBManager().fetchAllChats(user);
+					Packet chatsPacket = new Packet(actionType.GET_ALL_CHATS, allChatsStringed, "SERVER");
+					System.out.println("allChatsStringed: " + allChatsStringed);
+					sendPacket(chatsPacket);
 //
 //					List<Message> filteredMessages;
 

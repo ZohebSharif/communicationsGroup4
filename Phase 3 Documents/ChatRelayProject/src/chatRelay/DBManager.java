@@ -157,8 +157,6 @@ public class DBManager {
 	}
 
 	// Retrieve all users because they need to see the user list to add people to a Chat
-//	public String[] fetchAllUsers() {
-//	public List<AbstractUser> fetchAllUsers() {
 	public ArrayList<String> fetchAllUsers() {
 		ArrayList<String> stringedUsers = new ArrayList<>();
 		for(AbstractUser user : users.values()) {
@@ -167,16 +165,24 @@ public class DBManager {
 		return stringedUsers;
 	}
 	
-
-	
-//	public List<Chat> fetchChats(AbstractUser user) {
-//		if (user.isAdmin()) {
-//			
-//		} else {
-//			return user.getChats();
-//		}
-//		
-//	}
+	// Retrieve ONLY Chats that User has access too 
+	public ArrayList<String> fetchAllChats(AbstractUser user) {
+		ArrayList<String> stringedChats = new ArrayList<>();
+		
+//		give admin everything
+		if (user.isAdmin()) {
+			for (Chat chat : chats.values()) {
+				stringedChats.add(chat.toString());
+			}
+		}
+		else {
+			for (Chat chat : user.getChats()) {
+				stringedChats.add(chat.toString());
+			}
+		}
+		
+		return stringedChats;
+	}
 	
 	
 	// Retrieve only chats the user has access to

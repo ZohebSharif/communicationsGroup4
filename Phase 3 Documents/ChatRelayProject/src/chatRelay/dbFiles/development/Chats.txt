@@ -38,3 +38,5 @@
 38/1/writeNewChat() 498928918204 with a backslash!!/false/1,2
 39/1/writeNewChat() testing!/false/1,2
 40/1/writeNewChat() 498928918204 with a backslash!!/false/1,2
+41/1/writeNewChat() testing!/false/1,2
+42/1/writeNewChat() 498928918204 with a backslash!!/false/1,2
