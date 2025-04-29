@@ -55,17 +55,12 @@ public class DBManager {
 
 		writeNewUser("zohsha", "asdf", "zoheb", "sharif", false, true);
 		writeNewUser("talsha", "asdf", "talhah", "shaik", false, true);
-		
+
 		// PASSWORD W/ BACKSLASH
 		writeNewUser("biljoe", "asdf/", "bill", "joe", false, true);
-		
+
 		// ---------------------
 
-		
-		
-		
-		
-		
 		for (AbstractUser user : users.values()) {
 			System.out.println(user);
 		}
@@ -160,6 +155,47 @@ public class DBManager {
 		System.out.println(getChatById("1").getMessages().size());
 
 	}
+
+	// Retrieve all users because they need to see the user list to add people to a Chat
+//	public List<AbstractUser> fetchAllUsers() {
+	public String[] fetchAllUsers() {
+		String[] allUsersStringed = 
+		return new ArrayList<>(users.values());
+	}
+
+	
+	public List<Chat> fetchChats(AbstractUser user) {
+		if (user.isAdmin()) {
+			
+		} else {
+			return user.getChats();
+		}
+		
+	}
+	
+	
+	// Retrieve only chats the user has access to
+//	public List<Chat> fetchAllChats(String userId) {
+//		List<Chat> filteredChats = new ArrayList<>();
+//
+//		for (Chat chat : chats.values()) {
+//			// check if owner
+//			if (chat.getOwner().getId().equals(userId)) {
+//				filteredChats.add(chat);
+//				continue;
+//			}
+//
+//			// check if user is a chatter and should have access
+//			for (AbstractUser chatter : chat.getChatters()) {
+//				if (chatter.getId().equals(userId)) {
+//					filteredChats.add(chat);
+//					break;
+//				}
+//			}
+//		}
+//
+//		return filteredChats;
+//	}
 
 	private void loadUsers() {
 		try (Scanner scanner = new Scanner(new File(this.userTxtFilename))) {
@@ -292,10 +328,10 @@ public class DBManager {
 			boolean isAdmin) {
 		// TODO: consider if "/" char is ever used. Have server reject the packet if
 		// anything except password has a "/".
-		
+
 		// TODO: ENSURE USERNAMES ARE UNIQUE
 
-		String sanitizedPassword = password.replace("/", ESCAPED_SLASH);		
+		String sanitizedPassword = password.replace("/", ESCAPED_SLASH);
 
 		AbstractUser newUser;
 
@@ -420,5 +456,3 @@ public class DBManager {
 //	 }
 	// private Boolean validUsername(String name) {}
 }
-
-

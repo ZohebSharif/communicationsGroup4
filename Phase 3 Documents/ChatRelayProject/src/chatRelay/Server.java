@@ -20,12 +20,18 @@ public class Server {
 		this.port = port;
 		this.IP = IP;
 
-		this.dbManager = new DBManager("./src/chatRelay/dbFiles/development/", "Users.txt", "Chats.txt",
-				"Messages.txt");
+//		this.dbManager = new DBManager("./src/chatRelay/dbFiles/development/", "Users.txt", "Chats.txt",
+//				"Messages.txt");
 
+		
+		
+		//use this version why running from terminal
+		this.dbManager = new DBManager("./chatRelay/dbFiles/development/", "Users.txt", "Chats.txt",
+				"Messages.txt");
 	}
 
 	public void connect() {
+		System.out.println("Server.connect() fired");
 		try (ServerSocket serverSocket = new ServerSocket(port)) {
 			serverSocket.setReuseAddress(true);
 			while (true) {
@@ -39,10 +45,13 @@ public class Server {
 	}
 
 	public void receivePacket(String clientId, Packet packet) {
+
+
+		System.out.println("Server.receivePacket() fired");
 		switch (packet.getActionType()) {
-		case LOGIN:
-			handleLogin(clientId, packet);
-			break;
+//		case LOGIN:
+//			handleLogin(clientId, packet);
+//			break;
 		case SEND_MESSAGE:
 			handleSendMessage(clientId, packet);
 			break;
@@ -118,6 +127,6 @@ public class Server {
 		System.out.println("Server.java's main() fired\n");
 		Server server = new Server(port, IP);
 
-//		server.connect();
+		server.connect();
 	}
 }

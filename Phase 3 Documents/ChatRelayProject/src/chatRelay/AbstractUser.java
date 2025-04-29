@@ -56,6 +56,12 @@ public abstract class AbstractUser {
 	}
 	
 	
+	public String toStringClient() {
+		return id + "/" + username + "/" + firstName + "/" + lastName + "/" + String.valueOf(isDisabled) + "/" + String.valueOf(isAdmin);
+	}
+	
+	
+	
 	public boolean isAdmin() {
 		return this.isAdmin;
 	}

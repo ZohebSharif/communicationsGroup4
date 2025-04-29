@@ -6,6 +6,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.List;
 
 public class ClientHandler implements Runnable {
 
@@ -87,6 +88,8 @@ public class ClientHandler implements Runnable {
 
 	@Override
 	public void run() {
+
+		System.out.println("Client.run() fired");
 		try {
 //			Step 1 - Handle login
 			Packet packet = (Packet) inputStream.readObject();
@@ -96,16 +99,31 @@ public class ClientHandler implements Runnable {
 				String username = args[0];
 				String password = args[1];
 
+				System.out.println("username: " + username + " password: " + password);
+
 				AbstractUser user = server.getDBManager().checkLoginCredentials(username, password);
 
 				if (user != null) {
+					System.out.println("WE GOT A USER!");
 					// set user id
 					this.userId = user.getId();
 
-					server.addClient(userId, this); // you need a method like addClient(id, handler)
+					server.addClient(userId, this);
 
 					// send packet response
 					// 1 packet with everything? or send multiple packets?
+
+					List<AbstractUser> allUsers = server.getDBManager().fetchAllUsers();
+					List<Chat> filteredChats = server.getDBManager().fetchAllChats(userId);
+
+					List<Message> filteredMessages;
+
+					
+					
+					
+//					client.sendPacket(usersPacket);
+//					client.sendPacket(chatsPacket);
+//					client.sendPacket(messagesPacket);
 
 				} else {
 //					server.sendErrorMessage("Invalid login");
@@ -120,6 +138,8 @@ public class ClientHandler implements Runnable {
 
 // Step 2 - Now that user is logged in, process their subsequent steps			
 			while (true) {
+
+				System.out.println("Packet nextPacket part fired");
 				Packet nextPacket = (Packet) inputStream.readObject();
 				server.receivePacket(userId, nextPacket);
 			}
