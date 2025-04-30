@@ -26,6 +26,7 @@ public class Client {
     
     private ObjectOutputStream objectStream;
     private ObjectInputStream objectInStream;
+    private GUI clientGUI;
 
     public Client(String targetIp, String targetPort) {
         this.targetIP = targetIp;
@@ -43,14 +44,9 @@ public class Client {
         }
     }
 
-    public Boolean getIsConnected()
-    {
-    	return isConnected;
-    }
-    
     public void startUp() { //Added
     	
-    	GUI clientGUI = new GUI(this);
+    	clientGUI = new GUI(this);
     	
     	new Thread(clientGUI).start();
     	
@@ -61,7 +57,11 @@ public class Client {
     }
     
     public void login(String username, String password) {
-		Packet login = new Packet(actionType.LOGIN, new String[] {username, password}, "requesting");
+    	ArrayList<String> args = new ArrayList<>();
+    	args.add(username);
+    	args.add(password);
+    	
+		Packet login = new Packet(Status.NONE, actionType.LOGIN, args, "Requesting");
     	try {
     		objectStream.writeObject(login);
     	} catch (IOException e) {
@@ -70,7 +70,11 @@ public class Client {
     }
     
     public void sendMessage(String chatId, String content) {
-    	Packet sendMessage = new Packet(actionType.SEND_MESSAGE, new String[] {content, chatId}, userId);
+    	ArrayList<String> args = new ArrayList<>();
+    	args.add(content);
+    	args.add(chatId);
+    	
+    	Packet sendMessage = new Packet(Status.NONE, actionType.SEND_MESSAGE, args, userId);
     	try {
     		objectStream.writeObject(sendMessage);
     	} catch (IOException e) {
@@ -79,8 +83,12 @@ public class Client {
     }
     
     public void createChat(String chatName, Boolean isPrivate) {
-    	Packet createChat = new Packet(actionType.CREATE_CHAT, new String[] {users.toString(), chatName}, userId); 
-    	// TODO: Users should parse into a list with slashes EX: "userId/userId2/userId3"
+    	ArrayList<String> args = new ArrayList<>();
+    	for (AbstractUser user : users) {
+    		args.add(user.toString()); // Each Item in the list will be User.toString()
+    	}
+    	args.add(chatName);
+    	Packet createChat = new Packet(Status.NONE, actionType.CREATE_CHAT, args, userId); 
     	try {
     		objectStream.writeObject(createChat);
     	} catch (IOException e) {
@@ -92,7 +100,13 @@ public class Client {
     
     public void createUser(String username, String password, String firstname, String lastname, Boolean isAdmin) {
     	if (isAdmin) {
-    		Packet createUser = new Packet(actionType.CREATE_USER, new String[] {username, password, firstname, lastname}, userId);
+        	ArrayList<String> args = new ArrayList<>();
+        	args.add(username);
+        	args.add(password);
+        	args.add(firstname);
+        	args.add(lastname);
+        	args.add(String.valueOf(isAdmin));
+    		Packet createUser = new Packet(Status.NONE, actionType.CREATE_USER, args, userId);
     		try {
         		objectStream.writeObject(createUser);
         	} catch (IOException e) {
@@ -103,7 +117,9 @@ public class Client {
     
     public void enableUser(String userId) {
     	if (isITAdmin) {
-    		Packet enableUser = new Packet(actionType.ENABLE_USER, new String[] {userId}, this.userId);
+        	ArrayList<String> args = new ArrayList<>();
+        	args.add(userId);
+    		Packet enableUser = new Packet(Status.NONE, actionType.ENABLE_USER, args, this.userId);
     		try {
         		objectStream.writeObject(enableUser);
         	} catch (IOException e) {
@@ -114,7 +130,9 @@ public class Client {
     
     public void disableUser(String userId) {
     	if (isITAdmin) {
-    		Packet disableUser = new Packet(actionType.DISABLE_USER, new String[] {userId}, this.userId);
+        	ArrayList<String> args = new ArrayList<>();
+        	args.add(userId);
+    		Packet disableUser = new Packet(Status.NONE, actionType.DISABLE_USER, args, this.userId);
     		try {
         		objectStream.writeObject(disableUser);
         	} catch (IOException e) {
@@ -142,7 +160,8 @@ public class Client {
     }
     
     public void logout() {
-    	Packet logout = new Packet(actionType.LOGOUT, new String[] {}, userId);
+    	ArrayList<String> args = new ArrayList<>();
+    	Packet logout = new Packet(Status.NONE, actionType.LOGOUT, args, userId);
     	try {
     		objectStream.writeObject(logout);
     	} catch (IOException e) {
@@ -172,7 +191,7 @@ public class Client {
     
      //Made for getting Users for Create Chat in GUI
     public void getAllUsers() {
-    	Packet getUsers = new Packet(actionType.GET_ALL_USERS, new String[] {}, userId);
+    	Packet getUsers = new Packet(Status.NONE, actionType.GET_ALL_USERS, new ArrayList<String> (), userId);
     	try {
     		objectStream.writeObject(getUsers);
     	} catch (IOException e) {
@@ -181,7 +200,7 @@ public class Client {
     }
     
     public void getAllChats() {
-    	Packet getChats = new Packet(actionType.GET_ALL_CHATS, new String[] {}, userId);
+    	Packet getChats = new Packet(Status.NONE, actionType.GET_ALL_CHATS, new ArrayList<String> (), userId);
     	try {
     		objectStream.writeObject(getChats);
     	} catch (IOException e) {
@@ -190,6 +209,7 @@ public class Client {
     }
     
     private class ClientInput implements Runnable { // Added
+    	private static final String ESCAPED_SLASH = "498928918204";
     	
     	private ObjectInputStream inputStream;
     	private Client client;
@@ -197,6 +217,24 @@ public class Client {
     	public ClientInput(ObjectInputStream input, Client client) {
     		this.inputStream = input;
     		this.client = client;
+    	}
+    	
+    	private AbstractUser getUserById(String userId) {
+    		for (AbstractUser user : users) {
+    			if (user.getId().equals(userId)) {
+					return user;
+				}
+			}
+    		return null;
+    	}
+    	
+    	private Chat getChatById(String chatId) {
+    		for (Chat chat : chats) {
+    			if (chat.getId().equals(chatId)) {
+    				return chat;
+    			}
+    		}
+    		return null;
     	}
 
 		@Override
@@ -208,8 +246,20 @@ public class Client {
 						// Parsing each Action Type
 						case LOGIN -> {
 							client.isConnected = true;
-			            	userId = incoming.getActionArguments()[1]; // Get this UserId when requesting a login
-			            	isITAdmin = Boolean.valueOf(incoming.getActionArguments()[2]); //refine with DBManger
+							String[] words = incoming.getActionArguments().get(0).split("/");
+							
+							userId = words[0];
+							String username = words[1];
+							String firstName = words[2];
+							String lastName = words[3];
+							boolean isDisabled = words[4].equals("true") ? true : false;
+							boolean isAdmin = words[5].equals("true") ? true : false;
+							
+							if (isAdmin) {
+								thisUser = new ITAdmin(username, firstName, lastName, isDisabled, isAdmin);
+							} else {
+								thisUser = new User(username, firstName, lastName, isDisabled, isAdmin);
+							}
 			                break;
 						}
 						case SEND_MESSAGE -> {
@@ -239,12 +289,8 @@ public class Client {
 								}
 								
 								chatters = new ArrayList<>();
-								for (AbstractUser user : users) {
-									for (String userId : userIds) {
-										if (user.getId().equals(userId)) {
-											chatters.add(user);
-										}
-									}
+								for (String userId : userIds) {
+									chatters.add(getUserById(userId));
 								}
 								
 								Chat newChat = new Chat(owner, roomName, chatId, chatters, isPrivate);
@@ -255,28 +301,40 @@ public class Client {
 						case GET_ALL_USERS -> {
 							for (String line : incoming.getActionArguments()) {
 								String[] words = line.split("/");
-
-								String username = words[0];
-								String password = words[1];
-								String userId = words[2];
-								String firstName = words[3];
-								String lastName = words[4];
-								boolean isDisabled = words[5].equals("true") ? true : false;
-								boolean isAdmin = words[6].equals("true") ? true : false;
+								
+								String username = words[1];
+								String firstName = words[2];
+								String lastName = words[3];
+								boolean isDisabled = words[4].equals("true") ? true : false;
+								boolean isAdmin = words[5].equals("true") ? true : false;
 
 								AbstractUser newUser;
 
 								if (isAdmin) {
-									newUser = new ITAdmin(username, password, userId, firstName, lastName, isDisabled, isAdmin);
+									newUser = new ITAdmin(username, firstName, lastName, isDisabled, isAdmin);
 								} else {
-									newUser = new User(username, password, userId, firstName, lastName, isDisabled, isAdmin);
+									newUser = new User(username, firstName, lastName, isDisabled, isAdmin);
 								}
 								users.add(newUser);
 							}
 			                break;
 						}
 						case GET_ALL_MESSAGES -> {
-							
+							for (String line : incoming.getActionArguments()) {
+								String[] words = line.split("/");
+
+								String messageId = words[0];
+								long createdAt = Long.parseLong(words[1]);
+								String content = words[2].replace(ESCAPED_SLASH, "/"); // have client replace escaped char instead
+								String authorId = words[3];
+								String chatId = words[4];
+								
+								AbstractUser author = getUserById(authorId);
+								Chat chat = getChatById(chatId);
+
+								Message newMessage = new Message(messageId, createdAt, content, author, chat);
+								chat.addMessage(newMessage);
+							}
 						}
 						case CREATE_CHAT -> {
 							// Need to fill based on DB Manager
