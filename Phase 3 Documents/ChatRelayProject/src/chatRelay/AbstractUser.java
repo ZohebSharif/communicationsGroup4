@@ -14,9 +14,21 @@ public abstract class AbstractUser {
     private Boolean isAdmin = false;
     private List<Chat> chats = new ArrayList<>();
     
-    // probably add a 2nd constructor that DOESN'T take in an ID - for when an admin creates a new user
-
+    // dones't take in id (this is when Admin creates a new user) 
+    public AbstractUser(String username, String password, String firstname, String lastname, boolean isDisabled, boolean isAdmin  ) {
+    	this.id = String.valueOf(++count);
+    	this.username = username;
+    	this.password = password;
+    	this.firstName = firstname;
+    	this.lastName = lastname;
+    	this.isDisabled = isDisabled;
+    	this.isAdmin = isAdmin;
+    }
+    
+    // when user is read in from db .txt
     public AbstractUser(String username, String password, String id, String firstname, String lastname, boolean isDisabled, boolean isAdmin  ) {
+    	++count;
+
     	this.username = username;
     	this.password = password;
     	this.id = id;
@@ -38,10 +50,26 @@ public abstract class AbstractUser {
     public String getPassword() {return password;}
     public List<Chat> getChats() {return chats;}
     
+    // used to get string to write record to .txt DB
 	public String toString() {
-		return "UserId=" + id + ", " + firstName + " " + lastName + " (" + username + "), Admin: " + isAdmin;
+		return username + "/" + password + "/" + id + "/" + firstName + "/" + lastName + "/" + String.valueOf(isDisabled) + "/" + String.valueOf(isAdmin);
 	}
 	
+	
+	public String toStringClient() {
+		return id + "/" + username + "/" + firstName + "/" + lastName + "/" + String.valueOf(isDisabled) + "/" + String.valueOf(isAdmin);
+	}
+	
+	
+	public ArrayList<String> getAllChatIds(){
+		ArrayList<String> chatIds = new ArrayList<>();
+		
+		for (Chat chat : chats) {
+			chatIds.add(chat.getId());
+		}
+		
+		return chatIds;
+	}
 	
 	public boolean isAdmin() {
 		return this.isAdmin;
@@ -54,3 +82,5 @@ public abstract class AbstractUser {
     public void addUserToChat(User user) {}
     public void sendMessage() {}
 }
+
+

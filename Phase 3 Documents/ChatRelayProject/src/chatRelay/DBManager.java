@@ -3,17 +3,20 @@ package chatRelay;
 import java.io.File;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 
-// PROBABLY CAN MAKE MORE THINGS PRIVATE
+// TODO: Consider writing to DB first, and then create the object in memory
+// TODO: Consider concurrency/thread blocking stuff
 
 public class DBManager {
-	private static final String DELIMITER = "498928918204"; // maybe make public for outgoing (or have client deal do
-															// the convert?)
+	private static final String ESCAPED_SLASH = "498928918204"; // maybe make public for outgoing (or have client deal
+																// do
+	// the convert?)
 
 	private ConcurrentHashMap<String, AbstractUser> users = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<String, Chat> chats = new ConcurrentHashMap<>();
@@ -35,6 +38,32 @@ public class DBManager {
 		loadUsers(); // convert TXT strings into real User objects, put those into the hashmap
 		loadChats();
 		loadMessages();
+
+	}
+
+	private void tester() {
+
+//---------------------		
+
+		writeNewMessage("This is a test message from constructor!", "1", "1");
+		writeNewMessage("ANOOTHER MESSAGE!", "1", "1");
+		writeNewMessage("!!!DANGEROUS / I JUST ADDED A SLASH!", "1", "1");
+
+//----------------------		
+
+		String[] chatterIds = { "1", "2" };
+		writeNewChat("1", "writeNewChat() testing!", chatterIds, false);
+		writeNewChat("1", "writeNewChat() / with a backslash!!", chatterIds, false);
+
+//		---------------------
+
+		writeNewUser("zohsha", "asdf", "zoheb", "sharif", false, true);
+		writeNewUser("talsha", "asdf", "talhah", "shaik", false, true);
+
+		// PASSWORD W/ BACKSLASH
+		writeNewUser("biljoe", "asdf/", "bill", "joe", false, true);
+
+		// ---------------------
 
 		for (AbstractUser user : users.values()) {
 			System.out.println(user);
@@ -99,15 +128,14 @@ public class DBManager {
 					+ chat.getOwner().getId() + ", isPrivate: " + chat.isPrivate());
 		}
 
-		
 // SERVER SHOULD DO THIS BELOW?
 // Work on the user flows for each scenarios next		
-		
+
 		System.out.println(" ---------------------------------------");
 		System.out.println("Good login:");
 
 		// try both valid/invalid usernames/passwords
-		AbstractUser validUser1 = checkLoginCredentials("kenkot", "asdf");
+		AbstractUser validUser1 = checkLoginCredentials("biljoe", "asdf/");
 		System.out.println(validUser1);
 
 		if (validUser1 != null && !validUser1.isDisabled()) {
@@ -124,6 +152,61 @@ public class DBManager {
 		} else {
 			System.out.println("we can't proceed");
 		}
+
+//writeNewMessage("This is a test message from constructor!", "1", "1");
+//writeNewMessage("ANOOTHER MESSAGE!", "1", "1");
+
+		System.out.println(getChatById("1").getMessages().size());
+
+	}
+
+	// Retrieve all users because they need to see the user list to add people to a
+	// Chat
+	public ArrayList<String> fetchAllUsers() {
+		ArrayList<String> stringedUsers = new ArrayList<>();
+		for (AbstractUser user : users.values()) {
+			stringedUsers.add(user.toStringClient());
+		}
+		return stringedUsers;
+	}
+
+	// Retrieve ONLY Chats that User has access too. Admin gets all though
+	public ArrayList<String> fetchAllChats(AbstractUser user) {
+		ArrayList<String> stringedChats = new ArrayList<>();
+
+//		give admin everything
+		if (user.isAdmin()) {
+			for (Chat chat : chats.values()) {
+				stringedChats.add(chat.toString());
+			}
+		} else {
+			for (Chat chat : user.getChats()) {
+				stringedChats.add(chat.toString());
+			}
+		}
+
+		return stringedChats;
+	}
+
+	// Retrieve  Messages that User has access too. Admin gets all though
+	public ArrayList<String> fetchAllMessages(AbstractUser user) {
+		ArrayList<String> stringedMessages = new ArrayList<>();
+
+//		give admin everything
+		if (user.isAdmin()) {
+			for (Message message: messages.values()) {
+				stringedMessages.add(message.toString());
+			}
+		} else {
+			for (Chat chat : user.getChats()) {
+				
+				for (Message message : chat.getMessages()) {
+					stringedMessages.add(message.toString());
+				}
+			}
+		}
+
+		return stringedMessages;
 	}
 
 	private void loadUsers() {
@@ -210,7 +293,8 @@ public class DBManager {
 
 				String messageId = words[0];
 				long createdAt = Long.parseLong(words[1]);
-				String content = words[2].replace(DELIMITER, "/");
+//				String content = words[2].replace(ESCAPED_SLASH, "/"); // have client replace escaped char instead
+				String content = words[2];
 				String authorId = words[3];
 				String chatId = words[4];
 
@@ -222,7 +306,7 @@ public class DBManager {
 				Message newMessage = new Message(messageId, createdAt, content, author, chat);
 
 				chat.addMessage(newMessage);
-				author.addChat(chat);
+//				author.addChat(chat);
 
 				messages.put(messageId, newMessage);
 
@@ -251,13 +335,101 @@ public class DBManager {
 	// public List<Chat> fetchAllChats() {}
 	// public List<Message> fetchAllMessages() {}
 	// public List<Chat> getChatsForUser(String userId) {}
-	private void writeNewUser(User user) {
+
+	private void writeNewUser(String username, String password, String firstname, String lastname, boolean isDisabled,
+			boolean isAdmin) {
+		// TODO: consider if "/" char is ever used. Have server reject the packet if
+		// anything except password has a "/".
+
+		// TODO: ENSURE USERNAMES ARE UNIQUE
+
+		String sanitizedPassword = password.replace("/", ESCAPED_SLASH);
+
+		AbstractUser newUser;
+
+		if (isAdmin) {
+			newUser = new ITAdmin(username, sanitizedPassword, firstname, lastname, isDisabled, isAdmin);
+		} else {
+			newUser = new User(username, sanitizedPassword, firstname, lastname, isDisabled, isAdmin);
+		}
+
+		users.put(newUser.getId(), newUser);
+
+		try {
+			File file = new File(this.userTxtFilename);
+			FileWriter writer = new FileWriter(file, true); // append mode
+			writer.write(newUser.toString() + "\n");
+			writer.close();
+		} catch (IOException e) {
+			System.out.println("Error writing new user: " + e.getMessage());
+			e.printStackTrace();
+		}
+
 	}
 
-	private void writeNewChat(Chat chat) {
+	private void writeNewChat(String ownerId, String roomName, String[] chatterIds, boolean isPrivate) {
+		AbstractUser owner = getUserById(ownerId);
+		String sanitizedRoomName = roomName.replace("/", ESCAPED_SLASH); // a "/" inside content will break the DB
+
+//		consider using a setter to avoid 2nd loop?
+
+		List<AbstractUser> chatters = new ArrayList<>();
+		for (String chatterId : chatterIds) {
+			AbstractUser chatter = getUserById(chatterId);
+			chatters.add(chatter);
+		}
+
+		Chat newChat = new Chat(owner, sanitizedRoomName, chatters, isPrivate);
+		chats.put(newChat.getId(), newChat);
+
+		// add relationship
+		for (AbstractUser user : chatters) {
+			user.addChat(newChat);
+		}
+
+		// write new chat to file
+		try {
+			File file = new File(this.chatTxtFilename);
+
+			FileWriter writer = new FileWriter(file, true); // true is append mode!
+			writer.write(newChat.toString() + "\n");
+			writer.close();
+		} catch (IOException e) {
+			System.out.println("Error writing new chat: " + e.getMessage());
+			e.printStackTrace();
+		}
+
+		// TODO: BROADCAST!
+
 	}
 
-	private void writeNewMessage(Message message) {
+//	private void writeNewMessage(String content, AbstractUser author, Chat chat) {
+	private void writeNewMessage(String content, String authorId, String chatId) {
+		AbstractUser author = getUserById(authorId);
+		Chat chat = getChatById(chatId);
+
+		String sanitizedContent = content.replace("/", ESCAPED_SLASH); // a "/" inside content will break the DB
+		Message newMessage = new Message(sanitizedContent, author, chat);
+
+		chat.addMessage(newMessage);
+		messages.put(newMessage.getId(), newMessage);
+
+		// blocking an issue?
+		try {
+			File file = new File(this.messageTxtFilename);
+
+			FileWriter writer = new FileWriter(file, true); // true puts it in 'append' mode
+			writer.write(newMessage.toString() + "\n"); // Add newline for each message
+			writer.close();
+
+		} catch (IOException e) {
+			System.out.println("Error writing new message: " + e.getMessage());
+			e.printStackTrace();
+		}
+
+		// broadcasting should happen now, where everyone with access
+//		o this message's chat will receive this data
+
 	}
 
 	// private User stringToUser(String userString) {}
@@ -285,7 +457,7 @@ public class DBManager {
 	public AbstractUser checkLoginCredentials(String username, String password) {
 		AbstractUser user = getUserByUsername(username);
 
-		if (user.getPassword().equals(password)) {
+		if (user.getPassword().replace(ESCAPED_SLASH, "/").equals(password)) {
 			return user;
 		}
 		return null;
