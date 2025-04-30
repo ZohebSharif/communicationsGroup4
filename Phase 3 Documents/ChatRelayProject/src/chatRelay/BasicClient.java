@@ -151,9 +151,25 @@ public class BasicClient {
 
 	public static void main(String[] args) {
 		BasicClient client = new BasicClient("127.0.0.1", 1337);
-		client.login("biljoe", "asdf/"); // non-admin
 		
+		
+		System.out.println("Some users you can log into, otherwise it'll log into \"biljoe\": chrsmi kenkot stearm zohsha talsha biljoe ");
+		System.out.println("juse type in a username into CLI next time");
+		
+		
+		String username = "bilJoe"; // non-admin, NOT disabled
+		String password = "asdf/"; // testing "/" is valid
+		
+		if (args.length == 1) {
+			username = args[0];
+			password= "asdf";
+		}  
+		
+		
+		client.login(username, password);
+//		client.login("biljoe", "asdf/"); // non-admin
 //		client.login("chrsmi", "asdf"); // admin
+		
 		client.listen();
 	}
 }
