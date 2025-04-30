@@ -123,7 +123,7 @@ public class ClientHandler implements Runnable {
 					userInfoStringed.add("Login was successful");
 					userInfoStringed.add(userId);
 					userInfoStringed.add(String.valueOf(user.isAdmin()));
-					Packet userInfoPacket = new Packet(Status.SUCCESS, actionType.LOGIN, args, "SERVER");
+					Packet userInfoPacket = new Packet(Status.SUCCESS, actionType.LOGIN, userInfoStringed, "SERVER");
 					sendPacket(userInfoPacket);
 
 					System.out.println("allUsersStringed Packet created/sent");

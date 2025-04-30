@@ -157,6 +157,7 @@ public class BasicClient {
 		System.out.println("juse type in a username into CLI next time");
 		
 		
+		// default user to log in if no CLI args given
 		String username = "bilJoe"; // non-admin, NOT disabled
 		String password = "asdf/"; // testing "/" is valid
 		
