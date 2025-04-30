@@ -116,13 +116,11 @@ public class ClientHandler implements Runnable {
 					System.out.println("User ID being sent to client: " + userId);
 
 					ArrayList<String> userInfoStringed = new ArrayList<>();
-					System.out.println("Login Was Successful - sending basic user info: " + userId + ", isAdmin() = "
+					System.out.println("Login Was Successful - sending user info: " + userId + ", isAdmin() = "
 							+ user.isAdmin());
 
 					// maybe have client just set the message based on a SUCCESS
-					userInfoStringed.add("Login was successful");
-					userInfoStringed.add(userId);
-					userInfoStringed.add(String.valueOf(user.isAdmin()));
+					userInfoStringed.add(server.getDBManager().getUserById(userId).toStringClient());
 					Packet userInfoPacket = new Packet(Status.SUCCESS, actionType.LOGIN, args, "SERVER");
 					sendPacket(userInfoPacket);
 
