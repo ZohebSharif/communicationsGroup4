@@ -403,8 +403,9 @@ public class DBManager {
 
 	}
 
-//	private void writeNewMessage(String content, AbstractUser author, Chat chat) {
-	private void writeNewMessage(String content, String authorId, String chatId) {
+	// by returning new message, it lets my Server have access to that message which is needed!
+//	public void writeNewMessage(String content, String authorId, String chatId) {
+	public Message writeNewMessage(String content, String authorId, String chatId) {
 		AbstractUser author = getUserById(authorId);
 		Chat chat = getChatById(chatId);
 
@@ -427,6 +428,7 @@ public class DBManager {
 			e.printStackTrace();
 		}
 
+		return newMessage;
 		// broadcasting should happen now, where everyone with access
 //		o this message's chat will receive this data
 

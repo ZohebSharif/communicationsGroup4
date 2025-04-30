@@ -49,9 +49,9 @@ public class BasicClient {
 		System.out.println("BasicClient.sendMessage() fired");
 		try {
 			ArrayList<String> messageArgs = new ArrayList<>();
-			messageArgs.add(authorId);
-			messageArgs.add(chatId);
+//			messageArgs.add(authorId);
 			messageArgs.add(content);
+			messageArgs.add(chatId);
 
 			Packet messagePacket = new Packet(Status.NONE, actionType.SEND_MESSAGE, messageArgs, authorId);
 			out.writeObject(messagePacket);
@@ -113,11 +113,24 @@ public class BasicClient {
 						userId = args.get(1);
 						System.out.println("Logged in as: " + userId + ", Admin: " + args.get(2));
 					}
+
+					//
+					// dirty testing
+					// test sending a message after successfull login
+
+					String chatId = "2";
+					sendMessage(userId, chatId, "TESTING sendMessage() / SEND_MESSAGE");
+
 				}
-				case SEND_MESSAGE -> {
-					if (!args.isEmpty()) {
-						System.out.println("Message received: " + args.get(0));
-					}
+//				case SEND_MESSAGE -> {
+				case NEW_MESSAGE_BROADCAST -> {
+					String messageId = args.get(0);
+					String timestamp = args.get(1);
+					String content = args.get(2);
+					String senderId = args.get(3);
+					String chatId = args.get(4);
+
+					System.out.println("id:" + chatId + ", " + senderId + " at " + timestamp + ": " + content);
 				}
 				case GET_ALL_USERS -> System.out.println("Handled GET_ALL_USERS");
 				case GET_ALL_CHATS -> System.out.println("Handled GET_ALL_CHATS");
@@ -151,26 +164,24 @@ public class BasicClient {
 
 	public static void main(String[] args) {
 		BasicClient client = new BasicClient("127.0.0.1", 1337);
-		
-		
-		System.out.println("Some users you can log into, otherwise it'll log into \"biljoe\": chrsmi kenkot stearm zohsha talsha biljoe ");
+
+		System.out.println(
+				"Some users you can log into, otherwise it'll log into \"biljoe\": chrsmi kenkot stearm zohsha talsha biljoe ");
 		System.out.println("juse type in a username into CLI next time");
-		
-		
+
 		// default user to log in if no CLI args given
 		String username = "bilJoe"; // non-admin, NOT disabled
 		String password = "asdf/"; // testing "/" is valid
-		
+
 		if (args.length == 1) {
 			username = args[0];
-			password= "asdf";
-		}  
-		
-		
+			password = "asdf";
+		}
+
 		client.login(username, password);
 //		client.login("biljoe", "asdf/"); // non-admin
 //		client.login("chrsmi", "asdf"); // admin
-		
+
 		client.listen();
 	}
 }

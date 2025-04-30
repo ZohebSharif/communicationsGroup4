@@ -105,10 +105,12 @@ public class ClientHandler implements Runnable {
 
 				AbstractUser user = server.getDBManager().checkLoginCredentials(username, password);
 
+				
+				// give rejections w/ responses,
+				// ex: bad password, bad username, etc.
+				
 				// check if user isn't disabled too
 				if (user != null) {
-					System.out.println("WE GOT A USER!");
-					// set user id
 					this.userId = user.getId();
 
 					server.addClient(userId, this); // add this ClientHanlder to Server's HashMap
@@ -164,7 +166,7 @@ public class ClientHandler implements Runnable {
 // Step 2 - Now that user is logged in, process their subsequent steps			
 			while (true) {
 
-				System.out.println("Packet nextPacket part fired");
+				System.out.println("Inside 'step 2' loop for after login");
 				Packet nextPacket = (Packet) inputStream.readObject();
 				server.receivePacket(userId, nextPacket);
 			}

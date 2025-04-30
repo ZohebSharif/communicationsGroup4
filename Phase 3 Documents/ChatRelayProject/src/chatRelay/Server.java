@@ -49,6 +49,7 @@ public class Server {
 //			handleLogin(clientId, packet);
 //			break;
 		case SEND_MESSAGE:
+			System.out.println("Server.receievePacket() SEND_MESSAGE switch fired");
 			handleSendMessage(clientId, packet);
 			break;
 		case LOGOUT:
@@ -84,7 +85,37 @@ public class Server {
 //	}
 
 	private void handleSendMessage(String clientId, Packet packet) {
-		// TODO: parse packet arguments and broadcast message to intended users
+		// TODO: parse packet arguments
+//		and broadcast message to intended users
+
+		ArrayList<String> args = packet.getActionArguments();
+		String content = args.get(0);
+		String chatId = args.get(1);
+
+		Message newMessage = dbManager.writeNewMessage(content, clientId, chatId);
+
+//		BROADCASTING
+
+		Chat chat = dbManager.getChatById(chatId);
+
+		for (AbstractUser user : chat.getChatters()) {
+			String userId = user.getId();
+			ClientHandler client = clients.get(userId);
+
+			if (client != null) {
+				ArrayList<String> broadcastingArgs = new ArrayList<>();
+				broadcastingArgs.add(newMessage.getId());
+				broadcastingArgs.add(String.valueOf(newMessage.getCreatedAt()));
+				broadcastingArgs.add(newMessage.getContent());
+				broadcastingArgs.add(newMessage.getSender().getId());
+				broadcastingArgs.add(newMessage.getChat().getId());
+
+				Packet messagePacket = new Packet(Status.SUCCESS, actionType.NEW_MESSAGE_BROADCAST, broadcastingArgs,
+						"Server");
+				client.sendPacket(messagePacket);
+			}
+		}
+
 	}
 
 	public void handleLogout(String clientId) {
@@ -126,7 +157,8 @@ public class Server {
 		String IP = "127.0.0.1";
 
 		System.out.println("Server.java's main() fired\n");
-		System.out.println("NOTE: Database is currently sensitive. Each .txt file needs 1 blank line under the last record");
+		System.out.println(
+				"NOTE: Database is currently sensitive. Each .txt file needs 1 blank line under the last record");
 
 		Server server = new Server(port, IP);
 
