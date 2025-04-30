@@ -9,6 +9,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Client {
@@ -41,10 +42,7 @@ public class Client {
         	e.printStackTrace();
         }
     }
-    public Boolean getIsConnected()
-    {
-    	return isConnected;
-    }
+    
     public void startUp() { //Added
     	
     	GUI clientGUI = new GUI(this);
@@ -147,6 +145,10 @@ public class Client {
     	}
     }
     
+    public Boolean getIsConnected() {
+    	return isConnected;
+    }
+    
     public AbstractUser getThisUser() {
     	return thisUser;
     }
@@ -194,9 +196,9 @@ public class Client {
 
 		@Override
 		public void run() {
-			Packet incoming;
 			try {
-				while((incoming = (Packet) inputStream.readObject()) != null) {
+				Packet incoming = (Packet) inputStream.readObject();
+				do {
 					switch(incoming.getActionType()) {
 						// Parsing each Action Type
 						case LOGIN -> {
@@ -208,11 +210,41 @@ public class Client {
 						case SEND_MESSAGE -> {
 							// Need to fill based on DB Manager
 							// Does not require admin
+							// is a broadcast to receive information
 			                break;
 						}
 						case GET_ALL_CHATS -> {
-							// Need to fill based on DB Manager
-							// Does require admin
+							// Requesting chats from server
+							for (String line : incoming.getActionArguments()) {
+								String[] words = line.split("/");
+
+								String chatId = words[0];
+								String ownerId = words[1];
+								String roomName = words[2];
+								boolean isPrivate = words[3].equals("true") ? true : false;
+								String[] userIds = words[4].split(",");
+
+								// TODO: Consider that this is adding the owner to chatters
+								AbstractUser owner = null;
+								List<AbstractUser> chatters;
+								for (AbstractUser user : users) {
+									if (user.getId().equals(ownerId)) {
+										owner = user;
+									}
+								}
+								
+								chatters = new ArrayList<>();
+								for (AbstractUser user : users) {
+									for (String userId : userIds) {
+										if (user.getId().equals(userId)) {
+											chatters.add(user);
+										}
+									}
+								}
+								
+								Chat newChat = new Chat(owner, roomName, chatId, chatters, isPrivate);
+								chats.add(newChat);
+							}
 			                break;
 						}
 						case GET_ALL_USERS -> {
@@ -237,6 +269,9 @@ public class Client {
 								users.add(newUser);
 							}
 			                break;
+						}
+						case GET_ALL_MESSAGES -> {
+							
 						}
 						case CREATE_CHAT -> {
 							// Need to fill based on DB Manager
@@ -279,7 +314,7 @@ public class Client {
 							break;
 						}
 					}
-				}
+				} while((incoming = (Packet) inputStream.readObject()) != null && isConnected);
 			} catch (ClassNotFoundException | IOException e) {
 				e.printStackTrace();
 			}
