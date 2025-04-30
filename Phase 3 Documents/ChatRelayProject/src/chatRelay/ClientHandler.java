@@ -105,44 +105,48 @@ public class ClientHandler implements Runnable {
 
 				AbstractUser user = server.getDBManager().checkLoginCredentials(username, password);
 
+				// check if user isn't disabled too
 				if (user != null) {
 					System.out.println("WE GOT A USER!");
 					// set user id
 					this.userId = user.getId();
 
-					server.addClient(userId, this);
+					server.addClient(userId, this); // add this ClientHanlder to Server's HashMap
 
-					// send packet response
-					// 1 packet with everything? or send multiple packets?
+					System.out.println("User ID being sent to client: " + userId);
 
-					
-					
-					
-					
-					// Send user their ID + info too
-					
-					
-					
+					ArrayList<String> userInfoStringed = new ArrayList<>();
+					System.out.println("Login Was Successful - sending basic user info: " + userId + ", isAdmin() = "
+							+ user.isAdmin());
+
+					// maybe have client just set the message based on a SUCCESS
+					userInfoStringed.add("Login was successful");
+					userInfoStringed.add(userId);
+					userInfoStringed.add(String.valueOf(user.isAdmin()));
+					Packet userInfoPacket = new Packet(Status.SUCCESS, actionType.LOGIN, args, "SERVER");
+					sendPacket(userInfoPacket);
 
 					System.out.println("allUsersStringed Packet created/sent");
 					ArrayList<String> allUsersStringed = server.getDBManager().fetchAllUsers();
 					System.out.println("allUsersStringed: " + allUsersStringed);
-					Packet usersPacket = new Packet(actionType.GET_ALL_USERS, allUsersStringed, "SERVER");
+					Packet usersPacket = new Packet(Status.SUCCESS, actionType.GET_ALL_USERS, allUsersStringed,
+							"SERVER");
 					sendPacket(usersPacket);
 
-					
 //					TODO: sort chats/messages by timestamp? 
 //					TODO: Add timestamps on Chats (filter by name is good too though)? 
-					
+
 					System.out.println(user.getAllChatIds());
 
 					ArrayList<String> allChatsStringed = server.getDBManager().fetchAllChats(user);
-					Packet chatsPacket = new Packet(actionType.GET_ALL_CHATS, allChatsStringed, "SERVER");
+					Packet chatsPacket = new Packet(Status.SUCCESS, actionType.GET_ALL_CHATS, allChatsStringed,
+							"SERVER");
 					System.out.println("\n\nallChatsStringed: " + allChatsStringed);
 					sendPacket(chatsPacket);
 
 					ArrayList<String> allMessagesStringed = server.getDBManager().fetchAllMessages(user);
-					Packet messagesPacket = new Packet(actionType.GET_ALL_MESSAGES, allMessagesStringed, "SERVER");
+					Packet messagesPacket = new Packet(Status.SUCCESS, actionType.GET_ALL_MESSAGES, allMessagesStringed,
+							"SERVER");
 					System.out.println("\n\nallMessagesStringed: " + allMessagesStringed);
 					sendPacket(messagesPacket);
 
