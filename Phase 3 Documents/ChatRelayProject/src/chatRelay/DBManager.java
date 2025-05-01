@@ -51,9 +51,14 @@ public class DBManager {
 
 //----------------------		
 
-		String[] chatterIds = { "1", "2" };
-		writeNewChat("1", "writeNewChat() testing!", chatterIds, false);
-		writeNewChat("1", "writeNewChat() / with a backslash!!", chatterIds, false);
+//		String[] chatterIds = { "1", "2" };
+		ArrayList<String> chatterIds = new ArrayList<>();
+		chatterIds.add("1");
+		chatterIds.add("2");
+		
+		
+		writeNewChat("1", "writeNewChat() testing!", chatterIds, true);
+		writeNewChat("1", "writeNewChat() / with a backslash!!", chatterIds, true);
 
 //		---------------------
 
@@ -367,7 +372,8 @@ public class DBManager {
 
 	}
 
-	private void writeNewChat(String ownerId, String roomName, String[] chatterIds, boolean isPrivate) {
+//	private void writeNewChat(String ownerId, String roomName, String[] chatterIds, boolean isPrivate) {
+	public Chat writeNewChat(String ownerId, String roomName, ArrayList<String> chatterIds, boolean isPrivate) {
 		AbstractUser owner = getUserById(ownerId);
 		String sanitizedRoomName = roomName.replace("/", ESCAPED_SLASH); // a "/" inside content will break the DB
 
@@ -399,7 +405,7 @@ public class DBManager {
 			e.printStackTrace();
 		}
 
-		// TODO: BROADCAST!
+		return newChat;
 
 	}
 
@@ -429,9 +435,8 @@ public class DBManager {
 		}
 
 		return newMessage;
-		// broadcasting should happen now, where everyone with access
-//		o this message's chat will receive this data
 
+		
 	}
 
 	// private User stringToUser(String userString) {}

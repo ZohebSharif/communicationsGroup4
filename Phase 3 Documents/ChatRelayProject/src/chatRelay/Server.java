@@ -53,6 +53,10 @@ public class Server {
 			System.out.println("Server.receievePacket() SEND_MESSAGE switch fired");
 			handleSendMessage(clientId, packet);
 			break;
+		case CREATE_CHAT:
+			System.out.println("Server.receievePacket() CREATE_CHAT switch fired");
+			handleCreateChat(clientId, packet);
+			break;
 		case LOGOUT:
 			handleLogout(clientId);
 			break;
@@ -61,29 +65,38 @@ public class Server {
 		}
 	}
 
-	// done inside clienthandler now.
+	private void handleCreateChat(String clientId, Packet packet) {
+		ArrayList<String> args = packet.getActionArguments();
+		ArrayList<String> userIds = new ArrayList<>();
 
-//	private void handleLogin(String clientId, Packet packet) {
-//		String[] args = packet.getActionArguments();
-//		String username = args[0];
-//		String password = args[1];
-//
-//		AbstractUser user = dbManager.checkLoginCredentials(username, password);
-//
-//		if (user == null) {
-	////			sendErrorMessage()
+		for (String userId : args.get(0).split("/")) {
+			userIds.add(userId);
+		}
 
-//			return;
-//		}
-//
-//		ClientHandler client = clients.get(clientId);
-//
-	////		clients.put(user.getId(), client)
-//
-//		sendSuccessMessage(clientId, "Login successful");
-//
-//		clients.put(clientId, clients.get(clientId)); // after successful login
-//	}
+		// TODO: frontend should replace the "/",
+//		or Packet could have done that 
+
+		String roomName = args.get(1);
+		boolean isPrivate = args.get(2).equals("true");
+
+		Chat newChat = dbManager.writeNewChat(clientId, roomName, userIds, isPrivate);
+
+		ArrayList<String> broadcastingArgs = new ArrayList<>();
+		broadcastingArgs.add(newChat.getId());
+		broadcastingArgs.add(newChat.getOwner().getId());
+		broadcastingArgs.add(String.join("/", newChat.getChattersIds()));
+
+		Packet chatPacket = new Packet(Status.SUCCESS, actionType.NEW_CHAT_BROADCAST, broadcastingArgs, "Server");
+
+//		TODO: if not private, broadcast to every, if private, broadcast to only some
+
+		if (newChat.isPrivate()) {
+			broadcastToUsers(newChat.getChatters(), chatPacket);
+		} else {
+			broadcastToUsersConnected(chatPacket);
+		}
+
+	}
 
 	private void handleSendMessage(String clientId, Packet packet) {
 		ArrayList<String> args = packet.getActionArguments();
@@ -102,17 +115,26 @@ public class Server {
 		broadcastingArgs.add(newMessage.getChat().getId());
 
 		Packet messagePacket = new Packet(Status.SUCCESS, actionType.NEW_MESSAGE_BROADCAST, broadcastingArgs, "Server");
-		broadcast(chat.getChatters(), messagePacket);
+		broadcastToUsers(chat.getChatters(), messagePacket);
 	}
 
 	// send Packet to ALL users
-	private void broadcast(List<AbstractUser> usersToSendTo, Packet packet) {
+	// TODO: ADD TRY/CATCH ?
+	private void broadcastToUsers(List<AbstractUser> usersToSendTo, Packet packet) {
 		for (AbstractUser user : usersToSendTo) {
 			ClientHandler client = clients.get(user.getId());
 
 			if (client != null) {
 				client.sendPacket(packet);
 			}
+		}
+	}
+
+	// send Packet to Users Currently connected
+	// TODO: ADD TRY/CATCH?
+	private void broadcastToUsersConnected(Packet chatPacket) {
+		for (ClientHandler client : clients.values()) {
+			client.sendPacket(chatPacket);
 		}
 	}
 

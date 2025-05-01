@@ -61,6 +61,23 @@ public class BasicClient {
 		}
 	}
 
+	public void createChat(String chatName, boolean isPrivate, String[] userIds) {
+		System.out.println("BasicClient.createChat() fired");
+		try {
+			String joinedUsers = String.join("/", userIds); // format: "1/2/6"
+			ArrayList<String> args = new ArrayList<>();
+			args.add(joinedUsers);
+			args.add(chatName);
+			args.add(String.valueOf(isPrivate));
+
+			Packet packet = new Packet(Status.NONE, actionType.CREATE_CHAT, args, userId);
+			out.writeObject(packet);
+			out.flush();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	public void logout(String userId) {
 		try {
 			ArrayList<String> logoutArgs = new ArrayList<>();
@@ -110,22 +127,30 @@ public class BasicClient {
 				switch (incoming.getActionType()) {
 				case LOGIN -> {
 					if (incoming.getStatus() == Status.SUCCESS && args.size() >= 3) {
-						userId = args.get(1);
-						System.out.println("Logged in as: " + userId + ", Admin: " + args.get(2));
+						userId = args.get(0);
+						System.out.println("Logged in as userId: " + userId);
 					}
 
 					//
 					// dirty testing
 					// test sending a message after successfull login
 
+					
+					// TESTING TO SEND A MESSAGE
 					String chatId = "2";
 					sendMessage(userId, chatId, "TESTING sendMessage() / SEND_MESSAGE");
 
 					System.out.println("\n");
 
+					// TESTING TO CREATE A CHAT
+					String[] userIds = { "1", "2", "6" }; // Change this to real userIds in your Users.txt
+					createChat("test chat created from BasicClient!", true, userIds);
+
 				}
 //				case SEND_MESSAGE -> {
 				case NEW_MESSAGE_BROADCAST -> {
+					System.out.println("─────────────────────────────────────");
+					System.out.println("!!! RECEIVED A NEW BROADCAST !!!");
 					String messageId = args.get(0);
 					String timestamp = args.get(1);
 					String content = args.get(2);
@@ -133,7 +158,17 @@ public class BasicClient {
 					String chatId = args.get(4);
 
 					System.out.println("id:" + chatId + ", " + senderId + " at " + timestamp + ": " + content);
+					System.out.println("─────────────────────────────────────");
 				}
+
+				case NEW_CHAT_BROADCAST -> {
+					System.out.println("──────────── NEW CHAT BROADCAST ────────────");
+					for (String arg : args) {
+						System.out.println("chat info: " + arg);
+					}
+					System.out.println("─────────────────────────────────────");
+				}
+
 				case GET_ALL_USERS -> System.out.println("Handled GET_ALL_USERS\n");
 				case GET_ALL_CHATS -> System.out.println("Handled GET_ALL_CHATS\n");
 				case GET_ALL_MESSAGES -> System.out.println("Handled GET_ALL_MESSAGES\n");
