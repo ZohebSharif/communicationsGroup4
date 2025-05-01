@@ -1,6 +1,9 @@
 package chatRelay;
 
 import java.awt.*;
+
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -14,6 +17,7 @@ import javax.swing.*;
 
 public class GUI extends JFrame implements Runnable {
     private Client client;
+    private JFrame frame;
 
     public GUI(Client client) {
     	this.client = client;
@@ -30,7 +34,7 @@ public class GUI extends JFrame implements Runnable {
 	}
 	
 	private void loginPane() {
-		JFrame frame = new JFrame("Login Pane");
+		frame = new JFrame("Login Pane");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(500, 300);
         frame.setLayout(null);
@@ -136,7 +140,7 @@ public class GUI extends JFrame implements Runnable {
 	}
 	
 	private void buildUserGUI() {
-        JFrame frame = new JFrame("Chat Application");
+        frame = new JFrame("Chat Application");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(900, 600);
         frame.setLayout(new BorderLayout());
@@ -256,8 +260,8 @@ public class GUI extends JFrame implements Runnable {
         frame.setVisible(true);
 	}
 	
-	public void buildITGUI() {
-		JFrame frame = new JFrame("Chat Application - IT Admin View");
+	private void buildITGUI() {
+		frame = new JFrame("Chat Application - IT Admin View");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(900, 600);
         frame.setLayout(new BorderLayout());
@@ -392,4 +396,100 @@ public class GUI extends JFrame implements Runnable {
         // Show frame
         frame.setVisible(true);
 	}
+	
+	private void showCreateChatDialog() {
+        JDialog dialog = new JDialog(frame, "Create Chat Pane", true);
+        dialog.setSize(400, 350);
+        dialog.setLocationRelativeTo(frame);
+        dialog.setLayout(new BorderLayout());
+
+        // Header Label
+        JLabel headerLabel = new JLabel("Create Chat", SwingConstants.CENTER);
+        headerLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        headerLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        dialog.add(headerLabel, BorderLayout.NORTH);
+
+        // Form Panel
+        JPanel formPanel = new JPanel();
+        formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
+        formPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+
+        JLabel nameLabel = new JLabel("Name:");
+        JTextField nameField = new JTextField();
+        nameField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        nameField.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1, true));
+
+        formPanel.add(nameLabel);
+        formPanel.add(Box.createVerticalStrut(5));
+        formPanel.add(nameField);
+        formPanel.add(Box.createVerticalStrut(20));
+
+        JLabel groupLabel = new JLabel("Add to Group:");
+        JTextField searchField = new JTextField();
+        DefaultListModel<String> listModel = new DefaultListModel<>();
+
+        // Example data
+        String[] allUsers = {"Alice", "Bob", "Charlie", "David", "Eve", "Frank"};
+        for (String user : allUsers) listModel.addElement(user);
+
+        JList<String> userList = new JList<>(listModel);
+        userList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        JScrollPane userScrollPane = new JScrollPane(userList);
+
+        // Filter logic
+        searchField.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { filterList(); }
+            public void removeUpdate(DocumentEvent e) { filterList(); }
+            public void changedUpdate(DocumentEvent e) { filterList(); }
+
+            private void filterList() {
+                String filter = searchField.getText().toLowerCase();
+                listModel.clear();
+                for (String user : allUsers) {
+                    if (user.toLowerCase().contains(filter)) {
+                        listModel.addElement(user);
+                    }
+                }
+            }
+        });
+        
+        JScrollPane groupScrollPane = new JScrollPane(searchField);
+        groupScrollPane.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1, true));
+
+        // Add to your formPanel instead
+        formPanel.add(new JLabel("Search Users:"));
+        formPanel.add(searchField);
+        formPanel.add(Box.createVerticalStrut(10));
+        formPanel.add(new JLabel("Select Users to Add:"));
+        formPanel.add(userScrollPane);
+
+        formPanel.add(groupLabel);
+        formPanel.add(Box.createVerticalStrut(5));
+        formPanel.add(groupScrollPane);
+
+        dialog.add(formPanel, BorderLayout.CENTER);
+
+        // Buttons Panel
+        JPanel buttonPanel = new JPanel();
+        JButton createButton = new JButton("Create");
+        JButton cancelButton = new JButton("Cancel");
+
+        cancelButton.addActionListener(e -> dialog.dispose());
+
+        createButton.addActionListener(e -> {
+            String chatName = nameField.getText().trim();
+            String groupMembers = searchField.getText().trim();
+            // Handle your creation logic here
+            System.out.println("Chat Name: " + chatName);
+            System.out.println("Group Members: " + groupMembers);
+            dialog.dispose();
+        });
+
+        buttonPanel.add(createButton);
+        buttonPanel.add(cancelButton);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        dialog.getRootPane().setBorder(BorderFactory.createLineBorder(Color.BLACK, 2, true));
+        dialog.setVisible(true);
+    }
 }

@@ -115,7 +115,7 @@ public class GuiPlayground extends JFrame {
     //     messagesPanel.add(messagePane);
     // }
 
-    public static void main(String args[]) {
+    public void ITAdmin() {
         //EventQueue.invokeLater(() -> new GuiPlayground().setVisible(true));
         
         // JFrame frame = new JFrame("Login Pane");
@@ -401,4 +401,12 @@ public class GuiPlayground extends JFrame {
         // Show frame
         frame.setVisible(true);
     }
+
+    public static void main(String args[]) {
+        
+
+        
+    }
+
+    
 }

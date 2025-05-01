@@ -88,6 +88,7 @@ public class Client {
     		args.add(user.toString()); // Each Item in the list will be User.toString()
     	}
     	args.add(chatName);
+    	args.add(String.valueOf(isPrivate));
     	Packet createChat = new Packet(Status.NONE, actionType.CREATE_CHAT, args, userId); 
     	try {
     		objectStream.writeObject(createChat);
@@ -356,17 +357,32 @@ public class Client {
 							// Does require admin
 			                break;
 						}
+						case NEW_MESSAGE_BROADCAST -> {
+							String[] words = incoming.getActionArguments().get(0).split("/");
+
+							String messageId = words[0];
+							long createdAt = Long.parseLong(words[1]);
+							String content = words[2].replace(ESCAPED_SLASH, "/"); // have client replace escaped char instead
+							String authorId = words[3];
+							String chatId = words[4];
+							
+							AbstractUser author = getUserById(authorId);
+							Chat chat = getChatById(chatId);
+							
+							Message newMessage = new Message(messageId, createdAt, content, author, chat);
+							chat.addMessage(newMessage);
+						}
 						case ERROR -> {
 							// Need to fill based on DB Manager
 							// Does not require admin
 			                break;
 						}
-						case LOGOUT -> {
+						case SUCCESS -> { 
 							// Need to fill based on DB Manager
 							// Does not require admin
 							break;
 						}
-						case SUCCESS -> { 
+						case LOGOUT -> {
 							// Need to fill based on DB Manager
 							// Does not require admin
 							break;
