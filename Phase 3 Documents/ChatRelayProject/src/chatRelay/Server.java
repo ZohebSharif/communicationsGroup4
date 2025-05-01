@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 // TODO: Don't send passwords to frontend! 
+// TODO: Add something that deletes STALE connections? 
 
 public class Server {
 	private static final ConcurrentHashMap<String, ClientHandler> clients = new ConcurrentHashMap<>();
@@ -57,12 +58,66 @@ public class Server {
 			System.out.println("Server.receievePacket() CREATE_CHAT switch fired");
 			handleCreateChat(clientId, packet);
 			break;
+		case CREATE_USER:
+			System.out.println("Server.receievePacket() CREATE_USER switch fired");
+			handleCreateUser(clientId, packet);
+			break;
 		case LOGOUT:
 			handleLogout(clientId);
 			break;
 		default:
 			sendErrorMessage(clientId, "Unknown action type: " + packet.getActionType());
 		}
+	}
+
+	private void handleCreateUser(String clientId, Packet packet) {
+		ArrayList<String> broadcastingArgs = new ArrayList<>();
+
+		// Requestor must be an admin
+		if (!dbManager.getUserById(clientId).isAdmin()) {
+			broadcastingArgs.add("You're not an admin, get out of here!");
+			Packet errorPacket = new Packet(Status.ERROR, actionType.CREATE_USER, broadcastingArgs, "Server");
+			broadcastToRequestor(clientId, errorPacket);
+			return;
+		}
+
+		ArrayList<String> args = packet.getActionArguments();
+		// TODO: frontend should replace the "/",
+//		or Packet could have done that 
+
+//		TODO: VALIDATIONS:
+//		-first/lastname only letters, 
+//		-username should be alphanum
+
+		String username = args.get(0);
+		String password = args.get(1);
+		String firstname = args.get(2);
+		String lastname = args.get(3);
+		boolean isDisabled = args.get(4).equals("true");
+		boolean isAdmin = args.get(5).equals("true");
+
+		// No duplicate user names
+		// TODO: semi-major refactor to pass more than clientId, and the whole user into
+		// receivePacket() could be good
+		if (dbManager.getUserByUsername(username) != null) {
+			broadcastingArgs.add("That username already exists");
+			Packet errorPacket = new Packet(Status.ERROR, actionType.CREATE_USER, broadcastingArgs, "Server");
+			broadcastToRequestor(clientId, errorPacket);
+			return;
+		}
+
+		AbstractUser newUser = dbManager.writeNewUser(username, password, firstname, lastname, isDisabled, isAdmin);
+
+		broadcastingArgs.add(newUser.getId());
+		broadcastingArgs.add(newUser.getUserName());
+		broadcastingArgs.add(newUser.getFirstName());
+		broadcastingArgs.add(newUser.getLastName());
+		broadcastingArgs.add(String.valueOf(newUser.isAdmin()));
+		broadcastingArgs.add(String.valueOf(newUser.isDisabled()));
+
+		Packet newUserPacket = new Packet(Status.SUCCESS, actionType.NEW_USER_BROADCAST, broadcastingArgs, "Server");
+		broadcastToUsersConnected(newUserPacket);
+
 	}
 
 	private void handleCreateChat(String clientId, Packet packet) {
@@ -138,6 +193,15 @@ public class Server {
 		}
 	}
 
+	
+	// Only send packet to the initial Packet requestor
+	// TODO: ADD TRY/CATCH?
+	private void broadcastToRequestor(String requestorId, Packet packet) {
+		ClientHandler client = clients.get(requestorId);
+		client.sendPacket(packet);
+	}
+	
+	
 	public void handleLogout(String clientId) {
 		clients.remove(clientId);
 		System.out.println(clientId + " logged out and removed from clients.");

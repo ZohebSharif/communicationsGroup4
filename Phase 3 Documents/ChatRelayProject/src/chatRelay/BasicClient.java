@@ -111,6 +111,26 @@ public class BasicClient {
 		}
 	}
 
+	public void createUser(String username, String password, String firstName, String lastName, boolean isDisabled,
+			boolean isAdmin) {
+		System.out.println("BasicClient.createUser() fired");
+		try {
+			ArrayList<String> args = new ArrayList<>();
+			args.add(username);
+			args.add(password);
+			args.add(firstName);
+			args.add(lastName);
+			args.add(String.valueOf(isDisabled));
+			args.add(String.valueOf(isAdmin));
+
+			Packet packet = new Packet(Status.NONE, actionType.CREATE_USER, args, userId);
+			out.writeObject(packet);
+			out.flush();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	public void listen() {
 		System.out.println("in listen() loop");
 		try {
@@ -135,7 +155,6 @@ public class BasicClient {
 					// dirty testing
 					// test sending a message after successfull login
 
-					
 					// TESTING TO SEND A MESSAGE
 					String chatId = "2";
 					sendMessage(userId, chatId, "TESTING sendMessage() / SEND_MESSAGE");
@@ -143,8 +162,15 @@ public class BasicClient {
 					System.out.println("\n");
 
 					// TESTING TO CREATE A CHAT
-					String[] userIds = { "1", "2", "6" }; // Change this to real userIds in your Users.txt
+					String[] userIds = { "1", "2", "6" };
 					createChat("test chat created from BasicClient!", true, userIds);
+					
+					
+				    // TESTING TO CREATE A USER
+				    createUser("sarcon", "asdf", "Sara", "Connor", false, false);
+				    System.out.println("\n");
+					
+					
 
 				}
 //				case SEND_MESSAGE -> {
@@ -169,6 +195,13 @@ public class BasicClient {
 					System.out.println("─────────────────────────────────────");
 				}
 
+				case NEW_USER_BROADCAST -> {
+					System.out.println("──────────── NEW USER BROADCAST ────────────");
+					for (String arg : args) {
+						System.out.println("user info: " + arg);
+					}
+					System.out.println("─────────────────────────────────────");
+				}
 				case GET_ALL_USERS -> System.out.println("Handled GET_ALL_USERS\n");
 				case GET_ALL_CHATS -> System.out.println("Handled GET_ALL_CHATS\n");
 				case GET_ALL_MESSAGES -> System.out.println("Handled GET_ALL_MESSAGES\n");

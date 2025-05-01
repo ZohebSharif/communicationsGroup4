@@ -55,8 +55,7 @@ public class DBManager {
 		ArrayList<String> chatterIds = new ArrayList<>();
 		chatterIds.add("1");
 		chatterIds.add("2");
-		
-		
+
 		writeNewChat("1", "writeNewChat() testing!", chatterIds, true);
 		writeNewChat("1", "writeNewChat() / with a backslash!!", chatterIds, true);
 
@@ -193,18 +192,18 @@ public class DBManager {
 		return stringedChats;
 	}
 
-	// Retrieve  Messages that User has access too. Admin gets all though
+	// Retrieve Messages that User has access too. Admin gets all though
 	public ArrayList<String> fetchAllMessages(AbstractUser user) {
 		ArrayList<String> stringedMessages = new ArrayList<>();
 
 //		give admin everything
 		if (user.isAdmin()) {
-			for (Message message: messages.values()) {
+			for (Message message : messages.values()) {
 				stringedMessages.add(message.toString());
 			}
 		} else {
 			for (Chat chat : user.getChats()) {
-				
+
 				for (Message message : chat.getMessages()) {
 					stringedMessages.add(message.toString());
 				}
@@ -341,8 +340,9 @@ public class DBManager {
 	// public List<Message> fetchAllMessages() {}
 	// public List<Chat> getChatsForUser(String userId) {}
 
-	private void writeNewUser(String username, String password, String firstname, String lastname, boolean isDisabled,
-			boolean isAdmin) {
+//	private void writeNewUser(String username, String password, String firstname, String lastname, boolean isDisabled,
+	public AbstractUser writeNewUser(String username, String password, String firstname, String lastname,
+			boolean isDisabled, boolean isAdmin) {
 		// TODO: consider if "/" char is ever used. Have server reject the packet if
 		// anything except password has a "/".
 
@@ -369,7 +369,7 @@ public class DBManager {
 			System.out.println("Error writing new user: " + e.getMessage());
 			e.printStackTrace();
 		}
-
+		return newUser;
 	}
 
 //	private void writeNewChat(String ownerId, String roomName, String[] chatterIds, boolean isPrivate) {
@@ -409,7 +409,8 @@ public class DBManager {
 
 	}
 
-	// by returning new message, it lets my Server have access to that message which is needed!
+	// by returning new message, it lets my Server have access to that message which
+	// is needed!
 //	public void writeNewMessage(String content, String authorId, String chatId) {
 	public Message writeNewMessage(String content, String authorId, String chatId) {
 		AbstractUser author = getUserById(authorId);
@@ -436,7 +437,6 @@ public class DBManager {
 
 		return newMessage;
 
-		
 	}
 
 	// private User stringToUser(String userString) {}
@@ -469,6 +469,7 @@ public class DBManager {
 		}
 		return null;
 	}
+
 
 //	 public Boolean usernameExists(String name) {
 //		 
