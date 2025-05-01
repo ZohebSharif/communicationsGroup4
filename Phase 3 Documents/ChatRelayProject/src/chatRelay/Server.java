@@ -48,7 +48,7 @@ public class Server {
 		System.out.println("Server.receivePacket() fired");
 		switch (packet.getActionType()) {
 //		case LOGIN:
-//			handleLogin(clientId, packet);
+//		 	takes place on clientHandler
 //			break;
 		case SEND_MESSAGE:
 			System.out.println("Server.receievePacket() SEND_MESSAGE switch fired");
@@ -62,12 +62,35 @@ public class Server {
 			System.out.println("Server.receievePacket() CREATE_USER switch fired");
 			handleCreateUser(clientId, packet);
 			break;
+		case UPDATE_USER:
+			System.out.println("Server.receievePacket() CREATE_USER switch fired");
+			handleUpdateUser(clientId, packet);
+			break;
 		case LOGOUT:
 			handleLogout(clientId);
 			break;
 		default:
 			sendErrorMessage(clientId, "Unknown action type: " + packet.getActionType());
 		}
+	}
+
+	private void handleUpdateUser(String clientId, Packet packet) {
+//		TODO: 1) (low priority) Admins cant enable/disable admins
+//		TODO: 2) (low priority) can't disable twice (useful to signal something weird on frontend) 
+//		TODO: 3) (low priority) make sure user is found 
+
+		ArrayList<String> broadcastingArgs = new ArrayList<>();
+		ArrayList<String> args = packet.getActionArguments();
+		String userIdToUpdate = args.get(0);
+		boolean isDisabled = args.get(1).equals("true");
+
+		AbstractUser updatedUser = dbManager.updateUserIsDisabled(userIdToUpdate, isDisabled);
+		broadcastingArgs.add(updatedUser.getId());
+		broadcastingArgs.add(String.valueOf(updatedUser.isDisabled()));
+		
+		Packet updatedUserPacket = new Packet(Status.SUCCESS, actionType.UPDATED_USER_BROADCAST, broadcastingArgs, "Server");
+		broadcastToUsersConnected(updatedUserPacket);
+
 	}
 
 	private void handleCreateUser(String clientId, Packet packet) {
@@ -193,15 +216,13 @@ public class Server {
 		}
 	}
 
-	
 	// Only send packet to the initial Packet requestor
 	// TODO: ADD TRY/CATCH?
 	private void broadcastToRequestor(String requestorId, Packet packet) {
 		ClientHandler client = clients.get(requestorId);
 		client.sendPacket(packet);
 	}
-	
-	
+
 	public void handleLogout(String clientId) {
 		clients.remove(clientId);
 		System.out.println(clientId + " logged out and removed from clients.");
@@ -213,6 +234,7 @@ public class Server {
 	public void sendSuccessMessage(String userId, String successMessage) {
 	}
 
+//	TODO : Probabl delete as we already have a 'Broadcast' function that does this?
 	// instead get active userids living on clienthandler??
 	public void sendPacketToUsers(Packet packet, String[] userIds) {
 		for (String userId : userIds) {

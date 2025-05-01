@@ -131,6 +131,21 @@ public class BasicClient {
 		}
 	}
 
+	public void updateUserIsDisabled(String targetUserId, boolean shouldBeDisabled) {
+		System.out.println("BasicClient.updateUserIsDisabled() fired");
+		try {
+			ArrayList<String> args = new ArrayList<>();
+			args.add(targetUserId);
+			args.add(String.valueOf(shouldBeDisabled));
+
+			Packet packet = new Packet(Status.NONE, actionType.UPDATE_USER, args, userId);
+			out.writeObject(packet);
+			out.flush();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	public void listen() {
 		System.out.println("in listen() loop");
 		try {
@@ -164,13 +179,13 @@ public class BasicClient {
 					// TESTING TO CREATE A CHAT
 					String[] userIds = { "1", "2", "6" };
 					createChat("test chat created from BasicClient!", true, userIds);
-					
-					
-				    // TESTING TO CREATE A USER
-				    createUser("sarcon", "asdf", "Sara", "Connor", false, false);
-				    System.out.println("\n");
-					
-					
+
+					// TESTING TO CREATE A USER
+					createUser("sarcon", "asdf", "Sara", "Connor", false, false);
+					System.out.println("\n");
+
+					// TESTING TO UPDATE USER'S isDisabled()
+					updateUserIsDisabled("8", true); // this is Bill Samsung
 
 				}
 //				case SEND_MESSAGE -> {
@@ -200,6 +215,13 @@ public class BasicClient {
 					for (String arg : args) {
 						System.out.println("user info: " + arg);
 					}
+					System.out.println("─────────────────────────────────────");
+				}
+
+				case UPDATED_USER_BROADCAST -> {
+					System.out.println("──────────── USER STATUS UPDATED ────────────");
+					System.out.println("UserID: " + args.get(0));
+					System.out.println("IsDisabled: " + args.get(1));
 					System.out.println("─────────────────────────────────────");
 				}
 				case GET_ALL_USERS -> System.out.println("Handled GET_ALL_USERS\n");

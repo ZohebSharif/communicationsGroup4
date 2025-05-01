@@ -463,6 +463,8 @@ public class DBManager {
 
 	public AbstractUser checkLoginCredentials(String username, String password) {
 		AbstractUser user = getUserByUsername(username);
+		if (user == null)
+			return null;
 
 		if (user.getPassword().replace(ESCAPED_SLASH, "/").equals(password)) {
 			return user;
@@ -470,6 +472,30 @@ public class DBManager {
 		return null;
 	}
 
+	public AbstractUser updateUserIsDisabled(String userId, boolean isDisabled) {
+		AbstractUser user = getUserById(userId);
+		if (user == null)
+			return null;
+
+		user.updateIsDisabled(isDisabled);
+
+		try {
+			File file = new File(this.userTxtFilename);			
+			FileWriter writer = new FileWriter(file, false); // false is for over-writing 
+
+			for (AbstractUser u : users.values()) {
+				writer.write(u.toString() + "\n"); 
+			}
+
+			writer.close();
+		} catch (IOException e) {
+			System.out.println("Error updating user file: " + e.getMessage());
+			e.printStackTrace();
+		}
+
+		return user;
+
+	}
 
 //	 public Boolean usernameExists(String name) {
 //		 
