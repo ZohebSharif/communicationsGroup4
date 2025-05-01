@@ -15,7 +15,7 @@ public abstract class AbstractUser {
     private List<Chat> chats = new ArrayList<>();
     
     // dones't take in id (this is when Admin creates a new user) 
-    public AbstractUser(String username, String password, String firstname, String lastname, boolean isDisabled, boolean isAdmin  ) {
+    public AbstractUser(String username, String password, String firstname, String lastname, boolean isDisabled, boolean isAdmin) {
     	this.id = String.valueOf(++count);
     	this.username = username;
     	this.password = password;
@@ -26,7 +26,7 @@ public abstract class AbstractUser {
     }
     
     // when user is read in from db .txt
-    public AbstractUser(String username, String password, String id, String firstname, String lastname, boolean isDisabled, boolean isAdmin  ) {
+    public AbstractUser(String username, String password, String id, String firstname, String lastname, boolean isDisabled, boolean isAdmin) {
     	++count;
 
     	this.username = username;
@@ -36,6 +36,16 @@ public abstract class AbstractUser {
     	this.lastName = lastname;
     	this.isDisabled = isDisabled;
     	this.isAdmin = isAdmin;
+    }
+    
+    // constructor for client to make users (No Password Passed)
+    public AbstractUser(String username, String firstName, String lastName, boolean isDisabled, boolean isAdmin) {
+    	this.username = username;
+    	this.firstName = firstName;
+    	this.lastName = lastName;
+    	this.isDisabled = isDisabled;
+    	this.isAdmin = isAdmin;
+    	this.password = "******";
     }
     
     public void addChat(Chat chat) {

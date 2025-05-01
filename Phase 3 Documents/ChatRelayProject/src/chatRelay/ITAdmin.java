@@ -13,4 +13,9 @@ public class ITAdmin extends AbstractUser {
 			boolean isAdmin) {
 		super(username, password, firstName, lastName, isDisabled, isAdmin);
 	}
+	
+	// constructor for client to make users (No Password Passed)
+	public ITAdmin(String username, String firstName, String lastName, boolean isDisabled, boolean isAdmin) {
+		super(username, firstName, lastName, isDisabled, isAdmin);
+	}
 }
