@@ -101,9 +101,7 @@ public class Client {
     		e.printStackTrace();
     	}
     }
-    
-    public void updateState() {}
-    
+        
     public void createUser(String username, String password, String firstname, String lastname, Boolean isAdmin) {
     	if (isAdmin) {
         	ArrayList<String> args = new ArrayList<>();
@@ -161,6 +159,10 @@ public class Client {
     	} catch (IOException e) {
     		e.printStackTrace();
     	}
+    }
+    
+    public void updateState() {
+    	clientGUI.update();
     }
     
     public Boolean getIsConnected() {
@@ -256,12 +258,6 @@ public class Client {
 							}
 			                break;
 						}
-						case SEND_MESSAGE -> {
-							// Need to fill based on DB Manager
-							// Does not require admin
-							// is a broadcast to receive information
-			                break;
-						}
 						case GET_ALL_CHATS -> {
 							// Requesting chats from server
 							for (String line : incoming.getActionArguments()) {
@@ -333,7 +329,7 @@ public class Client {
 						case UPDATED_USER_BROADCAST -> {
 							List<String> args = incoming.getActionArguments();
 							AbstractUser updateUser = getUserById(args.get(0));
-							updateUser.updateIsDisabled(Boolean.parseBoolean(args.get(1)));
+							//updateUser.updateIsDisabled(Boolean.parseBoolean(args.get(1)));
 						}
 						case NEW_USER_BROADCAST -> {
 							List<String> args = incoming.getActionArguments();

@@ -492,4 +492,8 @@ public class GUI extends JFrame implements Runnable {
         dialog.getRootPane().setBorder(BorderFactory.createLineBorder(Color.BLACK, 2, true));
         dialog.setVisible(true);
     }
+
+	public void update() {
+		
+	}
 }
