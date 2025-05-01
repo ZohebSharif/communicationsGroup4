@@ -121,6 +121,8 @@ public class BasicClient {
 					String chatId = "2";
 					sendMessage(userId, chatId, "TESTING sendMessage() / SEND_MESSAGE");
 
+					System.out.println("\n");
+
 				}
 //				case SEND_MESSAGE -> {
 				case NEW_MESSAGE_BROADCAST -> {
@@ -132,9 +134,9 @@ public class BasicClient {
 
 					System.out.println("id:" + chatId + ", " + senderId + " at " + timestamp + ": " + content);
 				}
-				case GET_ALL_USERS -> System.out.println("Handled GET_ALL_USERS");
-				case GET_ALL_CHATS -> System.out.println("Handled GET_ALL_CHATS");
-				case GET_ALL_MESSAGES -> System.out.println("Handled GET_ALL_MESSAGES");
+				case GET_ALL_USERS -> System.out.println("Handled GET_ALL_USERS\n");
+				case GET_ALL_CHATS -> System.out.println("Handled GET_ALL_CHATS\n");
+				case GET_ALL_MESSAGES -> System.out.println("Handled GET_ALL_MESSAGES\n");
 				case SUCCESS -> System.out.println("Action successful.");
 				case ERROR -> {
 					if (!args.isEmpty()) {
