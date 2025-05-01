@@ -18,6 +18,9 @@ public class Client {
     private String targetIP;
     private String targetPort;
     
+    private String username;
+    private String password;
+    
     private List<Chat> chats;
     private List<AbstractUser> users;
     private String userId;
@@ -57,6 +60,9 @@ public class Client {
     }
     
     public void login(String username, String password) {
+    	this.username = username;
+    	this.password = password;
+    	
     	ArrayList<String> args = new ArrayList<>();
     	args.add(username);
     	args.add(password);
@@ -82,11 +88,10 @@ public class Client {
     	}
     }
     
-    public void createChat(String chatName, Boolean isPrivate) {
+    public void createChat(String[] userIds, String chatName, Boolean isPrivate) {
     	ArrayList<String> args = new ArrayList<>();
-    	for (AbstractUser user : users) {
-    		args.add(user.toString()); // Each Item in the list will be User.toString()
-    	}
+    	String joinedUsers = String.join("/", userIds);
+    	args.add(joinedUsers);
     	args.add(chatName);
     	args.add(String.valueOf(isPrivate));
     	Packet createChat = new Packet(Status.NONE, actionType.CREATE_CHAT, args, userId); 
@@ -116,26 +121,14 @@ public class Client {
     	}
     }
     
-    public void enableUser(String userId) {
+    public void updateUser(String userId, boolean isDisabled) {
     	if (isITAdmin) {
-        	ArrayList<String> args = new ArrayList<>();
+    		ArrayList<String> args = new ArrayList<>();
         	args.add(userId);
+        	args.add(String.valueOf(isDisabled));
     		Packet enableUser = new Packet(Status.NONE, actionType.ENABLE_USER, args, this.userId);
     		try {
         		objectStream.writeObject(enableUser);
-        	} catch (IOException e) {
-        		e.printStackTrace();
-        	}
-    	}
-    }
-    
-    public void disableUser(String userId) {
-    	if (isITAdmin) {
-        	ArrayList<String> args = new ArrayList<>();
-        	args.add(userId);
-    		Packet disableUser = new Packet(Status.NONE, actionType.DISABLE_USER, args, this.userId);
-    		try {
-        		objectStream.writeObject(disableUser);
         	} catch (IOException e) {
         		e.printStackTrace();
         	}
@@ -337,25 +330,31 @@ public class Client {
 								chat.addMessage(newMessage);
 							}
 						}
-						case CREATE_CHAT -> {
-							// Need to fill based on DB Manager
-							// Does not require admin
-			                break;
+						case UPDATED_USER_BROADCAST -> {
+							List<String> args = incoming.getActionArguments();
+							AbstractUser updateUser = getUserById(args.get(0));
+							updateUser.updateIsDisabled(Boolean.parseBoolean(args.get(1)));
 						}
-						case CREATE_USER -> {
-							// Need to fill based on DB Manager
-							// Does require admin
-			                break;
+						case NEW_USER_BROADCAST -> {
+							List<String> args = incoming.getActionArguments();
+							
+							String username = args.get(0);
+							String firstname = args.get(2);
+							String lastname = args.get(3);
+							boolean isDisabled = args.get(4).equals("true");
+							boolean isAdmin = args.get(5).equals("true");
+							
+							AbstractUser newUser;
+
+							if (isAdmin) {
+								newUser = new ITAdmin(username, firstname, lastname, isDisabled, isAdmin);
+							} else {
+								newUser = new User(username, firstname, lastname, isDisabled, isAdmin);
+							}
+							users.add(newUser);
 						}
-						case ENABLE_USER -> {
-							// Need to fill based on DB Manager
-							// Does require admin
-			                break;
-						}
-						case DISABLE_USER -> {
-							// Need to fill based on DB Manager
-							// Does require admin
-			                break;
+						case NEW_CHAT_BROADCAST -> {
+							
 						}
 						case NEW_MESSAGE_BROADCAST -> {
 							String[] words = incoming.getActionArguments().get(0).split("/");
@@ -373,13 +372,12 @@ public class Client {
 							chat.addMessage(newMessage);
 						}
 						case ERROR -> {
-							// Need to fill based on DB Manager
-							// Does not require admin
+							isConnected = false;
+							login(username, password);
 			                break;
 						}
 						case SUCCESS -> { 
-							// Need to fill based on DB Manager
-							// Does not require admin
+							// Update State or do nothing
 							break;
 						}
 						case LOGOUT -> {
@@ -388,8 +386,7 @@ public class Client {
 							break;
 						}
 						default -> {
-							// Need to fill based on DB Manager
-							// Does not require admin
+							System.out.println("Invalid Action Type: " + String.valueOf(incoming.getActionType()));
 							break;
 						}
 					}
