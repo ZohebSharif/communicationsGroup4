@@ -208,6 +208,14 @@ public class BasicClient {
 					// version that should fail:
 //					addUserToChat("3", "1"); // adds userId 3 into chatId 2. Must be done by Chatroom Owner!
 
+// 					TESTING TO ADD A USER TO A CHAT
+					
+					addUserToChat("5", "2"); // "5" is the User, "2" is the chatroom  
+					System.out.println("\n");
+
+//					addUserToChat("3", "1"); // Should fail since i'm not owner of chatroom 1
+					System.out.println("\n");
+
 				}
 //				case SEND_MESSAGE -> {
 				case NEW_MESSAGE_BROADCAST -> {

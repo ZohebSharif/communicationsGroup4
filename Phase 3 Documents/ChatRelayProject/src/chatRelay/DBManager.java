@@ -497,21 +497,24 @@ public class DBManager {
 
 	}
 
-	public boolean addUserToChat(String userId, String chatId, String packetSenderUserId) {
+//	public boolean addUserToChat(String userId, String chatId, String packetSenderUserId) {
+	public Chat addUserToChat(String userId, String chatId, String packetSenderUserId) {
 		AbstractUser userToAdd = getUserById(userId);
 		AbstractUser packetSender = getUserById(packetSenderUserId);
 		Chat chat = getChatById(chatId);
 
-		// validations
-		if (userToAdd == null || chat == null || !packetSenderUserId.equals(chat.getOwner().getId()))
-			return false;
+		// requestor must be the owner of the chat
+		// userToAdd must not already be on the chat
+		if (userToAdd == null || chat == null || !packetSenderUserId.equals(chat.getOwner().getId())
+				|| userToAdd.getAllChatIds().contains(chatId))
+			return null;
 
 		chat.addChatter(userToAdd);
 		userToAdd.addChat(chat);
 
 		try {
 			File file = new File(this.chatTxtFilename);
-			FileWriter writer = new FileWriter(file, false); 
+			FileWriter writer = new FileWriter(file, false);
 
 			for (Chat c : chats.values()) {
 				writer.write(c.toString() + "\n");
@@ -522,8 +525,8 @@ public class DBManager {
 			System.out.println("Error writing chat updates: " + e.getMessage());
 			e.printStackTrace();
 		}
-		
-		return true;
+
+		return chat;
 	}
 //	 public Boolean usernameExists(String name) {
 //		 
