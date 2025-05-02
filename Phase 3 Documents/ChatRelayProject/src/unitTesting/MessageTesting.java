@@ -12,7 +12,7 @@ import chatRelay.Chat;
 public class MessageTesting {
     
     private Message message;
-    private Message messageWithoutChat;
+    private Message newMessage;
     private User user;
     private Chat chat;
     private final String MESSAGE_ID = "123";
@@ -21,17 +21,17 @@ public class MessageTesting {
     
     @BeforeEach
     public void setUp() {
-        // create a test
+        // create a test user
         user = new User("testuser", "password", "USER_123", "Zoheb", "Sharif", false, false);
         
         // create a test chat
         chat = new Chat(user, "Test Chat", "CHAT_123", null, false);
         
-        // create a a test message with other constructor
+        // create a a test message with full constructor
         message = new Message(MESSAGE_ID, TIMESTAMP, CONTENT, user, chat);
         
-        // create a test message
-        messageWithoutChat = new Message(CONTENT, user);
+        // create a test message with normal constructor
+        newMessage = new Message(CONTENT, user, chat);
     }
     
     @Test
@@ -47,23 +47,23 @@ public class MessageTesting {
     }
     
     @Test
-    @DisplayName("Test simple constructor initialization")
-    public void testSimpleConstructor() {
-    	// verify the message was created with all attributes using simple constructor
-        assertNotNull(messageWithoutChat, "Message should not be null");
-        assertNotNull(messageWithoutChat.getId(), "ID should be generated");
-        assertTrue(messageWithoutChat.getCreatedAt() > 0, "Timestamp should be set");
-        assertEquals(CONTENT, messageWithoutChat.getContent(), "Content should match");
-        assertEquals(user, messageWithoutChat.getSender(), "Author should match");
-        assertNull(messageWithoutChat.getChat(), "Chat should be null");
+    @DisplayName("Test normal constructor initialization")
+    public void testNormalConstructor() {
+    	// verify the message was created with all attributes using normal constructor
+        assertNotNull(newMessage, "Message should not be null");
+        assertNotNull(newMessage.getId(), "ID should be generated");
+        assertTrue(newMessage.getCreatedAt() > 0, "Timestamp should be set");
+        assertEquals(CONTENT, newMessage.getContent(), "Content should match");
+        assertEquals(user, newMessage.getSender(), "Author should match");
+        assertEquals(chat, newMessage.getChat(), "Chat should match");
     }
     
     @Test
     @DisplayName("Test ID generation is sequential")
     public void testIdGeneration() {
     	// make two messages in a row to test ID generation
-        Message firstMsg = new Message("First message", user);
-        Message secondMsg = new Message("Second message", user);
+        Message firstMsg = new Message("First message", user, chat);
+        Message secondMsg = new Message("Second message", user, chat);
         
         // IDs should be unique and sequential
         assertNotEquals(firstMsg.getId(), secondMsg.getId(), "Message IDs should be different");
@@ -107,7 +107,7 @@ public class MessageTesting {
     @Test
     @DisplayName("Test toString method formatting")
     public void testToString() {
-        String expected = CONTENT + " (from: " + user.getUserName() + " at: " + TIMESTAMP + ")";
+        String expected = MESSAGE_ID + "/" + TIMESTAMP + "/" + CONTENT + "/" + user.getId() + "/" + chat.getId();
         assertEquals(expected, message.toString(), "toString() should return correctly formatted string");
     }
     
@@ -124,7 +124,7 @@ public class MessageTesting {
     @Test
     @DisplayName("Test message with empty content")
     public void testEmptyContent() {
-        Message emptyMessage = new Message("", user);
+        Message emptyMessage = new Message("", user, chat);
         assertEquals("", emptyMessage.getContent(), "Empty content should be allowed");
     }
     
@@ -132,9 +132,9 @@ public class MessageTesting {
     @DisplayName("Test multiple messages in chat")
     public void testMultipleMessagesInChat() {
         // Create multiple messages
-        Message message1 = new Message("First message", user);
-        Message message2 = new Message("Second message", user);
-        Message message3 = new Message("Third message", user);
+        Message message1 = new Message("First message", user, chat);
+        Message message2 = new Message("Second message", user, chat);
+        Message message3 = new Message("Third message", user, chat);
         
         // Add all messages to chat
         chat.addMessage(message1);
