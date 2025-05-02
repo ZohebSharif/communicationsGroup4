@@ -497,16 +497,16 @@ public class DBManager {
 
 	}
 
-//	public boolean addUserToChat(String userId, String chatId, String packetSenderUserId) {
 	public Chat addUserToChat(String userId, String chatId, String packetSenderUserId) {
 		AbstractUser userToAdd = getUserById(userId);
 		AbstractUser packetSender = getUserById(packetSenderUserId);
 		Chat chat = getChatById(chatId);
 
 		// requestor must be the owner of the chat
+		// chat owner can't remove themselves
 		// userToAdd must not already be on the chat
 		if (userToAdd == null || chat == null || !packetSenderUserId.equals(chat.getOwner().getId())
-				|| userToAdd.getAllChatIds().contains(chatId))
+				|| userToAdd.getAllChatIds().contains(chatId) || userId.equals(packetSenderUserId))
 			return null;
 
 		chat.addChatter(userToAdd);
@@ -528,6 +528,39 @@ public class DBManager {
 
 		return chat;
 	}
+
+	public Chat removeUserFromChat(String userId, String chatId, String packetSenderUserId) {
+		AbstractUser userToRemove = getUserById(userId);
+		AbstractUser packetSender = getUserById(packetSenderUserId);
+		Chat chat = getChatById(chatId);
+
+		// requestor must be the owner of the chat
+		// user must be part of the chat already
+		// prevent owner from removing themselves
+		if (userToRemove == null || chat == null || !packetSenderUserId.equals(chat.getOwner().getId())
+				|| !userToRemove.getAllChatIds().contains(chatId) || userId.equals(packetSenderUserId))
+			return null;
+
+		chat.removeChatter(userToRemove);
+		userToRemove.removeChat(chat);
+
+		try {
+			File file = new File(this.chatTxtFilename);
+			FileWriter writer = new FileWriter(file, false);
+
+			for (Chat c : chats.values()) {
+				writer.write(c.toString() + "\n");
+			}
+
+			writer.close();
+		} catch (IOException e) {
+			System.out.println("Error writing chat updates: " + e.getMessage());
+			e.printStackTrace();
+		}
+
+		return chat;
+	}
+
 //	 public Boolean usernameExists(String name) {
 //		 
 //	 }

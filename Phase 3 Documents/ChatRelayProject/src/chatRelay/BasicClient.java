@@ -161,6 +161,21 @@ public class BasicClient {
 		}
 	}
 
+	public void removeUserFromChat(String userIdToRemove, String chatId) {
+		System.out.println("BasicClient.removeUserFromChat() fired");
+		try {
+			ArrayList<String> args = new ArrayList<>();
+			args.add(userIdToRemove);
+			args.add(chatId);
+
+			Packet removeUserPacket = new Packet(Status.NONE, actionType.REMOVE_USER_FROM_CHAT, args, userId);
+			out.writeObject(removeUserPacket);
+			out.flush();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	public void listen() {
 		System.out.println("in listen() loop");
 		try {
@@ -209,12 +224,20 @@ public class BasicClient {
 //					addUserToChat("3", "1"); // adds userId 3 into chatId 2. Must be done by Chatroom Owner!
 
 // 					TESTING TO ADD A USER TO A CHAT
-					
-					addUserToChat("5", "2"); // "5" is the User, "2" is the chatroom  
+
+					addUserToChat("5", "2"); // "5" is the User, "2" is the chatroom
 					System.out.println("\n");
 
 //					addUserToChat("3", "1"); // Should fail since i'm not owner of chatroom 1
 					System.out.println("\n");
+
+					
+// ++++++++++++++++++++++++++++++++++++++++++++++					
+				// first arg is userId, second arg is chatId	
+					// TESTING TO REMOVE A USER FROM CHAT
+					removeUserFromChat("7", "2"); // remove 'Sarah Connor' w/ user id for 7, from chat room 2 
+					System.out.println("\n");
+
 
 				}
 //				case SEND_MESSAGE -> {
@@ -266,6 +289,20 @@ public class BasicClient {
 
 					System.out.println("─────────────────────────────────────");
 				}
+
+				case REMOVE_USER_FROM_CHAT_BROADCAST -> {
+					System.out.println("──────────── USER REMOVED FROM CHAT BROADCAST ────────────");
+
+					if (incoming.getStatus() == Status.ERROR) {
+						System.out.println("Error: " + args.get(0));
+					} else {
+						System.out.println("UserID removed: " + args.get(0));
+						System.out.println("ChatID: " + args.get(1));
+					}
+
+					System.out.println("─────────────────────────────────────");
+				}
+
 				case GET_ALL_USERS -> System.out.println("Handled GET_ALL_USERS\n");
 				case GET_ALL_CHATS -> System.out.println("Handled GET_ALL_CHATS\n");
 				case GET_ALL_MESSAGES -> System.out.println("Handled GET_ALL_MESSAGES\n");

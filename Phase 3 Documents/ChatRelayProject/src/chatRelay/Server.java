@@ -71,16 +71,40 @@ public class Server {
 			System.out.println("Server.receievePacket() ADD_USER_TO_CHAT switch fired");
 			handleAddUserToChat(clientId, packet);
 			break;
-//		case REMOVE_USER_FROM_CHAT:
-//			System.out.println("Server.receievePacket REMOVE_USER_FROM_CHAT switch fired");
-//			handleRemoveUserFromChat(clientId, packet);
-//			break;
+		case REMOVE_USER_FROM_CHAT:
+			System.out.println("Server.receievePacket REMOVE_USER_FROM_CHAT switch fired");
+			handleRemoveUserFromChat(clientId, packet);
+			break;
 
 		case LOGOUT:
 			handleLogout(clientId);
 			break;
 		default:
 			sendErrorMessage(clientId, "Unknown action type: " + packet.getActionType());
+		}
+	}
+
+	private void handleRemoveUserFromChat(String clientId, Packet packet) {
+		ArrayList<String> args = packet.getActionArguments();
+		String userIdToRemove = args.get(0);
+		String chatId = args.get(1);
+
+		Chat chat = dbManager.removeUserFromChat(userIdToRemove, chatId, clientId);
+		ArrayList<String> broadcastingArgs = new ArrayList<>();
+
+		if (chat == null) {
+			broadcastingArgs.add("Cannot to remove User from the Chat");
+
+			Packet errorPacket = new Packet(Status.ERROR, actionType.REMOVE_USER_FROM_CHAT_BROADCAST, broadcastingArgs,
+					"Server");
+			broadcastToUsersConnected(errorPacket);
+		} else {
+			broadcastingArgs.add(userIdToRemove);
+			broadcastingArgs.add(chatId);
+
+			Packet successPacket = new Packet(Status.SUCCESS, actionType.REMOVE_USER_FROM_CHAT_BROADCAST,
+					broadcastingArgs, "Server");
+			broadcastToUsersConnected(successPacket);
 		}
 	}
 
@@ -116,7 +140,6 @@ public class Server {
 			for (Message message : messagesInChat) {
 				broadcastingArgs.add(message.toString());
 			}
-
 
 			Packet chatroomInfoPacket = new Packet(Status.SUCCESS, actionType.ADD_USER_TO_CHAT_BROADCAST,
 					broadcastingArgs, "Server");
