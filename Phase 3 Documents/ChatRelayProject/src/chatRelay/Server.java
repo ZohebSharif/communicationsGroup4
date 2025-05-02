@@ -85,26 +85,26 @@ public class Server {
 	}
 
 	private void handleAddUserToChat(String clientId, Packet packet) {
-		ArrayList<String> args = packet.getActionArguments();
-		String userIdToAdd = args.get(0);
-		String chatId = args.get(1);
-
-		boolean operationSucceeded = dbManager.addUserToChat(userIdToAdd, chatId, clientId);
-		ArrayList<String> broadcastingArgs = new ArrayList<>();
-
-		if (!operationSucceeded) {
-			broadcastingArgs.add("Unable to add User to the Chat");
-			broadcastToUsersConnected(
-					new Packet(Status.ERROR, actionType.ADD_USER_TO_CHAT_BROADCAST, broadcastingArgs, "Server"));
-		} else {
-			broadcastingArgs.add(userIdToAdd);
-			broadcastingArgs.add(chatId);
-
-			// Client has the data in memory to do the rest
-			broadcastToUsersConnected(
-					new Packet(Status.SUCCESS, actionType.ADD_USER_TO_CHAT_BROADCAST, broadcastingArgs, "Server"));
-
-		}
+//		ArrayList<String> args = packet.getActionArguments();
+//		String userIdToAdd = args.get(0);
+//		String chatId = args.get(1);
+//
+//		boolean operationSucceeded = dbManager.addUserToChat(userIdToAdd, chatId, clientId);
+//		ArrayList<String> broadcastingArgs = new ArrayList<>();
+//
+//		if (!operationSucceeded) {
+//			broadcastingArgs.add("Unable to add User to the Chat");
+//			broadcastToUsersConnected(
+//					new Packet(Status.ERROR, actionType.ADD_USER_TO_CHAT_BROADCAST, broadcastingArgs, "Server"));
+//		} else {
+//			broadcastingArgs.add(userIdToAdd);
+//			broadcastingArgs.add(chatId);
+//
+//			// Client has the data in memory to do the rest
+//			broadcastToUsersConnected(
+//					new Packet(Status.SUCCESS, actionType.ADD_USER_TO_CHAT_BROADCAST, broadcastingArgs, "Server"));
+//
+//		}
 	}
 
 //	private void handleRemoveUserFromChat(String clientId, Packet packet) {
