@@ -480,11 +480,11 @@ public class DBManager {
 		user.updateIsDisabled(isDisabled);
 
 		try {
-			File file = new File(this.userTxtFilename);			
-			FileWriter writer = new FileWriter(file, false); // false is for over-writing 
+			File file = new File(this.userTxtFilename);
+			FileWriter writer = new FileWriter(file, false); // false is for over-writing
 
 			for (AbstractUser u : users.values()) {
-				writer.write(u.toString() + "\n"); 
+				writer.write(u.toString() + "\n");
 			}
 
 			writer.close();
@@ -497,6 +497,34 @@ public class DBManager {
 
 	}
 
+	public boolean addUserToChat(String userId, String chatId, String packetSenderUserId) {
+		AbstractUser userToAdd = getUserById(userId);
+		AbstractUser packetSender = getUserById(packetSenderUserId);
+		Chat chat = getChatById(chatId);
+
+		// validations
+		if (userToAdd == null || chat == null || !packetSenderUserId.equals(chat.getOwner().getId()))
+			return false;
+
+		chat.addChatter(userToAdd);
+		userToAdd.addChat(chat);
+
+		try {
+			File file = new File(this.chatTxtFilename);
+			FileWriter writer = new FileWriter(file, false); 
+
+			for (Chat c : chats.values()) {
+				writer.write(c.toString() + "\n");
+			}
+
+			writer.close();
+		} catch (IOException e) {
+			System.out.println("Error writing chat updates: " + e.getMessage());
+			e.printStackTrace();
+		}
+		
+		return true;
+	}
 //	 public Boolean usernameExists(String name) {
 //		 
 //	 }

@@ -146,6 +146,21 @@ public class BasicClient {
 		}
 	}
 
+	public void addUserToChat(String userIdToAdd, String chatId) {
+		System.out.println("BasicClient.addUserToChat() fired");
+		try {
+			ArrayList<String> args = new ArrayList<>();
+			args.add(userIdToAdd);
+			args.add(chatId);
+
+			Packet addUserPacket = new Packet(Status.NONE, actionType.ADD_USER_TO_CHAT, args, userId);
+			out.writeObject(addUserPacket);
+			out.flush();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	public void listen() {
 		System.out.println("in listen() loop");
 		try {
@@ -187,6 +202,12 @@ public class BasicClient {
 					// TESTING TO UPDATE USER'S isDisabled()
 					updateUserIsDisabled("8", true); // this is Bill Samsung
 
+					// TESTING TO ADD A USER TO A CHAT
+					addUserToChat("3", "2"); // adds userId 3 into chatId 2. Must be done by Chatroom Owner!
+
+					// version that should fail:
+//					addUserToChat("3", "1"); // adds userId 3 into chatId 2. Must be done by Chatroom Owner!
+
 				}
 //				case SEND_MESSAGE -> {
 				case NEW_MESSAGE_BROADCAST -> {
@@ -224,6 +245,19 @@ public class BasicClient {
 					System.out.println("IsDisabled: " + args.get(1));
 					System.out.println("─────────────────────────────────────");
 				}
+
+				case ADD_USER_TO_CHAT_BROADCAST -> {
+					System.out.println("──────────── USER ADDED TO CHAT BROADCAST ────────────");
+
+					if (incoming.getStatus() == Status.ERROR) {
+						System.out.println("Error: " + args.get(0));
+					} else {
+						System.out.println("UserID added: " + args.get(0));
+						System.out.println("ChatID: " + args.get(1));
+					}
+
+					System.out.println("─────────────────────────────────────");
+				}
 				case GET_ALL_USERS -> System.out.println("Handled GET_ALL_USERS\n");
 				case GET_ALL_CHATS -> System.out.println("Handled GET_ALL_CHATS\n");
 				case GET_ALL_MESSAGES -> System.out.println("Handled GET_ALL_MESSAGES\n");
@@ -255,7 +289,8 @@ public class BasicClient {
 	}
 
 	public static void main(String[] args) {
-		BasicClient client = new BasicClient("127.0.0.1", 1337);
+		BasicClient client = new BasicClient("127.0.0.1", 1337); // local host
+//		BasicClient client = new BasicClient("192.168.1.103", 1337); // connect to another computer on network
 
 		System.out.println(
 				"Some users you can log into, otherwise it'll log into \"biljoe\": chrsmi kenkot stearm zohsha talsha biljoe ");

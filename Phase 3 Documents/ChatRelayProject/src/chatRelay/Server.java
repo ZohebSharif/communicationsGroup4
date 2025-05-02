@@ -66,6 +66,16 @@ public class Server {
 			System.out.println("Server.receievePacket() CREATE_USER switch fired");
 			handleUpdateUser(clientId, packet);
 			break;
+
+		case ADD_USER_TO_CHAT:
+			System.out.println("Server.receievePacket() ADD_USER_TO_CHAT switch fired");
+			handleAddUserToChat(clientId, packet);
+			break;
+//		case REMOVE_USER_FROM_CHAT:
+//			System.out.println("Server.receievePacket REMOVE_USER_FROM_CHAT switch fired");
+//			handleRemoveUserFromChat(clientId, packet);
+//			break;
+
 		case LOGOUT:
 			handleLogout(clientId);
 			break;
@@ -73,6 +83,43 @@ public class Server {
 			sendErrorMessage(clientId, "Unknown action type: " + packet.getActionType());
 		}
 	}
+
+	private void handleAddUserToChat(String clientId, Packet packet) {
+		ArrayList<String> args = packet.getActionArguments();
+		String userIdToAdd = args.get(0);
+		String chatId = args.get(1);
+
+		boolean operationSucceeded = dbManager.addUserToChat(userIdToAdd, chatId, clientId);
+		ArrayList<String> broadcastingArgs = new ArrayList<>();
+
+		if (!operationSucceeded) {
+			broadcastingArgs.add("Unable to add User to the Chat");
+			broadcastToUsersConnected(
+					new Packet(Status.ERROR, actionType.ADD_USER_TO_CHAT_BROADCAST, broadcastingArgs, "Server"));
+		} else {
+			broadcastingArgs.add(userIdToAdd);
+			broadcastingArgs.add(chatId);
+
+			// Client has the data in memory to do the rest
+			broadcastToUsersConnected(
+					new Packet(Status.SUCCESS, actionType.ADD_USER_TO_CHAT_BROADCAST, broadcastingArgs, "Server"));
+
+		}
+	}
+
+//	private void handleRemoveUserFromChat(String clientId, Packet packet) {
+//		ArrayList<String> args = packet.getActionArguments();
+//		String chatId = args.get(0);
+//		String userIdToRemove = args.get(1);
+//
+//		Chat chat = dbManager.getChatById(chatId);
+//		AbstractUser userToRemove = dbManager.getUserById(userIdToRemove);
+//
+//		if (chat != null && userToRemove != null) {
+//			chat.removeChatter(userToRemove);
+//			// Optionally, update DB file now
+//		}
+//	}
 
 	private void handleUpdateUser(String clientId, Packet packet) {
 //		TODO: 1) (low priority) Admins cant enable/disable admins
@@ -87,8 +134,9 @@ public class Server {
 		AbstractUser updatedUser = dbManager.updateUserIsDisabled(userIdToUpdate, isDisabled);
 		broadcastingArgs.add(updatedUser.getId());
 		broadcastingArgs.add(String.valueOf(updatedUser.isDisabled()));
-		
-		Packet updatedUserPacket = new Packet(Status.SUCCESS, actionType.UPDATED_USER_BROADCAST, broadcastingArgs, "Server");
+
+		Packet updatedUserPacket = new Packet(Status.SUCCESS, actionType.UPDATED_USER_BROADCAST, broadcastingArgs,
+				"Server");
 		broadcastToUsersConnected(updatedUserPacket);
 
 	}
@@ -196,7 +244,7 @@ public class Server {
 		broadcastToUsers(chat.getChatters(), messagePacket);
 	}
 
-	// send Packet to ALL users
+	// send Packet to SOME users currently connected
 	// TODO: ADD TRY/CATCH ?
 	private void broadcastToUsers(List<AbstractUser> usersToSendTo, Packet packet) {
 		for (AbstractUser user : usersToSendTo) {
@@ -208,7 +256,7 @@ public class Server {
 		}
 	}
 
-	// send Packet to Users Currently connected
+	// send Packet to ALL Users Currently connected
 	// TODO: ADD TRY/CATCH?
 	private void broadcastToUsersConnected(Packet chatPacket) {
 		for (ClientHandler client : clients.values()) {
