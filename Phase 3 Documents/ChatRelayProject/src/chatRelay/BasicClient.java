@@ -196,6 +196,15 @@ public class BasicClient {
 						System.out.println("Logged in as userId: " + userId);
 					}
 
+					
+					
+					if (incoming.getStatus() == Status.ERROR && args.size() == 1) { 
+						
+						String errorMessage = args.get(0);
+						System.out.println("error logging in: " + errorMessage);
+						close();
+					}
+					
 					//
 					// dirty testing
 					// test sending a message after successfull login

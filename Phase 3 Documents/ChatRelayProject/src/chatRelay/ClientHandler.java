@@ -105,10 +105,9 @@ public class ClientHandler implements Runnable {
 
 				AbstractUser user = server.getDBManager().checkLoginCredentials(username, password);
 
-				
 				// give rejections w/ responses,
 				// ex: bad password, bad username, etc.
-				
+
 				// check if user isn't disabled too
 				if (user != null) {
 					this.userId = user.getId();
@@ -156,13 +155,16 @@ public class ClientHandler implements Runnable {
 					sendPacket(messagesPacket);
 
 				} else {
-//					server.sendErrorMessage("Invalid login");
-//					connect should close
+					ArrayList<String> errorArgs = new ArrayList<>();
+					errorArgs.add("Invalid username or password");
+
+					Packet errorPacket = new Packet(Status.ERROR, actionType.LOGIN, errorArgs, "SERVER");
+					sendPacket(errorPacket);
+
+					clientSocket.close();
 					return;
 				}
 			} else {
-//				server.sendErrorMessage("Expected login packet first");
-//					connect should close
 				return;
 			}
 
