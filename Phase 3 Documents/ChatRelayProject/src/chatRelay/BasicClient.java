@@ -8,7 +8,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 
 public class BasicClient {
-	private static boolean STRESS_TEST = true;
+//	private static boolean STRESS_TEST = true;
+	private static boolean STRESS_TEST = false;
 
 	private Socket socket;
 	private ObjectOutputStream out;
@@ -253,12 +254,12 @@ public class BasicClient {
 					// THREAD / STRESS TEST
 
 					if (!STRESS_TEST)
-						return;
+						continue;
 					for (int i = 0; i < 100; ++i) {
 						sendMessage(userId, "2", "message " + i);
 					}
 
-					break;
+					continue;
 				}
 				case NEW_MESSAGE_BROADCAST: {
 					System.out.println("─────────────────────────────────────");
@@ -377,30 +378,32 @@ public class BasicClient {
 					client.listen();
 				}).start();
 			}
-			return;
 		}
 
-		BasicClient client = new BasicClient("127.0.0.1", 1337); // local host
+		else {
+
+			BasicClient client = new BasicClient("127.0.0.1", 1337); // local host
 //		BasicClient client = new BasicClient("192.168.1.103", 1337); // connect to another computer on network
 
-		System.out.println(
-				"Some users you can log into, otherwise it'll log into \"biljoe\": chrsmi kenkot stearm zohsha talsha biljoe ");
-		System.out.println("juse type in a username into CLI next time");
+			System.out.println(
+					"Some users you can log into, otherwise it'll log into \"biljoe\": chrsmi kenkot stearm zohsha talsha biljoe ");
+			System.out.println("juse type in a username into CLI next time");
 
-		// default user to log in if no CLI args given
-		String username = "bilJoe"; // non-admin, NOT disabled
-		String password = "asdf/"; // testing "/" is valid
+			// default user to log in if no CLI args given
+			String username = "biljoe"; // non-admin, NOT disabled
+			String password = "asdf"; // testing "/" is valid
 
-		if (args.length == 1) {
-			username = args[0];
-			password = "asdf";
-		}
+			if (args.length == 1) {
+				username = args[0];
+				password = "asdf";
+			}
 
-		client.login(username, password);
+			client.login(username, password);
 //		client.login("biljoe", "asdf/"); // non-admin
 //		client.login("chrsmi", "asdf"); // admin
 
-		client.listen();
+			client.listen();
+		}
 	}
 
 }
