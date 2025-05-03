@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 
 public class BasicClient {
+	private static boolean STRESS_TEST = true;
 
 	private Socket socket;
 	private ObjectOutputStream out;
@@ -243,6 +244,20 @@ public class BasicClient {
 					removeUserFromChat("7", "2"); // remove 'Sarah Connor' w/ user id for 7, from chat room 2
 					System.out.println("\n");
 
+					// ++++++++++++++++++++++++++++++++++++++++++++++
+					// ++++++++++++++++++++++++++++++++++++++++++++++
+					// ++++++++++++++++++++++++++++++++++++++++++++++
+					// ++++++++++++++++++++++++++++++++++++++++++++++
+					// ++++++++++++++++++++++++++++++++++++++++++++++
+					// ++++++++++++++++++++++++++++++++++++++++++++++
+					// THREAD / STRESS TEST
+
+					if (!STRESS_TEST)
+						return;
+					for (int i = 0; i < 100; ++i) {
+						sendMessage(userId, "2", "message " + i);
+					}
+
 					break;
 				}
 				case NEW_MESSAGE_BROADCAST: {
@@ -348,6 +363,23 @@ public class BasicClient {
 	}
 
 	public static void main(String[] args) {
+//		boolean STRESS_TEST = true;
+
+		if (STRESS_TEST) {
+
+			String[] usernames = { "biljoe", "chrsmi", "kenkot", "stearm", "zohsha", "talsha" };
+
+			for (String username : usernames) {
+				new Thread(() -> {
+					BasicClient client = new BasicClient("127.0.0.1", 1337);
+					String password = "asdf";
+					client.login(username, password);
+					client.listen();
+				}).start();
+			}
+			return;
+		}
+
 		BasicClient client = new BasicClient("127.0.0.1", 1337); // local host
 //		BasicClient client = new BasicClient("192.168.1.103", 1337); // connect to another computer on network
 
@@ -370,4 +402,5 @@ public class BasicClient {
 
 		client.listen();
 	}
+
 }
