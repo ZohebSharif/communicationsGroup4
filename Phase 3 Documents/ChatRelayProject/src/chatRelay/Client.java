@@ -35,6 +35,8 @@ public class Client {
         this.targetIP = targetIp;
         this.targetPort = targetPort;
         isConnected = false;
+        users = new ArrayList<>();
+        chats = new ArrayList<>();
         try {
             socket = new Socket(targetIP, Integer.parseInt(targetPort));
             OutputStream outputStream = socket.getOutputStream();
@@ -221,7 +223,7 @@ public class Client {
     	
     	private AbstractUser getUserById(String userId) {
     		for (AbstractUser user : users) {
-    			if (user.getId().equals(userId)) {
+    			if (userId.equals(user.getId())) {
 					return user;
 				}
 			}
@@ -230,7 +232,7 @@ public class Client {
     	
     	private Chat getChatById(String chatId) {
     		for (Chat chat : chats) {
-    			if (chat.getId().equals(chatId)) {
+    			if (chatId.equals(chat.getId())) {
     				return chat;
     			}
     		}
@@ -259,7 +261,13 @@ public class Client {
 							} else {
 								thisUser = new User(true, username, firstName, lastName, isDisabled, isAdmin);
 							}
-							notify();
+							try {
+								synchronized (clientGUI) {
+									clientGUI.getFrame().notify();
+								}
+							} catch (IllegalMonitorStateException e) {
+								e.printStackTrace();
+							}
 			                break;
 						}
 						case GET_ALL_CHATS -> {
@@ -274,12 +282,7 @@ public class Client {
 								String[] userIds = words[4].split(",");
 
 								// TODO: Consider that this is adding the owner to chatters
-								AbstractUser owner = null;
-								for (AbstractUser user : users) {
-									if (user.getId().equals(ownerId)) {
-										owner = user;
-									}
-								}
+								AbstractUser owner = getUserById(ownerId);
 								
 								List<AbstractUser> chatters = new ArrayList<>();
 								for (String userId : userIds) {
