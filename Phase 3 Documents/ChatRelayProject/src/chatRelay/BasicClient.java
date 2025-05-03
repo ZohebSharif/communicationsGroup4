@@ -190,21 +190,18 @@ public class BasicClient {
 				}
 
 				switch (incoming.getActionType()) {
-				case LOGIN -> {
+				case LOGIN: {
 					if (incoming.getStatus() == Status.SUCCESS && args.size() >= 3) {
 						userId = args.get(0);
 						System.out.println("Logged in as userId: " + userId);
 					}
 
-					
-					
-					if (incoming.getStatus() == Status.ERROR && args.size() == 1) { 
-						
+					if (incoming.getStatus() == Status.ERROR && args.size() == 1) {
 						String errorMessage = args.get(0);
 						System.out.println("error logging in: " + errorMessage);
 						close();
 					}
-					
+
 					//
 					// dirty testing
 					// test sending a message after successfull login
@@ -230,27 +227,25 @@ public class BasicClient {
 					addUserToChat("3", "2"); // adds userId 3 into chatId 2. Must be done by Chatroom Owner!
 
 					// version that should fail:
-//					addUserToChat("3", "1"); // adds userId 3 into chatId 2. Must be done by Chatroom Owner!
+					// addUserToChat("3", "1"); // adds userId 3 into chatId 2. Must be done by
+					// Chatroom Owner!
 
-// 					TESTING TO ADD A USER TO A CHAT
-
+					// TESTING TO ADD A USER TO A CHAT
 					addUserToChat("5", "2"); // "5" is the User, "2" is the chatroom
 					System.out.println("\n");
 
-//					addUserToChat("3", "1"); // Should fail since i'm not owner of chatroom 1
+					// addUserToChat("3", "1"); // Should fail since i'm not owner of chatroom 1
 					System.out.println("\n");
 
-					
-// ++++++++++++++++++++++++++++++++++++++++++++++					
-				// first arg is userId, second arg is chatId	
+					// ++++++++++++++++++++++++++++++++++++++++++++++
+					// first arg is userId, second arg is chatId
 					// TESTING TO REMOVE A USER FROM CHAT
-					removeUserFromChat("7", "2"); // remove 'Sarah Connor' w/ user id for 7, from chat room 2 
+					removeUserFromChat("7", "2"); // remove 'Sarah Connor' w/ user id for 7, from chat room 2
 					System.out.println("\n");
 
-
+					break;
 				}
-//				case SEND_MESSAGE -> {
-				case NEW_MESSAGE_BROADCAST -> {
+				case NEW_MESSAGE_BROADCAST: {
 					System.out.println("─────────────────────────────────────");
 					System.out.println("!!! RECEIVED A NEW BROADCAST !!!");
 					String messageId = args.get(0);
@@ -261,32 +256,32 @@ public class BasicClient {
 
 					System.out.println("id:" + chatId + ", " + senderId + " at " + timestamp + ": " + content);
 					System.out.println("─────────────────────────────────────");
+					break;
 				}
-
-				case NEW_CHAT_BROADCAST -> {
+				case NEW_CHAT_BROADCAST: {
 					System.out.println("──────────── NEW CHAT BROADCAST ────────────");
 					for (String arg : args) {
 						System.out.println("chat info: " + arg);
 					}
 					System.out.println("─────────────────────────────────────");
+					break;
 				}
-
-				case NEW_USER_BROADCAST -> {
+				case NEW_USER_BROADCAST: {
 					System.out.println("──────────── NEW USER BROADCAST ────────────");
 					for (String arg : args) {
 						System.out.println("user info: " + arg);
 					}
 					System.out.println("─────────────────────────────────────");
+					break;
 				}
-
-				case UPDATED_USER_BROADCAST -> {
+				case UPDATED_USER_BROADCAST: {
 					System.out.println("──────────── USER STATUS UPDATED ────────────");
 					System.out.println("UserID: " + args.get(0));
 					System.out.println("IsDisabled: " + args.get(1));
 					System.out.println("─────────────────────────────────────");
+					break;
 				}
-
-				case ADD_USER_TO_CHAT_BROADCAST -> {
+				case ADD_USER_TO_CHAT_BROADCAST: {
 					System.out.println("──────────── USER ADDED TO CHAT BROADCAST ────────────");
 
 					if (incoming.getStatus() == Status.ERROR) {
@@ -297,9 +292,9 @@ public class BasicClient {
 					}
 
 					System.out.println("─────────────────────────────────────");
+					break;
 				}
-
-				case REMOVE_USER_FROM_CHAT_BROADCAST -> {
+				case REMOVE_USER_FROM_CHAT_BROADCAST: {
 					System.out.println("──────────── USER REMOVED FROM CHAT BROADCAST ────────────");
 
 					if (incoming.getStatus() == Status.ERROR) {
@@ -310,19 +305,29 @@ public class BasicClient {
 					}
 
 					System.out.println("─────────────────────────────────────");
+					break;
 				}
-
-				case GET_ALL_USERS -> System.out.println("Handled GET_ALL_USERS\n");
-				case GET_ALL_CHATS -> System.out.println("Handled GET_ALL_CHATS\n");
-				case GET_ALL_MESSAGES -> System.out.println("Handled GET_ALL_MESSAGES\n");
-				case SUCCESS -> System.out.println("Action successful.");
-				case ERROR -> {
+				case GET_ALL_USERS:
+					System.out.println("Handled GET_ALL_USERS\n");
+					break;
+				case GET_ALL_CHATS:
+					System.out.println("Handled GET_ALL_CHATS\n");
+					break;
+				case GET_ALL_MESSAGES:
+					System.out.println("Handled GET_ALL_MESSAGES\n");
+					break;
+				case SUCCESS:
+					System.out.println("Action successful.");
+					break;
+				case ERROR: {
 					if (!args.isEmpty()) {
 						System.out.println("Error from server: " + args.get(0));
 					}
+					break;
 				}
-				default -> {
+				default: {
 					System.out.println("Unhandled packet type: " + incoming.getActionType());
+					break;
 				}
 				}
 			}
