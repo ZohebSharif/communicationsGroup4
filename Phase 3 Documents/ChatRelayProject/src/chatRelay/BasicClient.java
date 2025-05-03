@@ -365,16 +365,19 @@ public class BasicClient {
 
 	public static void main(String[] args) {
 //		boolean STRESS_TEST = true;
+//		BasicClient client = new BasicClient("127.0.0.1", 1337);
 
 		if (STRESS_TEST) {
-
 			String[] usernames = { "biljoe", "chrsmi", "kenkot", "stearm", "zohsha", "talsha" };
 
 			for (String username : usernames) {
+				final String user = username;
+
 				new Thread(() -> {
 					BasicClient client = new BasicClient("127.0.0.1", 1337);
+//					BasicClient client = new BasicClient("non local ip"", 1337);
 					String password = "asdf";
-					client.login(username, password);
+					client.login(user, password);
 					client.listen();
 				}).start();
 			}
@@ -382,8 +385,8 @@ public class BasicClient {
 
 		else {
 
-			BasicClient client = new BasicClient("127.0.0.1", 1337); // local host
 //		BasicClient client = new BasicClient("192.168.1.103", 1337); // connect to another computer on network
+			BasicClient client = new BasicClient("127.0.0.1", 1337); // local host
 
 			System.out.println(
 					"Some users you can log into, otherwise it'll log into \"biljoe\": chrsmi kenkot stearm zohsha talsha biljoe ");
