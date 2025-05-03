@@ -11,6 +11,8 @@ public class BasicClient {
 //	private static boolean STRESS_TEST = true;
 	private static boolean STRESS_TEST = false;
 
+	
+	
 	private Socket socket;
 	private ObjectOutputStream out;
 	private ObjectInputStream in;
