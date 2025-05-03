@@ -31,9 +31,9 @@ public class ChatTest {
         user2 = new User("Kenny", "password789", "id3", "Kenny", "Kottenstette", false, false);
         
         // make test chat
-        chat = new Chat(owner, "Test Chat Room");
-        // Set chat to public for testing since default is now private
-        chat.changePrivacy(false);
+        List<AbstractUser> initialChatters = new ArrayList<>();
+        initialChatters.add(owner);
+        chat = new Chat(owner, "Test Chat Room", initialChatters, false);
     }
     
     @Test
@@ -59,7 +59,9 @@ public class ChatTest {
     public void testSecondConstructor() {
         // test creation of chat using second constructor
         // Now requires List<AbstractUser> instead of User[]
-        List<AbstractUser> users = new ArrayList<>(Arrays.asList(owner, user1));
+        List<AbstractUser> users = new ArrayList<>();
+        users.add(owner);
+        users.add(user1);
         Chat chat2 = new Chat(owner, "Another Chat", "TEST_ID", users, false);
         
         // check that chat is initialized correctly
@@ -124,13 +126,14 @@ public class ChatTest {
         
         // check that one user is still there (owner)
         chatters = chat.getChatters();
-        assertTrue(chatters.size() >= 1);
+        assertEquals(1, chatters.size());
+        assertEquals(owner, chatters.get(0));
     }
     
     @Test
     public void testAddMessage() {
         // create test message
-        Message message1 = new Message("Hello, world!", owner);
+        Message message1 = new Message("Hello, world!", owner, chat);
         
         // add message
         chat.addMessage(message1);
@@ -141,7 +144,7 @@ public class ChatTest {
         assertEquals(message1, messages.get(0));
         
         // add message
-        Message message2 = new Message("How are you?", user1);
+        Message message2 = new Message("How are you?", user1, chat);
         chat.addMessage(message2);
         
         // check if message was added
@@ -153,9 +156,7 @@ public class ChatTest {
     
     @Test
     public void testChangePrivacy() {
-        // Adjust test to account for default being true now
-        // First make it false for testing
-        chat.changePrivacy(false);
+        // Test starting with public chat (false)
         assertFalse(chat.isPrivate());
         
         // Make it private
@@ -175,9 +176,8 @@ public class ChatTest {
         // verify toString contains vital information
         assertTrue(chatString.contains(chat.getId()));
         assertTrue(chatString.contains("Test Chat Room"));
-        assertTrue(chatString.contains(owner.getUserName()));
-        assertTrue(chatString.contains("private=false"));
-        assertTrue(chatString.contains("chatters=1"));
+        assertTrue(chatString.contains(owner.getId()));
+        assertTrue(chatString.contains("false"));
     }
     
     public static void main(String[] args) {

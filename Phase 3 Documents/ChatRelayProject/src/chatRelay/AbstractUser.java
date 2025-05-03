@@ -40,6 +40,18 @@ public abstract class AbstractUser {
 		this.isAdmin = isAdmin;
 	}
 
+	// constructor for client to make users (No Password Passed)
+	public AbstractUser(boolean frontEndUser, String username, String firstName, String lastName, boolean isDisabled, boolean isAdmin) {
+		this.username = username;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.isDisabled = isDisabled;
+		this.isAdmin = isAdmin;
+		this.password = "******";
+	}
+
+
+
 	public void addChat(Chat chat) {
 		chats.add(chat);
 		return;
