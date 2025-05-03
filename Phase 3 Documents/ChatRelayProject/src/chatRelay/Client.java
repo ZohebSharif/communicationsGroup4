@@ -252,9 +252,11 @@ public class Client {
 							boolean isAdmin = words[5].equals("true") ? true : false;
 							
 							if (isAdmin) {
-								thisUser = new ITAdmin(username, firstName, lastName, isDisabled, isAdmin);
+//								thisUser = new ITAdmin(username, firstName, lastName, isDisabled, isAdmin);
+								thisUser = new ITAdmin(true, username, firstName, lastName, isDisabled, isAdmin);
 							} else {
-								thisUser = new User(username, firstName, lastName, isDisabled, isAdmin);
+//								thisUser = (username, firstName, lastName, isDisabled, isAdmin);
+								thisUser = new User(true, username, firstName, lastName, isDisabled, isAdmin);
 							}
 			                break;
 						}
@@ -301,9 +303,11 @@ public class Client {
 								AbstractUser newUser;
 
 								if (isAdmin) {
-									newUser = new ITAdmin(username, firstName, lastName, isDisabled, isAdmin);
+//									newUser = (username, firstName, lastName, isDisabled, isAdmin);
+									newUser = new ITAdmin(true, username, firstName, lastName, isDisabled, isAdmin);
 								} else {
-									newUser = new User(username, firstName, lastName, isDisabled, isAdmin);
+//									newUser = new User(username, firstName, lastName, isDisabled, isAdmin);
+									newUser = new User(true, username, firstName, lastName, isDisabled, isAdmin);
 								}
 								users.add(newUser);
 							}
@@ -343,9 +347,11 @@ public class Client {
 							AbstractUser newUser;
 
 							if (isAdmin) {
-								newUser = new ITAdmin(username, firstname, lastname, isDisabled, isAdmin);
+//								newUser = new ITAdmin(username, firstname, lastname, isDisabled, isAdmin);
+								newUser = new ITAdmin(true, username, firstname, lastname, isDisabled, isAdmin);
 							} else {
-								newUser = new User(username, firstname, lastname, isDisabled, isAdmin);
+//								newUser = new User(username, firstname, lastname, isDisabled, isAdmin);
+								newUser = new User(true, username, firstname, lastname, isDisabled, isAdmin);
 							}
 							users.add(newUser);
 						}

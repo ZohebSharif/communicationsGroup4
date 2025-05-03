@@ -5,9 +5,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 // TODO: Don't send passwords to frontend! 
+// TODO: Add something that deletes STALE connections? 
 
 public class Server {
 	private static final ConcurrentHashMap<String, ClientHandler> clients = new ConcurrentHashMap<>();
@@ -46,11 +48,34 @@ public class Server {
 		System.out.println("Server.receivePacket() fired");
 		switch (packet.getActionType()) {
 //		case LOGIN:
-//			handleLogin(clientId, packet);
+//		 	takes place on clientHandler
 //			break;
 		case SEND_MESSAGE:
+			System.out.println("Server.receievePacket() SEND_MESSAGE switch fired");
 			handleSendMessage(clientId, packet);
 			break;
+		case CREATE_CHAT:
+			System.out.println("Server.receievePacket() CREATE_CHAT switch fired");
+			handleCreateChat(clientId, packet);
+			break;
+		case CREATE_USER:
+			System.out.println("Server.receievePacket() CREATE_USER switch fired");
+			handleCreateUser(clientId, packet);
+			break;
+		case UPDATE_USER:
+			System.out.println("Server.receievePacket() CREATE_USER switch fired");
+			handleUpdateUser(clientId, packet);
+			break;
+
+		case ADD_USER_TO_CHAT:
+			System.out.println("Server.receievePacket() ADD_USER_TO_CHAT switch fired");
+			handleAddUserToChat(clientId, packet);
+			break;
+		case REMOVE_USER_FROM_CHAT:
+			System.out.println("Server.receievePacket REMOVE_USER_FROM_CHAT switch fired");
+			handleRemoveUserFromChat(clientId, packet);
+			break;
+
 		case LOGOUT:
 			handleLogout(clientId);
 			break;
@@ -59,32 +84,235 @@ public class Server {
 		}
 	}
 
-	// done inside clienthandler now.
+	private void handleRemoveUserFromChat(String clientId, Packet packet) {
+		ArrayList<String> args = packet.getActionArguments();
+		String userIdToRemove = args.get(0);
+		String chatId = args.get(1);
 
-//	private void handleLogin(String clientId, Packet packet) {
-//		String[] args = packet.getActionArguments();
-//		String username = args[0];
-//		String password = args[1];
-//
-//		AbstractUser user = dbManager.checkLoginCredentials(username, password);
-//
-//		if (user == null) {
-	////			sendErrorMessage()
+		Chat chat = dbManager.removeUserFromChat(userIdToRemove, chatId, clientId);
+		ArrayList<String> broadcastingArgs = new ArrayList<>();
 
-//			return;
+		if (chat == null) {
+			broadcastingArgs.add("Cannot to remove User from the Chat");
+
+			Packet errorPacket = new Packet(Status.ERROR, actionType.REMOVE_USER_FROM_CHAT_BROADCAST, broadcastingArgs,
+					"Server");
+			broadcastToUsersConnected(errorPacket);
+		} else {
+			broadcastingArgs.add(userIdToRemove);
+			broadcastingArgs.add(chatId);
+
+			Packet successPacket = new Packet(Status.SUCCESS, actionType.REMOVE_USER_FROM_CHAT_BROADCAST,
+					broadcastingArgs, "Server");
+			broadcastToUsersConnected(successPacket);
+		}
+	}
+
+	private void handleAddUserToChat(String clientId, Packet packet) {
+		ArrayList<String> args = packet.getActionArguments();
+		String userIdToAdd = args.get(0);
+		String chatId = args.get(1);
+
+//		boolean operationSucceeded = dbManager.addUserToChat(userIdToAdd, chatId, clientId);
+		Chat chat = dbManager.addUserToChat(userIdToAdd, chatId, clientId);
+		ArrayList<String> broadcastingArgs = new ArrayList<>();
+
+		if (chat == null) {
+			broadcastingArgs.add("Unable to add User to the Chat");
+
+			Packet chatroomInfoPacket = new Packet(Status.ERROR, actionType.ADD_USER_TO_CHAT_BROADCAST,
+					broadcastingArgs, "Server");
+			broadcastToClientById(clientId, chatroomInfoPacket);
+
+		} else {
+			// ["userAddedId", "chatId5", "ownerId1", "my chatroom name 1",
+			// "userId1/userId2/userId3",
+			// "messageId1/1745655698/mymessagecontent/authorId1/chatId1", ..., ..., ]
+
+			broadcastingArgs.add(userIdToAdd);
+			broadcastingArgs.add(chat.getId());
+			broadcastingArgs.add(chat.getOwner().getId());
+			broadcastingArgs.add(chat.getRoomName());
+			broadcastingArgs.add(String.join("/", chat.getChattersIds()));
+
+			ArrayList<Message> messagesInChat = (ArrayList<Message>) chat.getMessages();
+
+			for (Message message : messagesInChat) {
+				broadcastingArgs.add(message.toString());
+			}
+
+			Packet chatroomInfoPacket = new Packet(Status.SUCCESS, actionType.ADD_USER_TO_CHAT_BROADCAST,
+					broadcastingArgs, "Server");
+			broadcastToUsersConnected(chatroomInfoPacket);
+
+		}
+	}
+
+//	private void handleRemoveUserFromChat(String clientId, Packet packet) {
+//		ArrayList<String> args = packet.getActionArguments();
+//		String chatId = args.get(0);
+//		String userIdToRemove = args.get(1);
+//
+//		Chat chat = dbManager.getChatById(chatId);
+//		AbstractUser userToRemove = dbManager.getUserById(userIdToRemove);
+//
+//		if (chat != null && userToRemove != null) {
+//			chat.removeChatter(userToRemove);
+//			// Optionally, update DB file now
 //		}
-//
-//		ClientHandler client = clients.get(clientId);
-//
-	////		clients.put(user.getId(), client)
-//
-//		sendSuccessMessage(clientId, "Login successful");
-//
-//		clients.put(clientId, clients.get(clientId)); // after successful login
 //	}
 
+	private void handleUpdateUser(String clientId, Packet packet) {
+//		TODO: 1) (low priority) Admins cant enable/disable admins
+//		TODO: 2) (low priority) can't disable twice (useful to signal something weird on frontend) 
+//		TODO: 3) (low priority) make sure user is found 
+
+		ArrayList<String> broadcastingArgs = new ArrayList<>();
+		ArrayList<String> args = packet.getActionArguments();
+		String userIdToUpdate = args.get(0);
+		boolean isDisabled = args.get(1).equals("true");
+
+		AbstractUser updatedUser = dbManager.updateUserIsDisabled(userIdToUpdate, isDisabled);
+		broadcastingArgs.add(updatedUser.getId());
+		broadcastingArgs.add(String.valueOf(updatedUser.isDisabled()));
+
+		Packet updatedUserPacket = new Packet(Status.SUCCESS, actionType.UPDATED_USER_BROADCAST, broadcastingArgs,
+				"Server");
+		broadcastToUsersConnected(updatedUserPacket);
+
+	}
+
+	private void handleCreateUser(String clientId, Packet packet) {
+		ArrayList<String> broadcastingArgs = new ArrayList<>();
+
+		// Requestor must be an admin
+		if (!dbManager.getUserById(clientId).isAdmin()) {
+			broadcastingArgs.add("You're not an admin, get out of here!");
+			Packet errorPacket = new Packet(Status.ERROR, actionType.CREATE_USER, broadcastingArgs, "Server");
+//			broadcastToRequestor(clientId, errorPacket);
+			broadcastToClientById(clientId, errorPacket);
+			return;
+		}
+
+		ArrayList<String> args = packet.getActionArguments();
+		// TODO: frontend should replace the "/",
+//		or Packet could have done that 
+
+//		TODO: VALIDATIONS:
+//		-first/lastname only letters, 
+//		-username should be alphanum
+
+		String username = args.get(0);
+		String password = args.get(1);
+		String firstname = args.get(2);
+		String lastname = args.get(3);
+		boolean isDisabled = args.get(4).equals("true");
+		boolean isAdmin = args.get(5).equals("true");
+
+		// No duplicate user names
+		// TODO: semi-major refactor to pass more than clientId, and the whole user into
+		// receivePacket() could be good
+		if (dbManager.getUserByUsername(username) != null) {
+			broadcastingArgs.add("That username already exists");
+			Packet errorPacket = new Packet(Status.ERROR, actionType.CREATE_USER, broadcastingArgs, "Server");
+//			broadcastToRequestor(clientId, errorPacket);
+			broadcastToClientById(clientId, errorPacket);
+			return;
+		}
+
+		AbstractUser newUser = dbManager.writeNewUser(username, password, firstname, lastname, isDisabled, isAdmin);
+
+		broadcastingArgs.add(newUser.getId());
+		broadcastingArgs.add(newUser.getUserName());
+		broadcastingArgs.add(newUser.getFirstName());
+		broadcastingArgs.add(newUser.getLastName());
+		broadcastingArgs.add(String.valueOf(newUser.isAdmin()));
+		broadcastingArgs.add(String.valueOf(newUser.isDisabled()));
+
+		Packet newUserPacket = new Packet(Status.SUCCESS, actionType.NEW_USER_BROADCAST, broadcastingArgs, "Server");
+		broadcastToUsersConnected(newUserPacket);
+
+	}
+
+	private void handleCreateChat(String clientId, Packet packet) {
+		ArrayList<String> args = packet.getActionArguments();
+		ArrayList<String> userIds = new ArrayList<>();
+
+		for (String userId : args.get(0).split("/")) {
+			userIds.add(userId);
+		}
+
+		// TODO: frontend should replace the "/",
+//		or Packet could have done that 
+
+		String roomName = args.get(1);
+		boolean isPrivate = args.get(2).equals("true");
+
+		Chat newChat = dbManager.writeNewChat(clientId, roomName, userIds, isPrivate);
+
+		ArrayList<String> broadcastingArgs = new ArrayList<>();
+		broadcastingArgs.add(newChat.getId());
+		broadcastingArgs.add(newChat.getOwner().getId());
+		broadcastingArgs.add(String.join("/", newChat.getChattersIds()));
+
+		Packet chatPacket = new Packet(Status.SUCCESS, actionType.NEW_CHAT_BROADCAST, broadcastingArgs, "Server");
+
+//		TODO: if not private, broadcast to every, if private, broadcast to only some
+
+		if (newChat.isPrivate()) {
+			broadcastToUsers(newChat.getChatters(), chatPacket);
+		} else {
+			broadcastToUsersConnected(chatPacket);
+		}
+
+	}
+
 	private void handleSendMessage(String clientId, Packet packet) {
-		// TODO: parse packet arguments and broadcast message to intended users
+		ArrayList<String> args = packet.getActionArguments();
+		String content = args.get(0);
+		String chatId = args.get(1);
+
+		Message newMessage = dbManager.writeNewMessage(content, clientId, chatId);
+
+		Chat chat = dbManager.getChatById(chatId);
+
+		ArrayList<String> broadcastingArgs = new ArrayList<>();
+		broadcastingArgs.add(newMessage.getId());
+		broadcastingArgs.add(String.valueOf(newMessage.getCreatedAt()));
+		broadcastingArgs.add(newMessage.getContent());
+		broadcastingArgs.add(newMessage.getSender().getId());
+		broadcastingArgs.add(newMessage.getChat().getId());
+
+		Packet messagePacket = new Packet(Status.SUCCESS, actionType.NEW_MESSAGE_BROADCAST, broadcastingArgs, "Server");
+		broadcastToUsers(chat.getChatters(), messagePacket);
+	}
+
+	// send Packet to SOME users currently connected
+	// TODO: ADD TRY/CATCH ?
+	private void broadcastToUsers(List<AbstractUser> usersToSendTo, Packet packet) {
+		for (AbstractUser user : usersToSendTo) {
+			ClientHandler client = clients.get(user.getId());
+
+			if (client != null) {
+				client.sendPacket(packet);
+			}
+		}
+	}
+
+	// send Packet to ALL Users Currently connected
+	// TODO: ADD TRY/CATCH?
+	private void broadcastToUsersConnected(Packet chatPacket) {
+		for (ClientHandler client : clients.values()) {
+			client.sendPacket(chatPacket);
+		}
+	}
+
+	// Only send packet to the initial Packet requestor
+	// TODO: ADD TRY/CATCH?
+//	private void broadcastToRequestor(String requestorId, Packet packet) {
+	private void broadcastToClientById(String requestorId, Packet packet) {
+		ClientHandler client = clients.get(requestorId);
+		client.sendPacket(packet);
 	}
 
 	public void handleLogout(String clientId) {
@@ -98,6 +326,7 @@ public class Server {
 	public void sendSuccessMessage(String userId, String successMessage) {
 	}
 
+//	TODO : Probabl delete as we already have a 'Broadcast' function that does this?
 	// instead get active userids living on clienthandler??
 	public void sendPacketToUsers(Packet packet, String[] userIds) {
 		for (String userId : userIds) {
@@ -126,7 +355,8 @@ public class Server {
 		String IP = "127.0.0.1";
 
 		System.out.println("Server.java's main() fired\n");
-		System.out.println("NOTE: Database is currently sensitive. Each .txt file needs 1 blank line under the last record");
+		System.out.println(
+				"NOTE: Database is currently sensitive. Each .txt file needs 1 blank line under the last record");
 
 		Server server = new Server(port, IP);
 

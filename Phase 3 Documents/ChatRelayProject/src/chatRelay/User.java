@@ -15,7 +15,7 @@ public class User extends AbstractUser {
     }
     
  // constructor for client to make users (No Password Passed)
- 	public User(String username, String firstName, String lastName, boolean isDisabled, boolean isAdmin) {
- 		super(username, firstName, lastName, isDisabled, isAdmin);
- 	}
+    public User(boolean frontEndUser, String username, String firstName, String lastName, boolean isDisabled, boolean isAdmin) {
+        super(frontEndUser, username, firstName, lastName, isDisabled, isAdmin);
+    }
 }

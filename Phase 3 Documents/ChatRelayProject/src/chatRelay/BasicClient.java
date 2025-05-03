@@ -49,12 +49,29 @@ public class BasicClient {
 		System.out.println("BasicClient.sendMessage() fired");
 		try {
 			ArrayList<String> messageArgs = new ArrayList<>();
-			messageArgs.add(authorId);
-			messageArgs.add(chatId);
+//			messageArgs.add(authorId);
 			messageArgs.add(content);
+			messageArgs.add(chatId);
 
 			Packet messagePacket = new Packet(Status.NONE, actionType.SEND_MESSAGE, messageArgs, authorId);
 			out.writeObject(messagePacket);
+			out.flush();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void createChat(String chatName, boolean isPrivate, String[] userIds) {
+		System.out.println("BasicClient.createChat() fired");
+		try {
+			String joinedUsers = String.join("/", userIds); // format: "1/2/6"
+			ArrayList<String> args = new ArrayList<>();
+			args.add(joinedUsers);
+			args.add(chatName);
+			args.add(String.valueOf(isPrivate));
+
+			Packet packet = new Packet(Status.NONE, actionType.CREATE_CHAT, args, userId);
+			out.writeObject(packet);
 			out.flush();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -94,6 +111,71 @@ public class BasicClient {
 		}
 	}
 
+	public void createUser(String username, String password, String firstName, String lastName, boolean isDisabled,
+			boolean isAdmin) {
+		System.out.println("BasicClient.createUser() fired");
+		try {
+			ArrayList<String> args = new ArrayList<>();
+			args.add(username);
+			args.add(password);
+			args.add(firstName);
+			args.add(lastName);
+			args.add(String.valueOf(isDisabled));
+			args.add(String.valueOf(isAdmin));
+
+			Packet packet = new Packet(Status.NONE, actionType.CREATE_USER, args, userId);
+			out.writeObject(packet);
+			out.flush();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void updateUserIsDisabled(String targetUserId, boolean shouldBeDisabled) {
+		System.out.println("BasicClient.updateUserIsDisabled() fired");
+		try {
+			ArrayList<String> args = new ArrayList<>();
+			args.add(targetUserId);
+			args.add(String.valueOf(shouldBeDisabled));
+
+			Packet packet = new Packet(Status.NONE, actionType.UPDATE_USER, args, userId);
+			out.writeObject(packet);
+			out.flush();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void addUserToChat(String userIdToAdd, String chatId) {
+		System.out.println("BasicClient.addUserToChat() fired");
+		try {
+			ArrayList<String> args = new ArrayList<>();
+			args.add(userIdToAdd);
+			args.add(chatId);
+
+			Packet addUserPacket = new Packet(Status.NONE, actionType.ADD_USER_TO_CHAT, args, userId);
+			out.writeObject(addUserPacket);
+			out.flush();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void removeUserFromChat(String userIdToRemove, String chatId) {
+		System.out.println("BasicClient.removeUserFromChat() fired");
+		try {
+			ArrayList<String> args = new ArrayList<>();
+			args.add(userIdToRemove);
+			args.add(chatId);
+
+			Packet removeUserPacket = new Packet(Status.NONE, actionType.REMOVE_USER_FROM_CHAT, args, userId);
+			out.writeObject(removeUserPacket);
+			out.flush();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	public void listen() {
 		System.out.println("in listen() loop");
 		try {
@@ -108,28 +190,144 @@ public class BasicClient {
 				}
 
 				switch (incoming.getActionType()) {
-				case LOGIN -> {
+				case LOGIN: {
 					if (incoming.getStatus() == Status.SUCCESS && args.size() >= 3) {
-						userId = args.get(1);
-						System.out.println("Logged in as: " + userId + ", Admin: " + args.get(2));
+						userId = args.get(0);
+						System.out.println("Logged in as userId: " + userId);
 					}
-				}
-				case SEND_MESSAGE -> {
-					if (!args.isEmpty()) {
-						System.out.println("Message received: " + args.get(0));
+
+					if (incoming.getStatus() == Status.ERROR && args.size() == 1) {
+						String errorMessage = args.get(0);
+						System.out.println("error logging in: " + errorMessage);
+						close();
 					}
+
+					//
+					// dirty testing
+					// test sending a message after successfull login
+
+					// TESTING TO SEND A MESSAGE
+					String chatId = "2";
+					sendMessage(userId, chatId, "TESTING sendMessage() / SEND_MESSAGE");
+
+					System.out.println("\n");
+
+					// TESTING TO CREATE A CHAT
+					String[] userIds = { "1", "2", "6" };
+					createChat("test chat created from BasicClient!", true, userIds);
+
+					// TESTING TO CREATE A USER
+					createUser("sarcon", "asdf", "Sara", "Connor", false, false);
+					System.out.println("\n");
+
+					// TESTING TO UPDATE USER'S isDisabled()
+					updateUserIsDisabled("8", true); // this is Bill Samsung
+
+					// TESTING TO ADD A USER TO A CHAT
+					addUserToChat("3", "2"); // adds userId 3 into chatId 2. Must be done by Chatroom Owner!
+
+					// version that should fail:
+					// addUserToChat("3", "1"); // adds userId 3 into chatId 2. Must be done by
+					// Chatroom Owner!
+
+					// TESTING TO ADD A USER TO A CHAT
+					addUserToChat("5", "2"); // "5" is the User, "2" is the chatroom
+					System.out.println("\n");
+
+					// addUserToChat("3", "1"); // Should fail since i'm not owner of chatroom 1
+					System.out.println("\n");
+
+					// ++++++++++++++++++++++++++++++++++++++++++++++
+					// first arg is userId, second arg is chatId
+					// TESTING TO REMOVE A USER FROM CHAT
+					removeUserFromChat("7", "2"); // remove 'Sarah Connor' w/ user id for 7, from chat room 2
+					System.out.println("\n");
+
+					break;
 				}
-				case GET_ALL_USERS -> System.out.println("Handled GET_ALL_USERS");
-				case GET_ALL_CHATS -> System.out.println("Handled GET_ALL_CHATS");
-				case GET_ALL_MESSAGES -> System.out.println("Handled GET_ALL_MESSAGES");
-				case SUCCESS -> System.out.println("Action successful.");
-				case ERROR -> {
+				case NEW_MESSAGE_BROADCAST: {
+					System.out.println("─────────────────────────────────────");
+					System.out.println("!!! RECEIVED A NEW BROADCAST !!!");
+					String messageId = args.get(0);
+					String timestamp = args.get(1);
+					String content = args.get(2);
+					String senderId = args.get(3);
+					String chatId = args.get(4);
+
+					System.out.println("id:" + chatId + ", " + senderId + " at " + timestamp + ": " + content);
+					System.out.println("─────────────────────────────────────");
+					break;
+				}
+				case NEW_CHAT_BROADCAST: {
+					System.out.println("──────────── NEW CHAT BROADCAST ────────────");
+					for (String arg : args) {
+						System.out.println("chat info: " + arg);
+					}
+					System.out.println("─────────────────────────────────────");
+					break;
+				}
+				case NEW_USER_BROADCAST: {
+					System.out.println("──────────── NEW USER BROADCAST ────────────");
+					for (String arg : args) {
+						System.out.println("user info: " + arg);
+					}
+					System.out.println("─────────────────────────────────────");
+					break;
+				}
+				case UPDATED_USER_BROADCAST: {
+					System.out.println("──────────── USER STATUS UPDATED ────────────");
+					System.out.println("UserID: " + args.get(0));
+					System.out.println("IsDisabled: " + args.get(1));
+					System.out.println("─────────────────────────────────────");
+					break;
+				}
+				case ADD_USER_TO_CHAT_BROADCAST: {
+					System.out.println("──────────── USER ADDED TO CHAT BROADCAST ────────────");
+
+					if (incoming.getStatus() == Status.ERROR) {
+						System.out.println("Error: " + args.get(0));
+					} else {
+						System.out.println("UserID added: " + args.get(0));
+						System.out.println("ChatID: " + args.get(1));
+					}
+
+					System.out.println("─────────────────────────────────────");
+					break;
+				}
+				case REMOVE_USER_FROM_CHAT_BROADCAST: {
+					System.out.println("──────────── USER REMOVED FROM CHAT BROADCAST ────────────");
+
+					if (incoming.getStatus() == Status.ERROR) {
+						System.out.println("Error: " + args.get(0));
+					} else {
+						System.out.println("UserID removed: " + args.get(0));
+						System.out.println("ChatID: " + args.get(1));
+					}
+
+					System.out.println("─────────────────────────────────────");
+					break;
+				}
+				case GET_ALL_USERS:
+					System.out.println("Handled GET_ALL_USERS\n");
+					break;
+				case GET_ALL_CHATS:
+					System.out.println("Handled GET_ALL_CHATS\n");
+					break;
+				case GET_ALL_MESSAGES:
+					System.out.println("Handled GET_ALL_MESSAGES\n");
+					break;
+				case SUCCESS:
+					System.out.println("Action successful.");
+					break;
+				case ERROR: {
 					if (!args.isEmpty()) {
 						System.out.println("Error from server: " + args.get(0));
 					}
+					break;
 				}
-				default -> {
+				default: {
 					System.out.println("Unhandled packet type: " + incoming.getActionType());
+					break;
 				}
 				}
 			}
@@ -150,10 +348,26 @@ public class BasicClient {
 	}
 
 	public static void main(String[] args) {
-		BasicClient client = new BasicClient("127.0.0.1", 1337);
-		client.login("biljoe", "asdf/"); // non-admin
-		
+		BasicClient client = new BasicClient("127.0.0.1", 1337); // local host
+//		BasicClient client = new BasicClient("192.168.1.103", 1337); // connect to another computer on network
+
+		System.out.println(
+				"Some users you can log into, otherwise it'll log into \"biljoe\": chrsmi kenkot stearm zohsha talsha biljoe ");
+		System.out.println("juse type in a username into CLI next time");
+
+		// default user to log in if no CLI args given
+		String username = "bilJoe"; // non-admin, NOT disabled
+		String password = "asdf/"; // testing "/" is valid
+
+		if (args.length == 1) {
+			username = args[0];
+			password = "asdf";
+		}
+
+		client.login(username, password);
+//		client.login("biljoe", "asdf/"); // non-admin
 //		client.login("chrsmi", "asdf"); // admin
+
 		client.listen();
 	}
 }

@@ -99,6 +99,15 @@ public class Chat {
         return chatters;
     }
     
+    public ArrayList<String> getChattersIds(){
+    	ArrayList<String> chattersIds = new ArrayList<>();
+    	for (AbstractUser chatter : chatters) {
+    		chattersIds.add(chatter.getId());
+    	}
+    	
+    	return chattersIds;
+    }
+    
     public Boolean isPrivate() {
         return isPrivate;
     }

@@ -51,9 +51,13 @@ public class DBManager {
 
 //----------------------		
 
-		String[] chatterIds = { "1", "2" };
-		writeNewChat("1", "writeNewChat() testing!", chatterIds, false);
-		writeNewChat("1", "writeNewChat() / with a backslash!!", chatterIds, false);
+//		String[] chatterIds = { "1", "2" };
+		ArrayList<String> chatterIds = new ArrayList<>();
+		chatterIds.add("1");
+		chatterIds.add("2");
+
+		writeNewChat("1", "writeNewChat() testing!", chatterIds, true);
+		writeNewChat("1", "writeNewChat() / with a backslash!!", chatterIds, true);
 
 //		---------------------
 
@@ -188,18 +192,18 @@ public class DBManager {
 		return stringedChats;
 	}
 
-	// Retrieve  Messages that User has access too. Admin gets all though
+	// Retrieve Messages that User has access too. Admin gets all though
 	public ArrayList<String> fetchAllMessages(AbstractUser user) {
 		ArrayList<String> stringedMessages = new ArrayList<>();
 
 //		give admin everything
 		if (user.isAdmin()) {
-			for (Message message: messages.values()) {
+			for (Message message : messages.values()) {
 				stringedMessages.add(message.toString());
 			}
 		} else {
 			for (Chat chat : user.getChats()) {
-				
+
 				for (Message message : chat.getMessages()) {
 					stringedMessages.add(message.toString());
 				}
@@ -336,8 +340,9 @@ public class DBManager {
 	// public List<Message> fetchAllMessages() {}
 	// public List<Chat> getChatsForUser(String userId) {}
 
-	private void writeNewUser(String username, String password, String firstname, String lastname, boolean isDisabled,
-			boolean isAdmin) {
+//	private void writeNewUser(String username, String password, String firstname, String lastname, boolean isDisabled,
+	public AbstractUser writeNewUser(String username, String password, String firstname, String lastname,
+			boolean isDisabled, boolean isAdmin) {
 		// TODO: consider if "/" char is ever used. Have server reject the packet if
 		// anything except password has a "/".
 
@@ -364,10 +369,11 @@ public class DBManager {
 			System.out.println("Error writing new user: " + e.getMessage());
 			e.printStackTrace();
 		}
-
+		return newUser;
 	}
 
-	private void writeNewChat(String ownerId, String roomName, String[] chatterIds, boolean isPrivate) {
+//	private void writeNewChat(String ownerId, String roomName, String[] chatterIds, boolean isPrivate) {
+	public Chat writeNewChat(String ownerId, String roomName, ArrayList<String> chatterIds, boolean isPrivate) {
 		AbstractUser owner = getUserById(ownerId);
 		String sanitizedRoomName = roomName.replace("/", ESCAPED_SLASH); // a "/" inside content will break the DB
 
@@ -399,12 +405,14 @@ public class DBManager {
 			e.printStackTrace();
 		}
 
-		// TODO: BROADCAST!
+		return newChat;
 
 	}
 
-//	private void writeNewMessage(String content, AbstractUser author, Chat chat) {
-	private void writeNewMessage(String content, String authorId, String chatId) {
+	// by returning new message, it lets my Server have access to that message which
+	// is needed!
+//	public void writeNewMessage(String content, String authorId, String chatId) {
+	public Message writeNewMessage(String content, String authorId, String chatId) {
 		AbstractUser author = getUserById(authorId);
 		Chat chat = getChatById(chatId);
 
@@ -427,8 +435,7 @@ public class DBManager {
 			e.printStackTrace();
 		}
 
-		// broadcasting should happen now, where everyone with access
-//		o this message's chat will receive this data
+		return newMessage;
 
 	}
 
@@ -456,11 +463,102 @@ public class DBManager {
 
 	public AbstractUser checkLoginCredentials(String username, String password) {
 		AbstractUser user = getUserByUsername(username);
+		if (user == null)
+			return null;
 
 		if (user.getPassword().replace(ESCAPED_SLASH, "/").equals(password)) {
 			return user;
 		}
 		return null;
+	}
+
+	public AbstractUser updateUserIsDisabled(String userId, boolean isDisabled) {
+		AbstractUser user = getUserById(userId);
+		if (user == null)
+			return null;
+
+		user.updateIsDisabled(isDisabled);
+
+		try {
+			File file = new File(this.userTxtFilename);
+			FileWriter writer = new FileWriter(file, false); // false is for over-writing
+
+			for (AbstractUser u : users.values()) {
+				writer.write(u.toString() + "\n");
+			}
+
+			writer.close();
+		} catch (IOException e) {
+			System.out.println("Error updating user file: " + e.getMessage());
+			e.printStackTrace();
+		}
+
+		return user;
+
+	}
+
+	public Chat addUserToChat(String userId, String chatId, String packetSenderUserId) {
+		AbstractUser userToAdd = getUserById(userId);
+		AbstractUser packetSender = getUserById(packetSenderUserId);
+		Chat chat = getChatById(chatId);
+
+		// requestor must be the owner of the chat
+		// chat owner can't remove themselves
+		// userToAdd must not already be on the chat
+		if (userToAdd == null || chat == null || !packetSenderUserId.equals(chat.getOwner().getId())
+				|| userToAdd.getAllChatIds().contains(chatId) || userId.equals(packetSenderUserId))
+			return null;
+
+		chat.addChatter(userToAdd);
+		userToAdd.addChat(chat);
+
+		try {
+			File file = new File(this.chatTxtFilename);
+			FileWriter writer = new FileWriter(file, false);
+
+			for (Chat c : chats.values()) {
+				writer.write(c.toString() + "\n");
+			}
+
+			writer.close();
+		} catch (IOException e) {
+			System.out.println("Error writing chat updates: " + e.getMessage());
+			e.printStackTrace();
+		}
+
+		return chat;
+	}
+
+	public Chat removeUserFromChat(String userId, String chatId, String packetSenderUserId) {
+		AbstractUser userToRemove = getUserById(userId);
+		AbstractUser packetSender = getUserById(packetSenderUserId);
+		Chat chat = getChatById(chatId);
+
+		// requestor must be the owner of the chat
+		// user must be part of the chat already
+		// prevent owner from removing themselves
+		if (userToRemove == null || chat == null || !packetSenderUserId.equals(chat.getOwner().getId())
+				|| !userToRemove.getAllChatIds().contains(chatId) || userId.equals(packetSenderUserId))
+			return null;
+
+		chat.removeChatter(userToRemove);
+		userToRemove.removeChat(chat);
+
+		try {
+			File file = new File(this.chatTxtFilename);
+			FileWriter writer = new FileWriter(file, false);
+
+			for (Chat c : chats.values()) {
+				writer.write(c.toString() + "\n");
+			}
+
+			writer.close();
+		} catch (IOException e) {
+			System.out.println("Error writing chat updates: " + e.getMessage());
+			e.printStackTrace();
+		}
+
+		return chat;
 	}
 
 //	 public Boolean usernameExists(String name) {

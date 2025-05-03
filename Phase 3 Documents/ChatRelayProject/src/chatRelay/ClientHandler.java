@@ -105,10 +105,11 @@ public class ClientHandler implements Runnable {
 
 				AbstractUser user = server.getDBManager().checkLoginCredentials(username, password);
 
+				// give rejections w/ responses,
+				// ex: bad password, bad username, etc.
+
 				// check if user isn't disabled too
 				if (user != null) {
-					System.out.println("WE GOT A USER!");
-					// set user id
 					this.userId = user.getId();
 
 					server.addClient(userId, this); // add this ClientHanlder to Server's HashMap
@@ -119,9 +120,17 @@ public class ClientHandler implements Runnable {
 					System.out.println("Login Was Successful - sending user info: " + userId + ", isAdmin() = "
 							+ user.isAdmin());
 
-					// maybe have client just set the message based on a SUCCESS
+					// basic client version
+//					userInfoStringed.add(userId);
+//					userInfoStringed.add(user.getFirstName());
+//					userInfoStringed.add(user.getLastName());
+//					userInfoStringed.add(String.valueOf(user.isAdmin()));
+//					userInfoStringed.add(String.valueOf(user.isDisabled()));
+//					Packet userInfoPacket = new Packet(Status.SUCCESS, actionType.LOGIN, userInfoStringed, "SERVER");
+
 					userInfoStringed.add(server.getDBManager().getUserById(userId).toStringClient());
 					Packet userInfoPacket = new Packet(Status.SUCCESS, actionType.LOGIN, args, "SERVER");
+
 					sendPacket(userInfoPacket);
 
 					System.out.println("allUsersStringed Packet created/sent");
@@ -149,20 +158,23 @@ public class ClientHandler implements Runnable {
 					sendPacket(messagesPacket);
 
 				} else {
-//					server.sendErrorMessage("Invalid login");
-//					connect should close
+					ArrayList<String> errorArgs = new ArrayList<>();
+					errorArgs.add("Invalid username or password");
+
+					Packet errorPacket = new Packet(Status.ERROR, actionType.LOGIN, errorArgs, "SERVER");
+					sendPacket(errorPacket);
+
+					clientSocket.close();
 					return;
 				}
 			} else {
-//				server.sendErrorMessage("Expected login packet first");
-//					connect should close
 				return;
 			}
 
 // Step 2 - Now that user is logged in, process their subsequent steps			
 			while (true) {
 
-				System.out.println("Packet nextPacket part fired");
+				System.out.println("Inside 'step 2' loop for after login");
 				Packet nextPacket = (Packet) inputStream.readObject();
 				server.receivePacket(userId, nextPacket);
 			}
