@@ -59,7 +59,7 @@ public class Client {
     	
     }
     
-    public void login(String username, String password) {
+    public void login(String username, String password) { 
     	this.username = username;
     	this.password = password;
     	
@@ -124,7 +124,7 @@ public class Client {
     		ArrayList<String> args = new ArrayList<>();
         	args.add(userId);
         	args.add(String.valueOf(isDisabled));
-    		Packet enableUser = new Packet(Status.NONE, actionType.ENABLE_USER, args, this.userId);
+    		Packet enableUser = new Packet(Status.NONE, actionType.UPDATE_USER, args, this.userId);
     		try {
         		objectStream.writeObject(enableUser);
         	} catch (IOException e) {
@@ -156,6 +156,10 @@ public class Client {
     	Packet logout = new Packet(Status.NONE, actionType.LOGOUT, args, userId);
     	try {
     		objectStream.writeObject(logout);
+        	isConnected = false;
+    		objectStream.close();
+    		objectInStream.close();
+    		socket.close();
     	} catch (IOException e) {
     		e.printStackTrace();
     	}
@@ -242,22 +246,20 @@ public class Client {
 						// Parsing each Action Type
 						case LOGIN -> {
 							client.isConnected = true;
-							String[] words = incoming.getActionArguments().get(0).split("/");
+							List<String> args = incoming.getActionArguments();
 							
-							userId = words[0];
-							String username = words[1];
-							String firstName = words[2];
-							String lastName = words[3];
-							boolean isDisabled = words[4].equals("true") ? true : false;
-							boolean isAdmin = words[5].equals("true") ? true : false;
+							userId = args.get(0);
+							String firstName = args.get(1);
+							String lastName = args.get(2);
+							boolean isAdmin = args.get(3).equals("true") ? true : false;
+							boolean isDisabled = args.get(4).equals("true") ? true : false;
 							
 							if (isAdmin) {
-//								thisUser = new ITAdmin(username, firstName, lastName, isDisabled, isAdmin);
 								thisUser = new ITAdmin(true, username, firstName, lastName, isDisabled, isAdmin);
 							} else {
-//								thisUser = (username, firstName, lastName, isDisabled, isAdmin);
 								thisUser = new User(true, username, firstName, lastName, isDisabled, isAdmin);
 							}
+							notify();
 			                break;
 						}
 						case GET_ALL_CHATS -> {
@@ -273,14 +275,13 @@ public class Client {
 
 								// TODO: Consider that this is adding the owner to chatters
 								AbstractUser owner = null;
-								List<AbstractUser> chatters;
 								for (AbstractUser user : users) {
 									if (user.getId().equals(ownerId)) {
 										owner = user;
 									}
 								}
 								
-								chatters = new ArrayList<>();
+								List<AbstractUser> chatters = new ArrayList<>();
 								for (String userId : userIds) {
 									chatters.add(getUserById(userId));
 								}
@@ -303,10 +304,8 @@ public class Client {
 								AbstractUser newUser;
 
 								if (isAdmin) {
-//									newUser = (username, firstName, lastName, isDisabled, isAdmin);
 									newUser = new ITAdmin(true, username, firstName, lastName, isDisabled, isAdmin);
 								} else {
-//									newUser = new User(username, firstName, lastName, isDisabled, isAdmin);
 									newUser = new User(true, username, firstName, lastName, isDisabled, isAdmin);
 								}
 								users.add(newUser);
@@ -329,11 +328,12 @@ public class Client {
 								Message newMessage = new Message(messageId, createdAt, content, author, chat);
 								chat.addMessage(newMessage);
 							}
+							updateState();
 						}
 						case UPDATED_USER_BROADCAST -> {
 							List<String> args = incoming.getActionArguments();
 							AbstractUser updateUser = getUserById(args.get(0));
-							//updateUser.updateIsDisabled(Boolean.parseBoolean(args.get(1)));
+							updateUser.updateIsDisabled(Boolean.parseBoolean(args.get(1)));
 						}
 						case NEW_USER_BROADCAST -> {
 							List<String> args = incoming.getActionArguments();
@@ -347,52 +347,68 @@ public class Client {
 							AbstractUser newUser;
 
 							if (isAdmin) {
-//								newUser = new ITAdmin(username, firstname, lastname, isDisabled, isAdmin);
 								newUser = new ITAdmin(true, username, firstname, lastname, isDisabled, isAdmin);
 							} else {
-//								newUser = new User(username, firstname, lastname, isDisabled, isAdmin);
 								newUser = new User(true, username, firstname, lastname, isDisabled, isAdmin);
 							}
 							users.add(newUser);
+							updateState();
 						}
 						case NEW_CHAT_BROADCAST -> {
+							List<String> args = incoming.getActionArguments();
+
+							String chatId = args.get(0);
+							String ownerId = args.get(1);
+							String roomName = args.get(2);
+							boolean isPrivate = true;
+							String[] userIds = args.get(3).split(",");
+
+							AbstractUser owner = null;
+							List<AbstractUser> chatters;
+							for (AbstractUser user : users) {
+								if (user.getId().equals(ownerId)) {
+									owner = user;
+								}
+							}
 							
+							chatters = new ArrayList<>();
+							for (String userId : userIds) {
+								chatters.add(getUserById(userId));
+							}
+							
+							Chat newChat = new Chat(owner, roomName, chatId, chatters, isPrivate);
+							chats.add(newChat);
+							updateState();
 						}
 						case NEW_MESSAGE_BROADCAST -> {
-							String[] words = incoming.getActionArguments().get(0).split("/");
+							List<String> args = incoming.getActionArguments();
 
-							String messageId = words[0];
-							long createdAt = Long.parseLong(words[1]);
-							String content = words[2].replace(ESCAPED_SLASH, "/"); // have client replace escaped char instead
-							String authorId = words[3];
-							String chatId = words[4];
+							String messageId = args.get(0);
+							long createdAt = Long.parseLong(args.get(1));
+							String content = args.get(2).replace(ESCAPED_SLASH, "/"); 
+							String authorId = args.get(3);
+							String chatId = args.get(4);
 							
 							AbstractUser author = getUserById(authorId);
 							Chat chat = getChatById(chatId);
 							
 							Message newMessage = new Message(messageId, createdAt, content, author, chat);
 							chat.addMessage(newMessage);
+							updateState();
 						}
 						case ERROR -> {
 							isConnected = false;
-							login(username, password);
+							objectStream.close();
+							objectInStream.close();
+							socket.close();
 			                break;
-						}
-						case SUCCESS -> { 
-							// Update State or do nothing
-							break;
-						}
-						case LOGOUT -> {
-							// Need to fill based on DB Manager
-							// Does not require admin
-							break;
 						}
 						default -> {
 							System.out.println("Invalid Action Type: " + String.valueOf(incoming.getActionType()));
 							break;
 						}
 					}
-				} while((incoming = (Packet) inputStream.readObject()) != null && isConnected);
+				} while(isConnected && (incoming = (Packet) inputStream.readObject()) != null);
 			} catch (ClassNotFoundException | IOException e) {
 				e.printStackTrace();
 			}

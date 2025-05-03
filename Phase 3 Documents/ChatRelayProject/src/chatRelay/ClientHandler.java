@@ -121,15 +121,15 @@ public class ClientHandler implements Runnable {
 							+ user.isAdmin());
 
 					// basic client version
-//					userInfoStringed.add(userId);
-//					userInfoStringed.add(user.getFirstName());
-//					userInfoStringed.add(user.getLastName());
-//					userInfoStringed.add(String.valueOf(user.isAdmin()));
-//					userInfoStringed.add(String.valueOf(user.isDisabled()));
-//					Packet userInfoPacket = new Packet(Status.SUCCESS, actionType.LOGIN, userInfoStringed, "SERVER");
+					userInfoStringed.add(userId);
+					userInfoStringed.add(user.getFirstName());
+					userInfoStringed.add(user.getLastName());
+					userInfoStringed.add(String.valueOf(user.isAdmin()));
+					userInfoStringed.add(String.valueOf(user.isDisabled()));
+					Packet userInfoPacket = new Packet(Status.SUCCESS, actionType.LOGIN, userInfoStringed, "SERVER");
 
-					userInfoStringed.add(server.getDBManager().getUserById(userId).toStringClient());
-					Packet userInfoPacket = new Packet(Status.SUCCESS, actionType.LOGIN, args, "SERVER");
+					//userInfoStringed.add(server.getDBManager().getUserById(userId).toStringClient());
+					//Packet userInfoPacket = new Packet(Status.SUCCESS, actionType.LOGIN, args, "SERVER");
 
 					sendPacket(userInfoPacket);
 

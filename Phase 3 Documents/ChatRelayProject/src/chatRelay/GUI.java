@@ -26,6 +26,11 @@ public class GUI extends JFrame implements Runnable {
 	@Override
 	public void run() {
 		loginPane();
+		try { 
+			synchronized (frame) {
+				frame.wait();
+			}
+		} catch (InterruptedException e) { e.printStackTrace(); }
 		if (client.getAdminStatus()) {
 			buildITGUI();
 		} else {
@@ -494,6 +499,7 @@ public class GUI extends JFrame implements Runnable {
     }
 
 	public void update() {
-		
+		frame.revalidate();
+		frame.repaint();
 	}
 }
