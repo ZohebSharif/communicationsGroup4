@@ -186,11 +186,14 @@ public class GUI extends JFrame implements Runnable {
             	for (AbstractUser user : chat.getChatters()) {
             		members += user.getFirstName() + ", ";
             	}
-            	long lastMessageTime = chat.getMessages().get(chat.getMessages().size() - 1).getCreatedAt();
-            	DateFormat dateFormat = new SimpleDateFormat("yy/MM/dd HH:mm");
-            	dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-            	Date date = new Date(lastMessageTime);
-            	String time = dateFormat.format(date);
+            	String time = "No Messages";
+            	if (chat.getMessages().size() > 0) {
+            		long lastMessageTime = chat.getMessages().get(chat.getMessages().size() - 1).getCreatedAt();
+                	DateFormat dateFormat = new SimpleDateFormat("yy/MM/dd HH:mm");
+                	dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+                	Date date = new Date(lastMessageTime);
+                	time = dateFormat.format(date);
+            	}
                 JButton chatButton = new JButton("<html>" + owner + "<br>" + members + "<br>" + time + "</html>"); // Updated with information
                 privateChatsList.add(chatButton);
         	}
@@ -203,6 +206,12 @@ public class GUI extends JFrame implements Runnable {
         JLabel groupChatsTitle = new JLabel("Group Chats");
         leftPanel.add(groupChatsTitle);
 
+        try { 
+			synchronized (frame) {
+				frame.wait();
+			}
+		} catch (InterruptedException e) { e.printStackTrace(); }
+        
         // Group Chats list (in a scroll pane)
         JPanel groupChatsList = new JPanel();
         groupChatsList.setLayout(new BoxLayout(groupChatsList, BoxLayout.Y_AXIS));
@@ -213,11 +222,14 @@ public class GUI extends JFrame implements Runnable {
             	for (AbstractUser user : chat.getChatters()) {
             		members += user.getFirstName() + ", ";
             	}
-            	long lastMessageTime = chat.getMessages().get(chat.getMessages().size() - 1).getCreatedAt();
-            	DateFormat dateFormat = new SimpleDateFormat("yy/MM/dd HH:mm");
-            	dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-            	Date date = new Date(lastMessageTime);
-            	String time = dateFormat.format(date);
+            	String time = "No Messages";
+            	if (chat.getMessages().size() > 0) {
+            		long lastMessageTime = chat.getMessages().get(chat.getMessages().size()).getCreatedAt();
+                	DateFormat dateFormat = new SimpleDateFormat("yy/MM/dd HH:mm");
+                	dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+                	Date date = new Date(lastMessageTime);
+                	time = dateFormat.format(date);
+            	}
                 JButton groupButton = new JButton("<html>" + owner + "<br>" + members + "<br>" + time + "</html>"); // Updated with information
                 groupChatsList.add(groupButton);
         	}
@@ -279,7 +291,7 @@ public class GUI extends JFrame implements Runnable {
         JPanel topPanel = new JPanel(new BorderLayout());
 
         JPanel userInfoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JLabel fullNameLabel = new JLabel("Full Name");
+        JLabel fullNameLabel = new JLabel(client.getThisUser().getFirstName() + " " + client.getThisUser().getLastName());
         JButton addButton = new JButton("+");
         fullNameLabel.setForeground(Color.RED);
         userInfoPanel.add(fullNameLabel);
@@ -306,6 +318,12 @@ public class GUI extends JFrame implements Runnable {
         privateChatsTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
         leftPanel.add(privateChatsTitle);
 
+        try { 
+			synchronized (frame) {
+				frame.wait();
+			}
+		} catch (InterruptedException e) { e.printStackTrace(); }
+        
         // Private Chats list
         JPanel privateChatsList = new JPanel();
         privateChatsList.setLayout(new BoxLayout(privateChatsList, BoxLayout.Y_AXIS));
@@ -316,11 +334,14 @@ public class GUI extends JFrame implements Runnable {
             	for (AbstractUser user : chat.getChatters()) {
             		members += user.getFirstName() + ", ";
             	}
-            	long lastMessageTime = chat.getMessages().get(chat.getMessages().size() - 1).getCreatedAt();
-            	DateFormat dateFormat = new SimpleDateFormat("yy/MM/dd HH:mm");
-            	dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-            	Date date = new Date(lastMessageTime);
-            	String time = dateFormat.format(date);
+            	String time = "No Messages";
+            	if (chat.getMessages().size() > 0) {
+            		long lastMessageTime = chat.getMessages().get(chat.getMessages().size() - 1).getCreatedAt();
+                	DateFormat dateFormat = new SimpleDateFormat("yy/MM/dd HH:mm");
+                	dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+                	Date date = new Date(lastMessageTime);
+                	time = dateFormat.format(date);
+            	}
                 JButton chatButton = new JButton("<html>" + owner + "<br>" + members + "<br>" + time + "</html>"); // Updated with information
                 if (!chat.getChatters().contains(client.getThisUser())) {
                 	chatButton.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
@@ -347,11 +368,14 @@ public class GUI extends JFrame implements Runnable {
             	for (AbstractUser user : chat.getChatters()) {
             		members += user.getFirstName() + ", ";
             	}
-            	long lastMessageTime = chat.getMessages().get(chat.getMessages().size() - 1).getCreatedAt();
-            	DateFormat dateFormat = new SimpleDateFormat("yy/MM/dd HH:mm");
-            	dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-            	Date date = new Date(lastMessageTime);
-            	String time = dateFormat.format(date);
+            	String time = "No Messages";
+            	if (chat.getMessages().size() > 0) {
+            		long lastMessageTime = chat.getMessages().get(chat.getMessages().size() - 1).getCreatedAt();
+                	DateFormat dateFormat = new SimpleDateFormat("yy/MM/dd HH:mm");
+                	dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+                	Date date = new Date(lastMessageTime);
+                	time = dateFormat.format(date);
+            	}
                 JButton groupButton = new JButton("<html>" + owner + "<br>" + members + "<br>" + time + "</html>"); // Updated with information
                 if (!chat.getChatters().contains(client.getThisUser())) {
                 	groupButton.setBorder(BorderFactory.createLineBorder(Color.RED, 2));

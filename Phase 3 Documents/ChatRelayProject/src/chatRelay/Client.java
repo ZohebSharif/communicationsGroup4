@@ -329,12 +329,15 @@ public class Client {
 								Message newMessage = new Message(messageId, createdAt, content, author, chat);
 								chat.addMessage(newMessage);
 							}
-							updateState();
+							synchronized (clientGUI.getFrame()) {
+								clientGUI.getFrame().notify();
+							}
 						}
 						case UPDATED_USER_BROADCAST -> {
 							List<String> args = incoming.getActionArguments();
 							AbstractUser updateUser = getUserById(args.get(0));
 							updateUser.updateIsDisabled(Boolean.parseBoolean(args.get(1)));
+							updateState();
 						}
 						case NEW_USER_BROADCAST -> {
 							List<String> args = incoming.getActionArguments();
