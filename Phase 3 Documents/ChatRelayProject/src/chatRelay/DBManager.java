@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 // TODO: Consider concurrency/thread blocking stuff
 
 public class DBManager {
-	private static final String ESCAPED_SLASH = "498928918204"; // maybe make public for outgoing (or have client deal
+	private static final String ESCAPED_SLASH = "<<<SLASH>>>"; // maybe make public for outgoing (or have client deal
 																// do
 	// the convert?)
 

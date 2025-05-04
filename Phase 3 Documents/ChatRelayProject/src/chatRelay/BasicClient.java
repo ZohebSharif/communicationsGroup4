@@ -217,7 +217,9 @@ public class BasicClient {
 					System.out.println("\n");
 
 					// TESTING TO CREATE A CHAT
-					String[] userIds = { "1", "2", "6" };
+//					!!!
+//					String[] userIds = { "1", "2", "6" }
+					String[] userIds = null; 
 					createChat("test chat created from BasicClient!", true, userIds);
 
 					// TESTING TO CREATE A USER
@@ -395,8 +397,9 @@ public class BasicClient {
 			System.out.println("juse type in a username into CLI next time");
 
 			// default user to log in if no CLI args given
-			String username = "biljoe"; // non-admin, NOT disabled
-			String password = "asdf"; // testing "/" is valid
+//			String username = "biljoe"; 
+			String username = "bilsam"; 
+			String password = "asdf"; 
 
 			if (args.length == 1) {
 				username = args[0];
