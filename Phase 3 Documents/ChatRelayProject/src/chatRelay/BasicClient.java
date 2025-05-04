@@ -218,8 +218,8 @@ public class BasicClient {
 
 					// TESTING TO CREATE A CHAT
 //					!!!
-//					String[] userIds = { "1", "2", "6" }
-					String[] userIds = null; 
+					String[] userIds = { "1", "2", "6" }
+//					String[] userIds = null; 
 					createChat("test chat created from BasicClient!", true, userIds);
 
 					// TESTING TO CREATE A USER
