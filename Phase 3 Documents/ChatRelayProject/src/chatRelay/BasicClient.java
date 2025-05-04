@@ -178,6 +178,21 @@ public class BasicClient {
 		}
 	}
 
+	public void renameChat(String chatId, String newRoomName) {
+		System.out.println("BasicClient.renameChat() fired");
+		try {
+			ArrayList<String> args = new ArrayList<>();
+			args.add(chatId);
+			args.add(newRoomName);
+
+			Packet renamePacket = new Packet(Status.NONE, actionType.RENAME_CHAT, args, userId);
+			out.writeObject(renamePacket);
+			out.flush();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	public void listen() {
 		System.out.println("in listen() loop");
 		try {
@@ -216,7 +231,7 @@ public class BasicClient {
 
 					// TESTING TO CREATE A CHAT
 //					!!!
-					String[] userIds = { "1", "2", "6" };
+					String[] userIds = { "1", "2", "6", "8" };
 //					String[] userIds = null; 
 					createChat("test chat created from BasicClient!", true, userIds);
 
@@ -246,20 +261,14 @@ public class BasicClient {
 					// TESTING TO REMOVE A USER FROM CHAT
 					removeUserFromChat("7", "2"); // remove 'Sarah Connor' w/ user id for 7, from chat room 2
 					System.out.println("\n");
-					
-					
-					
-					
+
+// TESTING TO RENAME A CHAT
+					System.out.println("\n");
+					renameChat("12", "Renamed Chat From BasicClient!");
+					System.out.println("\n");
+
 //					TESTING LOGOUT
 //					logout(userId);
-
-					
-					
-					
-					
-					
-					
-					
 
 					// ++++++++++++++++++++++++++++++++++++++++++++++
 					// ++++++++++++++++++++++++++++++++++++++++++++++
@@ -339,6 +348,20 @@ public class BasicClient {
 					System.out.println("─────────────────────────────────────");
 					break;
 				}
+				case RENAME_CHAT_BROADCAST: {
+					System.out.println("──────────── CHAT RENAMED BROADCAST ────────────");
+
+					if (incoming.getStatus() == Status.ERROR) {
+						System.out.println("Error: " + args.get(0));
+					} else {
+						System.out.println("Chat ID: " + args.get(0));
+						System.out.println("New Chatroom Name: " + args.get(1));
+					}
+
+					System.out.println("─────────────────────────────────────");
+					break;
+				}
+
 				case GET_ALL_USERS:
 					System.out.println("Handled GET_ALL_USERS\n");
 					break;
@@ -412,7 +435,7 @@ public class BasicClient {
 //			String username = "biljoe"; 
 			String username = "bilsam";
 //			String password = "asdf";
-			String password = "a\nsdf/"; 
+			String password = "a\nsdf/";
 
 			if (args.length == 1) {
 				username = args[0];

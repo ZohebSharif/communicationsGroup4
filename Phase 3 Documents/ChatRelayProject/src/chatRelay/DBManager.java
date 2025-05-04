@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class DBManager {
 //	private static final String ESCAPED_SLASH = "<<<SLASH>>>"; // maybe make public for outgoing (or have client deal
-																// do
+	// do
 	// the convert?)
 
 	private ConcurrentHashMap<String, AbstractUser> users = new ConcurrentHashMap<>();
@@ -472,8 +472,7 @@ public class DBManager {
 
 //		if (user.getPassword().replace(ESCAPED_SLASH, "/").equals(password)) {
 //		if (Packet.unsanitize(user.getPassword()).equals(password)) {
-		
-		
+
 //		remember packet sanitizes
 		if (user.getPassword().equals(password)) {
 			return user;
@@ -552,6 +551,33 @@ public class DBManager {
 
 		chat.removeChatter(userToRemove);
 		userToRemove.removeChat(chat);
+
+		try {
+			File file = new File(this.chatTxtFilename);
+			FileWriter writer = new FileWriter(file, false);
+
+			for (Chat c : chats.values()) {
+				writer.write(c.toString() + "\n");
+			}
+
+			writer.close();
+		} catch (IOException e) {
+			System.out.println("Error writing chat updates: " + e.getMessage());
+			e.printStackTrace();
+		}
+
+		return chat;
+	}
+
+	public Chat renameChat(String senderId, String chatId, String newChatRoomName) {
+		Chat chat = getChatById(chatId);
+
+		// requestor must be the owner of the chat
+		if (!chat.getOwner().getId().equals(senderId)) {
+			return null;
+		}
+
+		chat.setRoomName(newChatRoomName);
 
 		try {
 			File file = new File(this.chatTxtFilename);

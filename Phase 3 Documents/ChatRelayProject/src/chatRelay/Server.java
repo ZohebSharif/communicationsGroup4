@@ -76,6 +76,10 @@ public class Server {
 			handleRemoveUserFromChat(clientId, packet);
 			break;
 
+		case RENAME_CHAT:
+			System.out.println("Server.receievePacket RENAME_CHAT switch fired");
+			handleRenameChat(clientId, packet);
+			break;
 		case LOGOUT:
 			System.out.println("Server.receievePacket LOGOUT switch fired");
 			handleLogout(clientId);
@@ -85,6 +89,31 @@ public class Server {
 		}
 	}
 
+	private void handleRenameChat(String clientId, Packet packet) {
+		ArrayList<String> args = packet.getActionArguments();
+		String chatroomId = args.get(0);
+		String newName = args.get(1);
+
+		Chat chat = dbManager.renameChat(clientId, chatroomId, newName);
+		ArrayList<String> broadcastingArgs = new ArrayList<>();
+
+		if (chat == null) {
+			broadcastingArgs.add("Cannot rename chatroom");
+
+			Packet errorPacket = new Packet(Status.ERROR, actionType.RENAME_CHAT_BROADCAST, broadcastingArgs,
+					"Server");
+
+			broadcastToClientById(clientId, errorPacket);
+		} else {
+			broadcastingArgs.add(chat.getId());
+			broadcastingArgs.add(chat.getRoomName());
+
+			Packet successPacket = new Packet(Status.SUCCESS, actionType.RENAME_CHAT_BROADCAST,
+					broadcastingArgs, "Server");
+			
+			broadcastToUsers(chat.getChatters(), successPacket);
+		}
+	}
 	private void handleRemoveUserFromChat(String clientId, Packet packet) {
 		ArrayList<String> args = packet.getActionArguments();
 		String userIdToRemove = args.get(0);
@@ -98,14 +127,19 @@ public class Server {
 
 			Packet errorPacket = new Packet(Status.ERROR, actionType.REMOVE_USER_FROM_CHAT_BROADCAST, broadcastingArgs,
 					"Server");
-			broadcastToUsersConnected(errorPacket);
+			
+			// TODO - broadcast only to sender
+			broadcastToAllUsersConnected(errorPacket);
+			
 		} else {
 			broadcastingArgs.add(userIdToRemove);
 			broadcastingArgs.add(chatId);
 
 			Packet successPacket = new Packet(Status.SUCCESS, actionType.REMOVE_USER_FROM_CHAT_BROADCAST,
 					broadcastingArgs, "Server");
-			broadcastToUsersConnected(successPacket);
+			
+			// TODO - broadcast to only chatters
+			broadcastToAllUsersConnected(successPacket);
 		}
 	}
 
@@ -144,7 +178,7 @@ public class Server {
 
 			Packet chatroomInfoPacket = new Packet(Status.SUCCESS, actionType.ADD_USER_TO_CHAT_BROADCAST,
 					broadcastingArgs, "Server");
-			broadcastToUsersConnected(chatroomInfoPacket);
+			broadcastToAllUsersConnected(chatroomInfoPacket);
 
 		}
 	}
@@ -179,7 +213,7 @@ public class Server {
 
 		Packet updatedUserPacket = new Packet(Status.SUCCESS, actionType.UPDATED_USER_BROADCAST, broadcastingArgs,
 				"Server");
-		broadcastToUsersConnected(updatedUserPacket);
+		broadcastToAllUsersConnected(updatedUserPacket);
 
 	}
 
@@ -231,7 +265,7 @@ public class Server {
 		broadcastingArgs.add(String.valueOf(newUser.isDisabled()));
 
 		Packet newUserPacket = new Packet(Status.SUCCESS, actionType.NEW_USER_BROADCAST, broadcastingArgs, "Server");
-		broadcastToUsersConnected(newUserPacket);
+		broadcastToAllUsersConnected(newUserPacket);
 
 	}
 
@@ -263,7 +297,7 @@ public class Server {
 		if (newChat.isPrivate()) {
 			broadcastToUsers(newChat.getChatters(), chatPacket);
 		} else {
-			broadcastToUsersConnected(chatPacket);
+			broadcastToAllUsersConnected(chatPacket);
 		}
 
 	}
@@ -302,7 +336,7 @@ public class Server {
 
 	// send Packet to ALL Users Currently connected
 	// TODO: ADD TRY/CATCH?
-	private void broadcastToUsersConnected(Packet chatPacket) {
+	private void broadcastToAllUsersConnected(Packet chatPacket) {
 		for (ClientHandler client : clients.values()) {
 			client.sendPacket(chatPacket);
 		}

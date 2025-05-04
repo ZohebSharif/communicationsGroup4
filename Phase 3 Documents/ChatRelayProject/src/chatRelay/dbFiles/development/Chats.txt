@@ -1,3 +1,6 @@
+11/8/test chat created from BasicClient!/true/1,2,6
+12/8/Renamed Chat From BasicClient!/true/1,2,6,8
+13/8/test chat created from BasicClient!/true/1,2,6,8
 1/1/general chat/true/1
 2/1/private chat/true/1,2,6
 3/2/private chat/true/5
@@ -8,5 +11,3 @@
 8/7/test chat created from BasicClient!/true/1,2,6
 9/8/test chat created from BasicClient!/true/1,2,6
 10/8/test chat created from BasicClient!/true/1,2,6
-11/8/test chat created from BasicClient!/true/1,2,6
-12/8/test chat created from BasicClient!/true/1,2,6

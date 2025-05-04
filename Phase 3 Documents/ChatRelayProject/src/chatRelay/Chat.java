@@ -108,6 +108,10 @@ public class Chat {
     	return chattersIds;
     }
     
+    public void setRoomName(String newname) {
+    	this.roomName = newname;
+    }
+    
     public Boolean isPrivate() {
         return isPrivate;
     }
