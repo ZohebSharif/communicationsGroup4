@@ -100,20 +100,20 @@ public class Server {
 		if (chat == null) {
 			broadcastingArgs.add("Cannot rename chatroom");
 
-			Packet errorPacket = new Packet(Status.ERROR, actionType.RENAME_CHAT_BROADCAST, broadcastingArgs,
-					"Server");
+			Packet errorPacket = new Packet(Status.ERROR, actionType.RENAME_CHAT_BROADCAST, broadcastingArgs, "Server");
 
 			broadcastToClientById(clientId, errorPacket);
 		} else {
 			broadcastingArgs.add(chat.getId());
 			broadcastingArgs.add(chat.getRoomName());
 
-			Packet successPacket = new Packet(Status.SUCCESS, actionType.RENAME_CHAT_BROADCAST,
-					broadcastingArgs, "Server");
-			
+			Packet successPacket = new Packet(Status.SUCCESS, actionType.RENAME_CHAT_BROADCAST, broadcastingArgs,
+					"Server");
+
 			broadcastToUsers(chat.getChatters(), successPacket);
 		}
 	}
+
 	private void handleRemoveUserFromChat(String clientId, Packet packet) {
 		ArrayList<String> args = packet.getActionArguments();
 		String userIdToRemove = args.get(0);
@@ -127,19 +127,17 @@ public class Server {
 
 			Packet errorPacket = new Packet(Status.ERROR, actionType.REMOVE_USER_FROM_CHAT_BROADCAST, broadcastingArgs,
 					"Server");
-			
-			// TODO - broadcast only to sender
-			broadcastToAllUsersConnected(errorPacket);
-			
+
+			broadcastToClientById(clientId, errorPacket);
+
 		} else {
 			broadcastingArgs.add(userIdToRemove);
 			broadcastingArgs.add(chatId);
 
 			Packet successPacket = new Packet(Status.SUCCESS, actionType.REMOVE_USER_FROM_CHAT_BROADCAST,
 					broadcastingArgs, "Server");
-			
-			// TODO - broadcast to only chatters
-			broadcastToAllUsersConnected(successPacket);
+
+			broadcastToUsers(chat.getChatters(), successPacket);
 		}
 	}
 
@@ -178,24 +176,11 @@ public class Server {
 
 			Packet chatroomInfoPacket = new Packet(Status.SUCCESS, actionType.ADD_USER_TO_CHAT_BROADCAST,
 					broadcastingArgs, "Server");
-			broadcastToAllUsersConnected(chatroomInfoPacket);
+			broadcastToUsers(chat.getChatters(), chatroomInfoPacket);
 
 		}
 	}
 
-//	private void handleRemoveUserFromChat(String clientId, Packet packet) {
-//		ArrayList<String> args = packet.getActionArguments();
-//		String chatId = args.get(0);
-//		String userIdToRemove = args.get(1);
-//
-//		Chat chat = dbManager.getChatById(chatId);
-//		AbstractUser userToRemove = dbManager.getUserById(userIdToRemove);
-//
-//		if (chat != null && userToRemove != null) {
-//			chat.removeChatter(userToRemove);
-//			// Optionally, update DB file now
-//		}
-//	}
 
 	private void handleUpdateUser(String clientId, Packet packet) {
 //		TODO: 1) (low priority) Admins cant enable/disable admins
@@ -276,9 +261,6 @@ public class Server {
 		for (String userId : args.get(0).split("/")) {
 			userIds.add(userId);
 		}
-
-		// TODO: frontend should replace the "/",
-//		or Packet could have done that 
 
 		String roomName = args.get(1);
 		boolean isPrivate = args.get(2).equals("true");

@@ -264,7 +264,7 @@ public class BasicClient {
 
 // TESTING TO RENAME A CHAT
 					System.out.println("\n");
-					renameChat("12", "Renamed Chat From BasicClient!");
+					renameChat("4", "Renamed Chat From BasicClient!"); // chatroom id of 4 should get name changed
 					System.out.println("\n");
 
 //					TESTING LOGOUT
