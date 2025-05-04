@@ -33,13 +33,13 @@ public class GUI extends JFrame implements Runnable {
 		try { 
 			synchronized (frame) {
 				frame.wait();
-				if (client.getAdminStatus()) {
-					buildITGUI();
-				} else {
-					buildUserGUI();
-				}
 			}
 		} catch (InterruptedException e) { e.printStackTrace(); }
+		if (client.getAdminStatus()) {
+			buildITGUI();
+		} else {
+			buildUserGUI();
+		}
 	}
 	
 	private void loginPane() {

@@ -253,20 +253,17 @@ public class Client {
 							userId = args.get(0);
 							String firstName = args.get(1);
 							String lastName = args.get(2);
-							boolean isAdmin = args.get(3).equals("true") ? true : false;
+							isITAdmin = args.get(3).equals("true") ? true : false;
 							boolean isDisabled = args.get(4).equals("true") ? true : false;
 							
-							if (isAdmin) {
-								thisUser = new ITAdmin(true, username, firstName, lastName, isDisabled, isAdmin);
+							if (isITAdmin) {
+								thisUser = new ITAdmin(true, userId, username, firstName, lastName, isDisabled, isITAdmin);
 							} else {
-								thisUser = new User(true, username, firstName, lastName, isDisabled, isAdmin);
+								thisUser = new User(true, userId, username, firstName, lastName, isDisabled, isITAdmin);
 							}
-							try {
-								synchronized (clientGUI) {
-									clientGUI.getFrame().notify();
-								}
-							} catch (IllegalMonitorStateException e) {
-								e.printStackTrace();
+							
+							synchronized (clientGUI.getFrame()) {
+								clientGUI.getFrame().notify();
 							}
 			                break;
 						}
@@ -298,6 +295,7 @@ public class Client {
 							for (String line : incoming.getActionArguments()) {
 								String[] words = line.split("/");
 								
+								String userId = words[0];
 								String username = words[1];
 								String firstName = words[2];
 								String lastName = words[3];
@@ -307,9 +305,9 @@ public class Client {
 								AbstractUser newUser;
 
 								if (isAdmin) {
-									newUser = new ITAdmin(true, username, firstName, lastName, isDisabled, isAdmin);
+									newUser = new ITAdmin(true, userId, username, firstName, lastName, isDisabled, isAdmin);
 								} else {
-									newUser = new User(true, username, firstName, lastName, isDisabled, isAdmin);
+									newUser = new User(true, userId, username, firstName, lastName, isDisabled, isAdmin);
 								}
 								users.add(newUser);
 							}
@@ -341,7 +339,8 @@ public class Client {
 						case NEW_USER_BROADCAST -> {
 							List<String> args = incoming.getActionArguments();
 							
-							String username = args.get(0);
+							String userId = args.get(0);
+							String username = args.get(1);
 							String firstname = args.get(2);
 							String lastname = args.get(3);
 							boolean isDisabled = args.get(4).equals("true");
@@ -350,9 +349,9 @@ public class Client {
 							AbstractUser newUser;
 
 							if (isAdmin) {
-								newUser = new ITAdmin(true, username, firstname, lastname, isDisabled, isAdmin);
+								newUser = new ITAdmin(true, userId, username, firstname, lastname, isDisabled, isAdmin);
 							} else {
-								newUser = new User(true, username, firstname, lastname, isDisabled, isAdmin);
+								newUser = new User(true, userId, username, firstname, lastname, isDisabled, isAdmin);
 							}
 							users.add(newUser);
 							updateState();
