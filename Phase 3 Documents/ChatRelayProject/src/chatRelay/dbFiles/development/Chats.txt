@@ -2,3 +2,9 @@
 2/1/private chat/true/1,2,6
 3/2/private chat/true/5
 4/8/test chat created from BasicClient!/true/1,2,6
+5/8/test chat created from BasicClient!/true/1,2,6
+6/8/test chat created from BasicClient!/true/1,2,6
+7/8/test chat created from BasicClient!/true/1,2,6
+8/7/test chat created from BasicClient!/true/1,2,6
+9/8/test chat created from BasicClient!/true/1,2,6
+10/8/test chat created from BasicClient!/true/1,2,6

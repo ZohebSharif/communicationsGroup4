@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 // TODO: Consider concurrency/thread blocking stuff
 
 public class DBManager {
-	private static final String ESCAPED_SLASH = "<<<SLASH>>>"; // maybe make public for outgoing (or have client deal
+//	private static final String ESCAPED_SLASH = "<<<SLASH>>>"; // maybe make public for outgoing (or have client deal
 																// do
 	// the convert?)
 
@@ -348,7 +348,8 @@ public class DBManager {
 
 		// TODO: ENSURE USERNAMES ARE UNIQUE
 
-		String sanitizedPassword = password.replace("/", ESCAPED_SLASH);
+//		String sanitizedPassword = password.replace("/", ESCAPED_SLASH);
+		String sanitizedPassword = Packet.sanitize(password);
 
 		AbstractUser newUser;
 
@@ -375,7 +376,8 @@ public class DBManager {
 //	private void writeNewChat(String ownerId, String roomName, String[] chatterIds, boolean isPrivate) {
 	public Chat writeNewChat(String ownerId, String roomName, ArrayList<String> chatterIds, boolean isPrivate) {
 		AbstractUser owner = getUserById(ownerId);
-		String sanitizedRoomName = roomName.replace("/", ESCAPED_SLASH); // a "/" inside content will break the DB
+//		String sanitizedRoomName = roomName.replace("/", ESCAPED_SLASH); // a "/" inside content will break the DB
+		String sanitizedRoomName = Packet.sanitize(roomName);
 
 //		consider using a setter to avoid 2nd loop?
 
@@ -416,7 +418,8 @@ public class DBManager {
 		AbstractUser author = getUserById(authorId);
 		Chat chat = getChatById(chatId);
 
-		String sanitizedContent = content.replace("/", ESCAPED_SLASH); // a "/" inside content will break the DB
+//		String sanitizedContent = content.replace("/", ESCAPED_SLASH); // a "/" inside content will break the DB
+		String sanitizedContent = Packet.sanitize(content);
 		Message newMessage = new Message(sanitizedContent, author, chat);
 
 		chat.addMessage(newMessage);
@@ -462,11 +465,17 @@ public class DBManager {
 	}
 
 	public AbstractUser checkLoginCredentials(String username, String password) {
+		System.out.println("checkLoginCreds(), username: " + username + ", pass:" + password);
 		AbstractUser user = getUserByUsername(username);
 		if (user == null)
 			return null;
 
-		if (user.getPassword().replace(ESCAPED_SLASH, "/").equals(password)) {
+//		if (user.getPassword().replace(ESCAPED_SLASH, "/").equals(password)) {
+//		if (Packet.unsanitize(user.getPassword()).equals(password)) {
+		
+		
+//		remember packet sanitizes
+		if (user.getPassword().equals(password)) {
 			return user;
 		}
 		return null;

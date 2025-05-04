@@ -11,8 +11,6 @@ public class BasicClient {
 //	private static boolean STRESS_TEST = true;
 	private static boolean STRESS_TEST = false;
 
-	
-	
 	private Socket socket;
 	private ObjectOutputStream out;
 	private ObjectInputStream in;
@@ -218,7 +216,7 @@ public class BasicClient {
 
 					// TESTING TO CREATE A CHAT
 //					!!!
-					String[] userIds = { "1", "2", "6" }
+					String[] userIds = { "1", "2", "6" };
 //					String[] userIds = null; 
 					createChat("test chat created from BasicClient!", true, userIds);
 
@@ -393,13 +391,14 @@ public class BasicClient {
 			BasicClient client = new BasicClient("127.0.0.1", 1337); // local host
 
 			System.out.println(
-					"Some users you can log into, otherwise it'll log into \"biljoe\": chrsmi kenkot stearm zohsha talsha biljoe ");
+					"Some users you can log into, otherwise it'll log into \"bilsam\": chrsmi kenkot stearm zohsha talsha biljoe ");
 			System.out.println("juse type in a username into CLI next time");
 
 			// default user to log in if no CLI args given
 //			String username = "biljoe"; 
-			String username = "bilsam"; 
-			String password = "asdf"; 
+			String username = "bilsam";
+//			String password = "asdf";
+			String password = "a\nsdf/"; 
 
 			if (args.length == 1) {
 				username = args[0];
