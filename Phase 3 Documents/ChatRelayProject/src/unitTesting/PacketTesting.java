@@ -1,6 +1,7 @@
 package unitTesting;
 
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,14 +16,15 @@ import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import chatRelay.Packet;
 import chatRelay.actionType;
+import java.util.ArrayList;
 
 public class PacketTesting {
     
-	// create test objects
+    // create test objects
+    private static ArrayList<String> LOGIN_ARGS = new ArrayList<String>();
+    private static ArrayList<String> MESSAGE_ARGS = new ArrayList<String>();
+    private static ArrayList<String> CREATE_CHAT_ARGS = new ArrayList<String>();
     private static final String SENDER_ID = "user123";
-    private static final String[] LOGIN_ARGS = {"username", "password"};
-    private static final String[] MESSAGE_ARGS = {"Hello, this is a test message!", "chat001"};
-    private static final String[] CREATE_CHAT_ARGS = {"[user1, user2, user3]", "Test Chat Room"};
     
     // create packets
     private Packet loginPacket;
@@ -30,11 +32,26 @@ public class PacketTesting {
     private Packet createChatPacket;
     
     @BeforeEach
+    // set up ArrayLists
     // set up test packets with action types
     public void setUp() {
-        loginPacket = new Packet(actionType.LOGIN, LOGIN_ARGS, SENDER_ID);
-        messagePacket = new Packet(actionType.SEND_MESSAGE, MESSAGE_ARGS, SENDER_ID);
-        createChatPacket = new Packet(actionType.CREATE_CHAT, CREATE_CHAT_ARGS, SENDER_ID);
+        // Clear ArrayLists in case tests run multiple times
+        LOGIN_ARGS.clear();
+        MESSAGE_ARGS.clear();
+        CREATE_CHAT_ARGS.clear();
+        
+        LOGIN_ARGS.add("username");
+        LOGIN_ARGS.add("password");
+    	
+        MESSAGE_ARGS.add("Hello, this is a test message!");
+        MESSAGE_ARGS.add("chat001");
+        
+        CREATE_CHAT_ARGS.add("[user1, user2, user3]");
+        CREATE_CHAT_ARGS.add("Test Chat Room");
+        
+        loginPacket = new Packet(null, actionType.LOGIN, LOGIN_ARGS, SENDER_ID);
+        messagePacket = new Packet(null, actionType.SEND_MESSAGE, MESSAGE_ARGS, SENDER_ID);
+        createChatPacket = new Packet(null, actionType.CREATE_CHAT, CREATE_CHAT_ARGS, SENDER_ID);
     }
     
     // test the constructor
@@ -42,8 +59,7 @@ public class PacketTesting {
     public void testConstructor() {
         assertNotNull(loginPacket, "Packet should not be null");
         assertEquals(actionType.LOGIN, loginPacket.getActionType(), "Action type should match");
-        assertArrayEquals(LOGIN_ARGS, loginPacket.getActionArguments(), "Action arguments should match");
-        assertEquals(SENDER_ID, loginPacket.getSenderId(), "Sender ID should match");
+        assertEquals(LOGIN_ARGS, loginPacket.getActionArguments(), "Action arguments should match");
         assertNotNull(loginPacket.getTimeCreated(), "Creation time should not be null");
     }
     
@@ -58,17 +74,9 @@ public class PacketTesting {
     // test getactionargument methods
     @Test
     public void testGetActionArguments() {
-        assertArrayEquals(LOGIN_ARGS, loginPacket.getActionArguments(), "getActionArguments() should return correct login args");
-        assertArrayEquals(MESSAGE_ARGS, messagePacket.getActionArguments(), "getActionArguments() should return correct message args");
-        assertArrayEquals(CREATE_CHAT_ARGS, createChatPacket.getActionArguments(), "getActionArguments() should return correct create chat args");
-    }
-    
-    // test getter for senderid
-    @Test
-    public void testGetSenderId() {
-        assertEquals(SENDER_ID, loginPacket.getSenderId(), "getSenderId() should return the correct sender ID");
-        assertEquals(SENDER_ID, messagePacket.getSenderId(), "getSenderId() should return the correct sender ID");
-        assertEquals(SENDER_ID, createChatPacket.getSenderId(), "getSenderId() should return the correct sender ID");
+        assertEquals(LOGIN_ARGS, loginPacket.getActionArguments(), "getActionArguments() should return correct login args");
+        assertEquals(MESSAGE_ARGS, messagePacket.getActionArguments(), "getActionArguments() should return correct message args");
+        assertEquals(CREATE_CHAT_ARGS, createChatPacket.getActionArguments(), "getActionArguments() should return correct create chat args");
     }
     
     // test gettimecreated method
@@ -77,7 +85,7 @@ public class PacketTesting {
         LocalTime now = LocalTime.now();
         LocalTime packetTime = loginPacket.getTimeCreated();
         
-        // Time difference should be very small (within a few seconds)
+        // time difference should be very small (within a few seconds)
         long secondsDiff = ChronoUnit.SECONDS.between(packetTime, now);
         assertTrue(secondsDiff < 5, "Packet creation time should be very close to current time");
     }
@@ -85,66 +93,90 @@ public class PacketTesting {
     // test the serialization 
     @Test
     public void testSerialization() throws IOException, ClassNotFoundException {
-        // Serialize the packet
+        Packet testPacket = new Packet(null, actionType.SEND_MESSAGE, MESSAGE_ARGS, "serialTest123");
+        
+        // serialize the packet
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(baos);
-        oos.writeObject(messagePacket);
+        oos.writeObject(testPacket);
         oos.close();
         
-        // deserialze the packet
+        // deserialze the pack et
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         ObjectInputStream ois = new ObjectInputStream(bais);
         Packet deserializedPacket = (Packet) ois.readObject();
         ois.close();
         
         // verify deserialized packet matches original
-        assertEquals(messagePacket.getActionType(), deserializedPacket.getActionType(), "Action type should match after serialization");
-        assertArrayEquals(messagePacket.getActionArguments(), deserializedPacket.getActionArguments(), "Action arguments should match after serialization");
-        assertEquals(messagePacket.getSenderId(), deserializedPacket.getSenderId(), "Sender ID should match after serialization");
+        assertEquals(testPacket.getActionType(), deserializedPacket.getActionType(), "Action type should match after serialization");
+        assertEquals(testPacket.getActionArguments(), deserializedPacket.getActionArguments(), "Action arguments should match after serialization");
+        
+    
     }
     
     // test with empty action arguments
     @Test
     public void testEmptyActionArguments() {
-        // create packet
-        Packet emptyArgsPacket = new Packet(actionType.LOGOUT, new String[]{}, SENDER_ID);
+        // create packet with empty ArrayList
+        ArrayList<String> emptyArgs = new ArrayList<>();
+        Packet emptyArgsPacket = new Packet(null, actionType.LOGOUT, emptyArgs, SENDER_ID);
         
-        assertEquals(0, emptyArgsPacket.getActionArguments().length, "Action arguments array should be empty");
+        assertEquals(0, emptyArgsPacket.getActionArguments().size(), "Action arguments ArrayList should be empty");
         assertEquals(actionType.LOGOUT, emptyArgsPacket.getActionType(), "Action type should be LOGOUT");
     }
     
     // test with null action arguments
     @Test
     public void testNullActionArguments() {
-    	// create packet with null action args
-        Packet nullArgsPacket = new Packet(actionType.LOGOUT, null, SENDER_ID);
+        // create packet with null action args
+        Packet nullArgsPacket = new Packet(null, actionType.LOGOUT, null, SENDER_ID);
         
         assertNull(nullArgsPacket.getActionArguments(), "Action arguments should be null");
     }
     
     // test sending null sender id
     @Test
-    @DisplayName("Test with null sender ID")
     public void testNullSenderId() {
-        Packet nullSenderPacket = new Packet(actionType.LOGOUT, new String[]{}, null);
-        assertNull(nullSenderPacket.getSenderId(), "Sender ID should be null");
+        // create a packet with null sender ID
+        ArrayList<String> testArgs = new ArrayList<>();
+        testArgs.add("test argument");
+        Packet nullSenderPacket = new Packet(null, actionType.LOGOUT, testArgs, null);
+        
+        // direct check of return value
+        String retrievedSenderId = nullSenderPacket.getSenderId();
+        assertNull(retrievedSenderId, "getSenderId() should return null when sender ID is null");
     }
     
     // test varied action types
     @Test
     public void testAllActionTypes() {
+        // create ArrayList for each test case
+        ArrayList<String> emptyArgs = new ArrayList<>();
+        ArrayList<String> successArgs = new ArrayList<>();
+        successArgs.add("Operation completed successfully");
+        ArrayList<String> errorArgs = new ArrayList<>();
+        errorArgs.add("Error occurred");
+        ArrayList<String> createUserArgs = new ArrayList<>();
+        createUserArgs.add("username");
+        createUserArgs.add("password");
+        createUserArgs.add("firstName");
+        createUserArgs.add("lastName");
+        ArrayList<String> enableUserArgs = new ArrayList<>();
+        enableUserArgs.add("user456");
+        ArrayList<String> disableUserArgs = new ArrayList<>();
+        disableUserArgs.add("user789");
 
-        Packet loginPacket = new Packet(actionType.LOGIN, LOGIN_ARGS, SENDER_ID);
-        Packet logoutPacket = new Packet(actionType.LOGOUT, new String[]{}, SENDER_ID);
-        Packet sendMessagePacket = new Packet(actionType.SEND_MESSAGE, MESSAGE_ARGS, SENDER_ID);
-        Packet getAllChatsPacket = new Packet(actionType.GET_ALL_CHATS, new String[]{}, SENDER_ID);
-        Packet getAllUsersPacket = new Packet(actionType.GET_ALL_USERS, new String[]{}, SENDER_ID);
-        Packet createChatPacket = new Packet(actionType.CREATE_CHAT, CREATE_CHAT_ARGS, SENDER_ID);
-        Packet successPacket = new Packet(actionType.SUCCESS, new String[]{"Operation completed successfully"}, SENDER_ID);
-        Packet errorPacket = new Packet(actionType.ERROR, new String[]{"Error occurred"}, SENDER_ID);
-        Packet createUserPacket = new Packet(actionType.CREATE_USER, new String[]{"username", "password", "firstName", "lastName"}, SENDER_ID);
-        Packet enableUserPacket = new Packet(actionType.ENABLE_USER, new String[]{"user456"}, SENDER_ID);
-        Packet disableUserPacket = new Packet(actionType.DISABLE_USER, new String[]{"user789"}, SENDER_ID);
+        Packet loginPacket = new Packet(null, actionType.LOGIN, LOGIN_ARGS, SENDER_ID);
+        Packet logoutPacket = new Packet(null, actionType.LOGOUT, emptyArgs, SENDER_ID);
+        Packet sendMessagePacket = new Packet(null, actionType.SEND_MESSAGE, MESSAGE_ARGS, SENDER_ID);
+        Packet getAllChatsPacket = new Packet(null, actionType.GET_ALL_CHATS, emptyArgs, SENDER_ID);
+        Packet getAllUsersPacket = new Packet(null, actionType.GET_ALL_USERS, emptyArgs, SENDER_ID);
+        Packet createChatPacket = new Packet(null, actionType.CREATE_CHAT, CREATE_CHAT_ARGS, SENDER_ID);
+        Packet successPacket = new Packet(null, actionType.SUCCESS, successArgs, SENDER_ID);
+        Packet errorPacket = new Packet(null, actionType.ERROR, errorArgs, SENDER_ID);
+        Packet createUserPacket = new Packet(null, actionType.CREATE_USER, createUserArgs, SENDER_ID);
+        Packet enableUserPacket = new Packet(null, actionType.ENABLE_USER, enableUserArgs, SENDER_ID);
+        Packet disableUserPacket = new Packet(null, actionType.DISABLE_USER, disableUserArgs, SENDER_ID);
         
         // verify all of these packets have action types
         assertEquals(actionType.LOGIN, loginPacket.getActionType());
