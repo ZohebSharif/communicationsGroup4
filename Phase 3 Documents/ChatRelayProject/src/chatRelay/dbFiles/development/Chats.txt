@@ -8,3 +8,5 @@
 8/7/test chat created from BasicClient!/true/1,2,6
 9/8/test chat created from BasicClient!/true/1,2,6
 10/8/test chat created from BasicClient!/true/1,2,6
+11/8/test chat created from BasicClient!/true/1,2,6
+12/8/test chat created from BasicClient!/true/1,2,6

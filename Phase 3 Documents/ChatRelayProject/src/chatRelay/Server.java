@@ -77,6 +77,7 @@ public class Server {
 			break;
 
 		case LOGOUT:
+			System.out.println("Server.receievePacket LOGOUT switch fired");
 			handleLogout(clientId);
 			break;
 		default:

@@ -210,7 +210,7 @@ public class BasicClient {
 
 					// TESTING TO SEND A MESSAGE
 					String chatId = "2";
-					sendMessage(userId, chatId, "TESTING sendMessage() / SEND_MESSAGE");
+					sendMessage(userId, chatId, "TESTING \nsendMessage() / SEND_MESSAGE");
 
 					System.out.println("\n");
 
@@ -246,6 +246,20 @@ public class BasicClient {
 					// TESTING TO REMOVE A USER FROM CHAT
 					removeUserFromChat("7", "2"); // remove 'Sarah Connor' w/ user id for 7, from chat room 2
 					System.out.println("\n");
+					
+					
+					
+					
+//					TESTING LOGOUT
+//					logout(userId);
+
+					
+					
+					
+					
+					
+					
+					
 
 					// ++++++++++++++++++++++++++++++++++++++++++++++
 					// ++++++++++++++++++++++++++++++++++++++++++++++

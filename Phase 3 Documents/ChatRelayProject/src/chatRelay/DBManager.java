@@ -452,8 +452,8 @@ public class DBManager {
 		// ex for loading messages from DB into memory: str1.replace("[sLaSH]", /)
 	}
 
-	public void addUserToChat(String userId) {
-	}
+//	public void addUserToChat(String userId) {
+//	}
 
 	public AbstractUser getUserByUsername(String username) {
 		for (AbstractUser user : users.values()) {
