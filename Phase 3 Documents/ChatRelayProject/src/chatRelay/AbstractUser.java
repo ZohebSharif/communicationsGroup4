@@ -41,7 +41,8 @@ public abstract class AbstractUser {
 	}
 
 	// constructor for client to make users (No Password Passed)
-	public AbstractUser(boolean frontEndUser, String username, String firstName, String lastName, boolean isDisabled, boolean isAdmin) {
+	public AbstractUser(boolean frontEndUser, String id, String username, String firstName, String lastName, boolean isDisabled, boolean isAdmin) {
+		this.id = id;
 		this.username = username;
 		this.firstName = firstName;
 		this.lastName = lastName;
