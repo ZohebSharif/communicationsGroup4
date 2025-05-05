@@ -45,47 +45,52 @@ public class Server {
 
 	public void receivePacket(String clientId, Packet packet) {
 
-		System.out.println("Server.receivePacket() fired");
-		switch (packet.getActionType()) {
+		try {
+
+			System.out.println("Server.receivePacket() fired");
+			switch (packet.getActionType()) {
 //		case LOGIN:
 //		 	takes place on clientHandler
 //			break;
-		case SEND_MESSAGE:
-			System.out.println("Server.receievePacket() SEND_MESSAGE switch fired");
-			handleSendMessage(clientId, packet);
-			break;
-		case CREATE_CHAT:
-			System.out.println("Server.receievePacket() CREATE_CHAT switch fired");
-			handleCreateChat(clientId, packet);
-			break;
-		case CREATE_USER:
-			System.out.println("Server.receievePacket() CREATE_USER switch fired");
-			handleCreateUser(clientId, packet);
-			break;
-		case UPDATE_USER:
-			System.out.println("Server.receievePacket() CREATE_USER switch fired");
-			handleUpdateUser(clientId, packet);
-			break;
+			case SEND_MESSAGE:
+				System.out.println("Server.receievePacket() SEND_MESSAGE switch fired");
+				handleSendMessage(clientId, packet);
+				break;
+			case CREATE_CHAT:
+				System.out.println("Server.receievePacket() CREATE_CHAT switch fired");
+				handleCreateChat(clientId, packet);
+				break;
+			case CREATE_USER:
+				System.out.println("Server.receievePacket() CREATE_USER switch fired");
+				handleCreateUser(clientId, packet);
+				break;
+			case UPDATE_USER:
+				System.out.println("Server.receievePacket() CREATE_USER switch fired");
+				handleUpdateUser(clientId, packet);
+				break;
 
-		case ADD_USER_TO_CHAT:
-			System.out.println("Server.receievePacket() ADD_USER_TO_CHAT switch fired");
-			handleAddUserToChat(clientId, packet);
-			break;
-		case REMOVE_USER_FROM_CHAT:
-			System.out.println("Server.receievePacket REMOVE_USER_FROM_CHAT switch fired");
-			handleRemoveUserFromChat(clientId, packet);
-			break;
+			case ADD_USER_TO_CHAT:
+				System.out.println("Server.receievePacket() ADD_USER_TO_CHAT switch fired");
+				handleAddUserToChat(clientId, packet);
+				break;
+			case REMOVE_USER_FROM_CHAT:
+				System.out.println("Server.receievePacket REMOVE_USER_FROM_CHAT switch fired");
+				handleRemoveUserFromChat(clientId, packet);
+				break;
 
-		case RENAME_CHAT:
-			System.out.println("Server.receievePacket RENAME_CHAT switch fired");
-			handleRenameChat(clientId, packet);
-			break;
-		case LOGOUT:
-			System.out.println("Server.receievePacket LOGOUT switch fired");
-			handleLogout(clientId);
-			break;
-		default:
-			sendErrorMessage(clientId, "Unknown action type: " + packet.getActionType());
+			case RENAME_CHAT:
+				System.out.println("Server.receievePacket RENAME_CHAT switch fired");
+				handleRenameChat(clientId, packet);
+				break;
+			case LOGOUT:
+				System.out.println("Server.receievePacket LOGOUT switch fired");
+				handleLogout(clientId);
+				break;
+			default:
+				sendErrorMessage(clientId, "Unknown action type: " + packet.getActionType());
+			}
+		} catch (Exception e) {
+			sendErrorMessage(clientId, "Unable to handle the packet");
 		}
 	}
 
@@ -180,7 +185,6 @@ public class Server {
 
 		}
 	}
-
 
 	private void handleUpdateUser(String clientId, Packet packet) {
 //		TODO: 1) (low priority) Admins cant enable/disable admins
@@ -304,8 +308,6 @@ public class Server {
 		broadcastToUsers(chat.getChatters(), messagePacket);
 	}
 
-	// send Packet to SOME users currently connected
-	// TODO: ADD TRY/CATCH ?
 	private void broadcastToUsers(List<AbstractUser> usersToSendTo, Packet packet) {
 		for (AbstractUser user : usersToSendTo) {
 			ClientHandler client = clients.get(user.getId());
@@ -316,17 +318,12 @@ public class Server {
 		}
 	}
 
-	// send Packet to ALL Users Currently connected
-	// TODO: ADD TRY/CATCH?
 	private void broadcastToAllUsersConnected(Packet chatPacket) {
 		for (ClientHandler client : clients.values()) {
 			client.sendPacket(chatPacket);
 		}
 	}
 
-	// Only send packet to the initial Packet requestor
-	// TODO: ADD TRY/CATCH?
-//	private void broadcastToRequestor(String requestorId, Packet packet) {
 	private void broadcastToClientById(String requestorId, Packet packet) {
 		ClientHandler client = clients.get(requestorId);
 		client.sendPacket(packet);
@@ -338,6 +335,12 @@ public class Server {
 	}
 
 	public void sendErrorMessage(String userId, String errorMessage) {
+		ArrayList<String> broadcastingArgs = new ArrayList<>();
+		broadcastingArgs.add(errorMessage);
+
+		Packet errorPacket = new Packet(Status.ERROR, actionType.ERROR, broadcastingArgs, "Server");
+
+		broadcastToClientById(userId, errorPacket);
 	}
 
 	public void sendSuccessMessage(String userId, String successMessage) {
