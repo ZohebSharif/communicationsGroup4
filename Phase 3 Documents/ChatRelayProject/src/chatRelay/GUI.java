@@ -21,6 +21,9 @@ import javax.swing.*;
 public class GUI extends JFrame implements Runnable {
     private Client client;
     private JFrame frame;
+    private JPanel privateChatsList;
+    private JPanel groupChatsList;
+    private JPanel messagePanel;
     private HashMap<JButton, Chat> chatMap;
 
     public GUI(Client client) {
@@ -321,7 +324,7 @@ public class GUI extends JFrame implements Runnable {
 
         // Show frame
         frame.setVisible(true);
-	}
+	} // Needs work after IT
 	
 	private void buildITGUI() {
 		frame = new JFrame("Chat Application - IT Admin View");
@@ -333,11 +336,13 @@ public class GUI extends JFrame implements Runnable {
         JPanel topPanel = new JPanel(new BorderLayout());
 
         JPanel userInfoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JLabel fullNameLabel = new JLabel(client.getThisUser().getFirstName() + " " + client.getThisUser().getLastName());
-        JButton addButton = new JButton("+");
+        JLabel fullNameLabel = new JLabel("<html>" + client.getThisUser().getFirstName() + " " + client.getThisUser().getLastName() + "<br></html>");
+        JButton addChatButton = new JButton("Create Chat");
+        JButton addUserButton = new JButton("Create User");
         fullNameLabel.setForeground(Color.RED);
         userInfoPanel.add(fullNameLabel);
-        userInfoPanel.add(addButton);
+        userInfoPanel.add(addChatButton);
+        userInfoPanel.add(addUserButton);
 
         JLabel chatTitleLabel = new JLabel("Team/Chat Name • Member List", SwingConstants.CENTER);
 
@@ -349,11 +354,6 @@ public class GUI extends JFrame implements Runnable {
         // Left Panel (IT Badge + Private + Group Chats)
         JPanel leftPanel = new JPanel();
         leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
-
-        // IT Badge
-        JLabel badgeLabel = new JLabel("IT Badge");
-        badgeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        leftPanel.add(badgeLabel);
 
         // Private Chats Title
         JLabel privateChatsTitle = new JLabel("Private Chats");
@@ -369,31 +369,9 @@ public class GUI extends JFrame implements Runnable {
         }
         
         // Private Chats list
-        JPanel privateChatsList = new JPanel();
+        privateChatsList = new JPanel();
         privateChatsList.setLayout(new BoxLayout(privateChatsList, BoxLayout.Y_AXIS));
-        for (Chat chat : client.getChats()) {
-        	if (chat.getChatters().size() < 3) {
-        		String owner = chat.getOwner().getFirstName();
-            	String members = "";
-            	for (AbstractUser user : chat.getChatters()) {
-            		members += user.getFirstName() + ", ";
-            	}
-            	String time = "No Messages";
-            	if (chat.getMessages().size() > 0) {
-            		long lastMessageTime = chat.getMessages().get(0).getCreatedAt();
-                	DateFormat dateFormat = new SimpleDateFormat("yy/MM/dd HH:mm");
-                	dateFormat.setTimeZone(TimeZone.getTimeZone("GMT-7"));
-                	Date date = new Date(lastMessageTime);
-                	time = dateFormat.format(date);
-            	}
-                JButton chatButton = new JButton("<html>" + owner + "<br>" + members + "<br>" + time + "</html>"); // Updated with information
-                if (!chat.getChatters().contains(client.getThisUser())) {
-                	chatButton.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
-                }
-                chatMap.put(chatButton, chat);
-                privateChatsList.add(chatButton);
-        	}
-        }
+        loadChatPanel(privateChatsList, true);
         JScrollPane privateScroll = new JScrollPane(privateChatsList);
         privateScroll.setPreferredSize(new Dimension(200, 200));
         leftPanel.add(privateScroll);
@@ -404,30 +382,9 @@ public class GUI extends JFrame implements Runnable {
         leftPanel.add(groupChatsTitle);
 
         // Group Chats list
-        JPanel groupChatsList = new JPanel();
+        groupChatsList = new JPanel();
         groupChatsList.setLayout(new BoxLayout(groupChatsList, BoxLayout.Y_AXIS));
-        for (Chat chat : client.getChats()) {
-        	if (chat.getChatters().size() < 3) {
-            	String members = "";
-            	for (AbstractUser user : chat.getChatters()) {
-            		members += user.getFirstName() + ", ";
-            	}
-            	String time = "No Messages";
-            	if (chat.getMessages().size() > 0) {
-            		long lastMessageTime = chat.getMessages().get(0).getCreatedAt();
-                	DateFormat dateFormat = new SimpleDateFormat("yy/MM/dd HH:mm");
-                	dateFormat.setTimeZone(TimeZone.getTimeZone("GMT-7"));
-                	Date date = new Date(lastMessageTime);
-                	time = dateFormat.format(date);
-            	}
-                JButton groupButton = new JButton("<html>" + chat.getRoomName() + "<br>" + members + "<br>" + time + "</html>"); // Updated with information
-                if (!chat.getChatters().contains(client.getThisUser())) {
-                	groupButton.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
-                }
-                chatMap.put(groupButton, chat);
-                groupChatsList.add(groupButton);
-        	}
-        }
+        loadChatPanel(groupChatsList, false);
         JScrollPane groupScroll = new JScrollPane(groupChatsList);
         groupScroll.setPreferredSize(new Dimension(200, 150));
         leftPanel.add(groupScroll);
@@ -471,32 +428,24 @@ public class GUI extends JFrame implements Runnable {
 							membersList += ", ";
 						}
 					}
-					chatTitleLabel.setText(chat.getRoomName() + "•" + membersList);
-					for (Message message : chat.getMessages()) {
-						JPanel messagePanel = new JPanel(new BorderLayout());
-						
-						long lastMessageTime = message.getCreatedAt();
-	                	DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm");
-	                	dateFormat.setTimeZone(TimeZone.getTimeZone("GMT-7"));
-	                	Date date = new Date(lastMessageTime);
-	                	String time = dateFormat.format(date);
-	                	
-					    JLabel messageLabel = new JLabel("<html>" + message.getSender().getFirstName() + 
-					    		" • " + time + "<br>" + message.getContent() + "</html>");
-					    messagePanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-					    messagePanel.add(messageLabel, BorderLayout.CENTER);
-					    chatMessagesPanel.setName(chat.getId());
-					    chatMessagesPanel.add(messagePanel);
-					}
-					update();
+					chatTitleLabel.setText(chat.getRoomName() + " • " + membersList);
+					loadMessagePanel(chatMessagesPanel, chat);
+					update(actionType.SUCCESS);
 				}
         	});
         }
         
-        addButton.addActionListener(new ActionListener() {
+        addChatButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				showCreateChatDialog();
+			}
+        });
+        
+        addUserButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				createUserPane();
 			}
         });
         
@@ -516,6 +465,7 @@ public class GUI extends JFrame implements Runnable {
 	private void showCreateChatDialog() {
         JDialog dialog = new JDialog(frame, "Create Chat Pane", true);
         dialog.setSize(400, 350);
+	    dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dialog.setLocationRelativeTo(frame);
         dialog.setLayout(new BorderLayout());
 
@@ -609,26 +559,153 @@ public class GUI extends JFrame implements Runnable {
         dialog.setVisible(true);
     }
 	
+	public void createUserPane() {
+		JDialog dialog = new JDialog(frame, "Create User", true);
+	    dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+	    dialog.setLayout(new BoxLayout(dialog.getContentPane(), BoxLayout.Y_AXIS));
+	    dialog.setResizable(false);
+
+	    // Title
+	    JLabel titleLabel = new JLabel("Create User");
+	    titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+	    titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+	    dialog.add(Box.createVerticalStrut(10));
+	    dialog.add(titleLabel);
+	    dialog.add(Box.createVerticalStrut(20));
+
+	    // Input Fields
+	    JTextField firstNameField = new JTextField(15);
+	    JTextField lastNameField = new JTextField(15);
+	    JTextField usernameField = new JTextField(15);
+	    JPasswordField passwordField = new JPasswordField(15);
+	    JCheckBox isAdminBox = new JCheckBox("Is Admin?");
+
+	    dialog.add(createLabeledField("First Name:", firstNameField));
+	    dialog.add(createLabeledField("Last Name:", lastNameField));
+	    dialog.add(createLabeledField("Username:", usernameField));
+	    dialog.add(createLabeledField("Password:", passwordField));
+	    dialog.add(Box.createVerticalStrut(10));
+	    dialog.add(isAdminBox);
+	    dialog.add(Box.createVerticalStrut(20));
+
+	    // Buttons
+	    JPanel buttonPanel = new JPanel();
+	    JButton createButton = new JButton("Create");
+	    JButton cancelButton = new JButton("Cancel");
+
+	    createButton.addActionListener(e -> {
+	        String first = firstNameField.getText();
+	        String last = lastNameField.getText();
+	        String user = usernameField.getText();
+	        String pass = new String(passwordField.getPassword());
+	        boolean isAdmin = isAdminBox.isSelected();
+	        
+	        client.createUser(user, pass, first, last, isAdmin);
+	        dialog.dispose();
+	    });
+
+	    cancelButton.addActionListener(e -> dialog.dispose());
+
+	    buttonPanel.add(createButton);
+	    buttonPanel.add(cancelButton);
+	    dialog.add(buttonPanel);
+	    dialog.add(Box.createVerticalStrut(10));
+
+	    dialog.pack();
+	    dialog.setLocationRelativeTo(frame);
+	    dialog.setVisible(true);
+	}
+
+	private JPanel createLabeledField(String label, JComponent field) {
+	    JPanel panel = new JPanel(new BorderLayout());
+	    panel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
+	    panel.add(new JLabel(label), BorderLayout.NORTH);
+	    panel.add(field, BorderLayout.CENTER);
+	    return panel;
+	}
+	
+	public void loadChatPanel(JPanel chatButtons, boolean isPrivate) {
+		if (isPrivate) {
+			for (Chat chat : client.getChats()) {
+	        	if (chat.getChatters().size() < 3) {
+	        		String owner = chat.getOwner().getFirstName();
+	            	String members = "";
+	            	for (AbstractUser user : chat.getChatters()) {
+	            		members += user.getFirstName() + ", "; //TODO: Needs to be repaired
+	            	}
+	            	String time = "No Messages";
+	            	if (chat.getMessages().size() > 0) {
+	            		long lastMessageTime = chat.getMessages().get(0).getCreatedAt();
+	                	DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm");
+	                	dateFormat.setTimeZone(TimeZone.getTimeZone("GMT-7"));
+	                	Date date = new Date(lastMessageTime);
+	                	time = dateFormat.format(date);
+	            	}
+	                JButton chatButton = new JButton("<html>" + owner + "<br>" + members + "<br>" + time + "</html>");
+	                if (!chat.getChatters().contains(client.getThisUser())) {
+	                	chatButton.setBorder(BorderFactory.createLineBorder(Color.RED, 1));
+	                }
+	                chatMap.put(chatButton, chat);
+	                chatButtons.add(chatButton);
+	        	}
+	        }
+		} else {
+	        for (Chat chat : client.getChats()) {
+	        	if (chat.getChatters().size() > 3) {
+	            	String members = "";
+	            	for (AbstractUser user : chat.getChatters()) {
+	            		members += user.getFirstName() + ", "; //TODO: Needs to be repaired
+	            	}
+	            	String time = "No Messages";
+	            	if (chat.getMessages().size() > 0) {
+	            		long lastMessageTime = chat.getMessages().get(0).getCreatedAt();
+	                	DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm");
+	                	dateFormat.setTimeZone(TimeZone.getTimeZone("GMT-7"));
+	                	Date date = new Date(lastMessageTime);
+	                	time = dateFormat.format(date);
+	            	}
+	                JButton groupButton = new JButton("<html>" + chat.getRoomName() + "<br>" + members + "<br>" + time + "</html>");
+	                if (!chat.getChatters().contains(client.getThisUser())) {
+	                	groupButton.setBorder(BorderFactory.createLineBorder(Color.RED, 1));
+	                }
+	                chatMap.put(groupButton, chat);
+	                chatButtons.add(groupButton);
+	        	}
+	        }
+		}
+	}
+	
 	public void loadMessagePanel(JPanel chatMessagePanel, Chat chat) {
     	for (Message message : chat.getMessages() ) {
     		JPanel messagePanel = new JPanel(new BorderLayout());
     		String sender = message.getSender().getFirstName();
     		
     		long lastMessageTime = message.getCreatedAt();
-        	DateFormat dateFormat = new SimpleDateFormat("yy/MM/dd HH:mm");
-        	dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        	DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm");
+        	dateFormat.setTimeZone(TimeZone.getTimeZone("GMT-7"));
         	Date date = new Date(lastMessageTime);
         	String time = dateFormat.format(date);
         	String content = message.getContent();
         	
-            JLabel messageLabel = new JLabel("<html>" + sender + " • " + time + "<br>" + content + "</html>"); // Updated with information
+            JLabel messageLabel = new JLabel("<html>" + sender + " • " + time + "<br>" + content + "<br></html>");
             messagePanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
             messagePanel.add(messageLabel, BorderLayout.CENTER);
             chatMessagePanel.add(messagePanel);
     	}
 	}
 
-	public void update() {
+	public void update(actionType action) {
+		switch (action) {
+			case NEW_CHAT_BROADCAST:
+				loadChatPanel(privateChatsList, true);
+				loadChatPanel(groupChatsList, false);
+				break;
+			case NEW_MESSAGE_BROADCAST:
+				loadMessagePanel(messagePanel, client.getLastChatSent());
+				break;
+			default:
+				break;
+		}
 		frame.revalidate();
 		frame.repaint();
 	}

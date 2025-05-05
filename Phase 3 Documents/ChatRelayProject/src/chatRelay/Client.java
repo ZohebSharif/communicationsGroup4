@@ -20,6 +20,7 @@ public class Client {
     
     private String username;
     private String password;
+    private Chat lastChatSent;
     
     private List<Chat> chats;
     private List<AbstractUser> users;
@@ -105,7 +106,7 @@ public class Client {
     }
         
     public void createUser(String username, String password, String firstname, String lastname, Boolean isAdmin) {
-    	if (isAdmin) {
+    	if (isITAdmin) {
         	ArrayList<String> args = new ArrayList<>();
         	args.add(username);
         	args.add(password);
@@ -167,8 +168,8 @@ public class Client {
     	}
     }
     
-    public void updateState() {
-    	clientGUI.update();
+    public void updateState(actionType action) {
+    	clientGUI.update(action);
     }
     
     public Boolean getIsConnected() {
@@ -189,6 +190,10 @@ public class Client {
     
     public List<AbstractUser> getUsers() {
     	return users;
+    }
+    
+    public Chat getLastChatSent() {
+    	return lastChatSent;
     }
     
      //Made for getting Users for Create Chat in GUI
@@ -337,7 +342,7 @@ public class Client {
 							List<String> args = incoming.getActionArguments();
 							AbstractUser updateUser = getUserById(args.get(0));
 							updateUser.updateIsDisabled(Boolean.parseBoolean(args.get(1)));
-							updateState();
+							updateState(actionType.SUCCESS);
 						}
 						case NEW_USER_BROADCAST -> {
 							List<String> args = incoming.getActionArguments();
@@ -357,7 +362,7 @@ public class Client {
 								newUser = new User(true, userId, username, firstname, lastname, isDisabled, isAdmin);
 							}
 							users.add(newUser);
-							updateState();
+							updateState(actionType.SUCCESS);
 						}
 						case NEW_CHAT_BROADCAST -> {
 							List<String> args = incoming.getActionArguments();
@@ -383,7 +388,7 @@ public class Client {
 							
 							Chat newChat = new Chat(owner, roomName, chatId, chatters, isPrivate);
 							chats.add(newChat);
-							updateState();
+							updateState(actionType.NEW_CHAT_BROADCAST);
 						}
 						case NEW_MESSAGE_BROADCAST -> {
 							List<String> args = incoming.getActionArguments();
@@ -399,7 +404,8 @@ public class Client {
 							
 							Message newMessage = new Message(messageId, createdAt, content, author, chat);
 							chat.addMessage(newMessage);
-							updateState();
+							lastChatSent = newMessage.getChat();
+							updateState(actionType.NEW_MESSAGE_BROADCAST);
 						}
 						case ERROR -> {
 							isConnected = false;
