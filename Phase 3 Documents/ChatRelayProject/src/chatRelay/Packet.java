@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 public class Packet implements Serializable {
 
+	private static final long serialVersionUID = 6310290976439495433L;
 	private static final String ESCAPED_SLASH = "<<<SLASH>>>";
 	private static final String ESCAPED_NEWLINE = "<<<NEWLINE>>>";
 
