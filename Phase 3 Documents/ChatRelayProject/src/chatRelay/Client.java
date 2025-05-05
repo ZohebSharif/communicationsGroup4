@@ -9,6 +9,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +31,7 @@ public class Client {
     
     private ObjectOutputStream objectStream;
     private ObjectInputStream objectInStream;
+    private ClientInput input;
     private GUI clientGUI;
 
     public Client(String targetIp, String targetPort) {
@@ -56,7 +58,7 @@ public class Client {
     	
     	new Thread(clientGUI).start();
     	
-    	ClientInput input = new ClientInput(objectInStream, this);
+    	input = new ClientInput(objectInStream, this);
     	
     	new Thread(input).start();
     	
@@ -89,6 +91,7 @@ public class Client {
     	} catch (IOException e) {
     		e.printStackTrace();
     	}
+    	lastChatSent = input.getChatById(chatId);
     }
     
     public void createChat(String[] userIds, String chatName, Boolean isPrivate) {
@@ -407,6 +410,11 @@ public class Client {
 							lastChatSent = newMessage.getChat();
 							updateState(actionType.NEW_MESSAGE_BROADCAST);
 						}
+						case SEND_MESSAGE -> {
+							if (incoming.getStatus() == Status.SUCCESS) {
+								updateState(actionType.NEW_MESSAGE_BROADCAST);
+							}
+						}
 						case ERROR -> {
 							isConnected = false;
 							objectStream.close();
@@ -415,13 +423,17 @@ public class Client {
 			                break;
 						}
 						default -> {
-							System.out.println("Invalid Action Type: " + String.valueOf(incoming.getActionType()));
+							if (incoming.getStatus() == Status.SUCCESS) {
+								updateState(actionType.NEW_MESSAGE_BROADCAST);
+							} else {
+								System.out.println("Invalid Action Type: " + String.valueOf(incoming.getActionType()));
+							}
 							break;
 						}
 					}
 				} while(isConnected && (incoming = (Packet) inputStream.readObject()) != null);
 			} catch (ClassNotFoundException | IOException e) {
-				e.printStackTrace();
+				
 			}
 		}
     }
