@@ -130,8 +130,7 @@ public class Server {
 		if (chat == null) {
 			broadcastingArgs.add("Cannot to remove User from the Chat");
 
-			Packet errorPacket = new Packet(Status.ERROR, actionType.REMOVE_USER_FROM_CHAT, broadcastingArgs,
-					"Server");
+			Packet errorPacket = new Packet(Status.ERROR, actionType.REMOVE_USER_FROM_CHAT, broadcastingArgs, "Server");
 
 			broadcastToClientById(clientId, errorPacket);
 
@@ -158,8 +157,8 @@ public class Server {
 		if (chat == null) {
 			broadcastingArgs.add("Unable to add User to the Chat");
 
-			Packet chatroomInfoPacket = new Packet(Status.ERROR, actionType.ADD_USER_TO_CHAT,
-					broadcastingArgs, "Server");
+			Packet chatroomInfoPacket = new Packet(Status.ERROR, actionType.ADD_USER_TO_CHAT, broadcastingArgs,
+					"Server");
 			broadcastToClientById(clientId, chatroomInfoPacket);
 
 		} else {
@@ -200,8 +199,7 @@ public class Server {
 
 		if (updatedUser == null) {
 			broadcastingArgs.add("Unable to add User to the Chat");
-			Packet errorPacket = new Packet(Status.ERROR, actionType.UPDATE_USER, broadcastingArgs,
-					"Server");
+			Packet errorPacket = new Packet(Status.ERROR, actionType.UPDATE_USER, broadcastingArgs, "Server");
 			broadcastToClientById(clientId, errorPacket);
 
 		} else {
@@ -228,10 +226,6 @@ public class Server {
 		}
 
 		ArrayList<String> args = packet.getActionArguments();
-//		TODO: VALIDATIONS:
-//		-first/lastname only letters, 
-//		-username should be alphanum
-
 		String username = args.get(0);
 		String password = args.get(1);
 		String firstname = args.get(2);
@@ -240,12 +234,9 @@ public class Server {
 		boolean isAdmin = args.get(5).equals("true");
 
 		// No duplicate user names
-		// TODO: semi-major refactor to pass more than clientId, and the whole user into
-		// receivePacket() could be good
 		if (dbManager.getUserByUsername(username) != null) {
 			broadcastingArgs.add("That username already exists");
 			Packet errorPacket = new Packet(Status.ERROR, actionType.CREATE_USER, broadcastingArgs, "Server");
-//			broadcastToRequestor(clientId, errorPacket);
 			broadcastToClientById(clientId, errorPacket);
 			return;
 		}
@@ -258,19 +249,18 @@ public class Server {
 			Packet errorPacket = new Packet(Status.ERROR, actionType.CREATE_USER, broadcastingArgs, "Server");
 			broadcastToClientById(clientId, errorPacket);
 			return;
-		} else {
-
-			broadcastingArgs.add(newUser.getId());
-			broadcastingArgs.add(newUser.getUserName());
-			broadcastingArgs.add(newUser.getFirstName());
-			broadcastingArgs.add(newUser.getLastName());
-			broadcastingArgs.add(String.valueOf(newUser.isAdmin()));
-			broadcastingArgs.add(String.valueOf(newUser.isDisabled()));
-
-			Packet newUserPacket = new Packet(Status.SUCCESS, actionType.NEW_USER_BROADCAST, broadcastingArgs,
-					"Server");
-			broadcastToAllUsersConnected(newUserPacket);
 		}
+
+		broadcastingArgs.add(newUser.getId());
+		broadcastingArgs.add(newUser.getUserName());
+		broadcastingArgs.add(newUser.getFirstName());
+		broadcastingArgs.add(newUser.getLastName());
+		broadcastingArgs.add(String.valueOf(newUser.isAdmin()));
+		broadcastingArgs.add(String.valueOf(newUser.isDisabled()));
+
+		Packet newUserPacket = new Packet(Status.SUCCESS, actionType.NEW_USER_BROADCAST, broadcastingArgs, "Server");
+		broadcastToAllUsersConnected(newUserPacket);
+
 	}
 
 	private void handleCreateChat(String clientId, Packet packet) {
@@ -290,8 +280,7 @@ public class Server {
 
 		if (newChat == null) {
 			broadcastingArgs.add("Unable to add User to the Chat");
-			Packet errorPacket = new Packet(Status.ERROR, actionType.CREATE_CHAT, broadcastingArgs,
-					"Server");
+			Packet errorPacket = new Packet(Status.ERROR, actionType.CREATE_CHAT, broadcastingArgs, "Server");
 			broadcastToClientById(clientId, errorPacket);
 			return;
 		}
@@ -320,20 +309,16 @@ public class Server {
 		Message newMessage = dbManager.writeNewMessage(content, clientId, chatId);
 
 		Chat chat = dbManager.getChatById(chatId);
-		
-		
 
 		ArrayList<String> broadcastingArgs = new ArrayList<>();
-		
-		
+
 		if (chat == null) {
-			
+
 			broadcastingArgs.add("Unable to add User to the Chat");
-			Packet errorPacket = new Packet(Status.ERROR, actionType.SEND_MESSAGE, broadcastingArgs,
-					"Server");
+			Packet errorPacket = new Packet(Status.ERROR, actionType.SEND_MESSAGE, broadcastingArgs, "Server");
 			broadcastToClientById(clientId, errorPacket);
 		}
-		
+
 		broadcastingArgs.add(newMessage.getId());
 		broadcastingArgs.add(String.valueOf(newMessage.getCreatedAt()));
 		broadcastingArgs.add(newMessage.getContent());
@@ -392,13 +377,17 @@ public class Server {
 			}
 		}
 	}
-
+	
 	public DBManager getDBManager() {
 		return this.dbManager;
 	}
 
 	public void addClient(String userId, ClientHandler ch) {
 		clients.put(userId, ch);
+	}
+
+	public boolean containsClient(String userId) {
+		return clients.containsKey(userId);
 	}
 
 	public static void main(String[] args) {
