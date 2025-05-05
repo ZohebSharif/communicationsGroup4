@@ -105,7 +105,7 @@ public class Server {
 		if (chat == null) {
 			broadcastingArgs.add("Cannot rename chatroom");
 
-			Packet errorPacket = new Packet(Status.ERROR, actionType.RENAME_CHAT_BROADCAST, broadcastingArgs, "Server");
+			Packet errorPacket = new Packet(Status.ERROR, actionType.RENAME_CHAT, broadcastingArgs, "Server");
 
 			broadcastToClientById(clientId, errorPacket);
 		} else {
@@ -130,7 +130,7 @@ public class Server {
 		if (chat == null) {
 			broadcastingArgs.add("Cannot to remove User from the Chat");
 
-			Packet errorPacket = new Packet(Status.ERROR, actionType.REMOVE_USER_FROM_CHAT_BROADCAST, broadcastingArgs,
+			Packet errorPacket = new Packet(Status.ERROR, actionType.REMOVE_USER_FROM_CHAT, broadcastingArgs,
 					"Server");
 
 			broadcastToClientById(clientId, errorPacket);
@@ -158,7 +158,7 @@ public class Server {
 		if (chat == null) {
 			broadcastingArgs.add("Unable to add User to the Chat");
 
-			Packet chatroomInfoPacket = new Packet(Status.ERROR, actionType.ADD_USER_TO_CHAT_BROADCAST,
+			Packet chatroomInfoPacket = new Packet(Status.ERROR, actionType.ADD_USER_TO_CHAT,
 					broadcastingArgs, "Server");
 			broadcastToClientById(clientId, chatroomInfoPacket);
 
@@ -197,12 +197,22 @@ public class Server {
 		boolean isDisabled = args.get(1).equals("true");
 
 		AbstractUser updatedUser = dbManager.updateUserIsDisabled(userIdToUpdate, isDisabled);
-		broadcastingArgs.add(updatedUser.getId());
-		broadcastingArgs.add(String.valueOf(updatedUser.isDisabled()));
 
-		Packet updatedUserPacket = new Packet(Status.SUCCESS, actionType.UPDATED_USER_BROADCAST, broadcastingArgs,
-				"Server");
-		broadcastToAllUsersConnected(updatedUserPacket);
+		if (updatedUser == null) {
+			broadcastingArgs.add("Unable to add User to the Chat");
+			Packet errorPacket = new Packet(Status.ERROR, actionType.UPDATE_USER, broadcastingArgs,
+					"Server");
+			broadcastToClientById(clientId, errorPacket);
+
+		} else {
+			broadcastingArgs.add(updatedUser.getId());
+			broadcastingArgs.add(String.valueOf(updatedUser.isDisabled()));
+
+			Packet updatedUserPacket = new Packet(Status.SUCCESS, actionType.UPDATED_USER_BROADCAST, broadcastingArgs,
+					"Server");
+
+			broadcastToAllUsersConnected(updatedUserPacket);
+		}
 
 	}
 
@@ -213,15 +223,11 @@ public class Server {
 		if (!dbManager.getUserById(clientId).isAdmin()) {
 			broadcastingArgs.add("You're not an admin, get out of here!");
 			Packet errorPacket = new Packet(Status.ERROR, actionType.CREATE_USER, broadcastingArgs, "Server");
-//			broadcastToRequestor(clientId, errorPacket);
 			broadcastToClientById(clientId, errorPacket);
 			return;
 		}
 
 		ArrayList<String> args = packet.getActionArguments();
-		// TODO: frontend should replace the "/",
-//		or Packet could have done that 
-
 //		TODO: VALIDATIONS:
 //		-first/lastname only letters, 
 //		-username should be alphanum
@@ -246,16 +252,25 @@ public class Server {
 
 		AbstractUser newUser = dbManager.writeNewUser(username, password, firstname, lastname, isDisabled, isAdmin);
 
-		broadcastingArgs.add(newUser.getId());
-		broadcastingArgs.add(newUser.getUserName());
-		broadcastingArgs.add(newUser.getFirstName());
-		broadcastingArgs.add(newUser.getLastName());
-		broadcastingArgs.add(String.valueOf(newUser.isAdmin()));
-		broadcastingArgs.add(String.valueOf(newUser.isDisabled()));
+		if (newUser == null) {
 
-		Packet newUserPacket = new Packet(Status.SUCCESS, actionType.NEW_USER_BROADCAST, broadcastingArgs, "Server");
-		broadcastToAllUsersConnected(newUserPacket);
+			broadcastingArgs.add("Unable to create new User");
+			Packet errorPacket = new Packet(Status.ERROR, actionType.CREATE_USER, broadcastingArgs, "Server");
+			broadcastToClientById(clientId, errorPacket);
+			return;
+		} else {
 
+			broadcastingArgs.add(newUser.getId());
+			broadcastingArgs.add(newUser.getUserName());
+			broadcastingArgs.add(newUser.getFirstName());
+			broadcastingArgs.add(newUser.getLastName());
+			broadcastingArgs.add(String.valueOf(newUser.isAdmin()));
+			broadcastingArgs.add(String.valueOf(newUser.isDisabled()));
+
+			Packet newUserPacket = new Packet(Status.SUCCESS, actionType.NEW_USER_BROADCAST, broadcastingArgs,
+					"Server");
+			broadcastToAllUsersConnected(newUserPacket);
+		}
 	}
 
 	private void handleCreateChat(String clientId, Packet packet) {
@@ -272,6 +287,15 @@ public class Server {
 		Chat newChat = dbManager.writeNewChat(clientId, roomName, userIds, isPrivate);
 
 		ArrayList<String> broadcastingArgs = new ArrayList<>();
+
+		if (newChat == null) {
+			broadcastingArgs.add("Unable to add User to the Chat");
+			Packet errorPacket = new Packet(Status.ERROR, actionType.CREATE_CHAT, broadcastingArgs,
+					"Server");
+			broadcastToClientById(clientId, errorPacket);
+			return;
+		}
+
 		broadcastingArgs.add(newChat.getId());
 		broadcastingArgs.add(newChat.getOwner().getId());
 		broadcastingArgs.add(String.join("/", newChat.getChattersIds()));
@@ -296,8 +320,20 @@ public class Server {
 		Message newMessage = dbManager.writeNewMessage(content, clientId, chatId);
 
 		Chat chat = dbManager.getChatById(chatId);
+		
+		
 
 		ArrayList<String> broadcastingArgs = new ArrayList<>();
+		
+		
+		if (chat == null) {
+			
+			broadcastingArgs.add("Unable to add User to the Chat");
+			Packet errorPacket = new Packet(Status.ERROR, actionType.SEND_MESSAGE, broadcastingArgs,
+					"Server");
+			broadcastToClientById(clientId, errorPacket);
+		}
+		
 		broadcastingArgs.add(newMessage.getId());
 		broadcastingArgs.add(String.valueOf(newMessage.getCreatedAt()));
 		broadcastingArgs.add(newMessage.getContent());
