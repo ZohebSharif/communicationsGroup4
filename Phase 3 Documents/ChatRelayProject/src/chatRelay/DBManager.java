@@ -14,8 +14,8 @@ import java.util.concurrent.ConcurrentHashMap;
 // TODO: Consider concurrency/thread blocking stuff
 
 public class DBManager {
-	private static final String ESCAPED_SLASH = "498928918204"; // maybe make public for outgoing (or have client deal
-																// do
+//	private static final String ESCAPED_SLASH = "<<<SLASH>>>"; // maybe make public for outgoing (or have client deal
+	// do
 	// the convert?)
 
 	private ConcurrentHashMap<String, AbstractUser> users = new ConcurrentHashMap<>();
@@ -348,7 +348,8 @@ public class DBManager {
 
 		// TODO: ENSURE USERNAMES ARE UNIQUE
 
-		String sanitizedPassword = password.replace("/", ESCAPED_SLASH);
+//		String sanitizedPassword = password.replace("/", ESCAPED_SLASH);
+		String sanitizedPassword = Packet.sanitize(password);
 
 		AbstractUser newUser;
 
@@ -375,7 +376,8 @@ public class DBManager {
 //	private void writeNewChat(String ownerId, String roomName, String[] chatterIds, boolean isPrivate) {
 	public Chat writeNewChat(String ownerId, String roomName, ArrayList<String> chatterIds, boolean isPrivate) {
 		AbstractUser owner = getUserById(ownerId);
-		String sanitizedRoomName = roomName.replace("/", ESCAPED_SLASH); // a "/" inside content will break the DB
+//		String sanitizedRoomName = roomName.replace("/", ESCAPED_SLASH); // a "/" inside content will break the DB
+		String sanitizedRoomName = Packet.sanitize(roomName);
 
 //		consider using a setter to avoid 2nd loop?
 
@@ -416,7 +418,8 @@ public class DBManager {
 		AbstractUser author = getUserById(authorId);
 		Chat chat = getChatById(chatId);
 
-		String sanitizedContent = content.replace("/", ESCAPED_SLASH); // a "/" inside content will break the DB
+//		String sanitizedContent = content.replace("/", ESCAPED_SLASH); // a "/" inside content will break the DB
+		String sanitizedContent = Packet.sanitize(content);
 		Message newMessage = new Message(sanitizedContent, author, chat);
 
 		chat.addMessage(newMessage);
@@ -449,8 +452,8 @@ public class DBManager {
 		// ex for loading messages from DB into memory: str1.replace("[sLaSH]", /)
 	}
 
-	public void addUserToChat(String userId) {
-	}
+//	public void addUserToChat(String userId) {
+//	}
 
 	public AbstractUser getUserByUsername(String username) {
 		for (AbstractUser user : users.values()) {
@@ -462,11 +465,16 @@ public class DBManager {
 	}
 
 	public AbstractUser checkLoginCredentials(String username, String password) {
+		System.out.println("checkLoginCreds(), username: " + username + ", pass:" + password);
 		AbstractUser user = getUserByUsername(username);
 		if (user == null)
 			return null;
 
-		if (user.getPassword().replace(ESCAPED_SLASH, "/").equals(password)) {
+//		if (user.getPassword().replace(ESCAPED_SLASH, "/").equals(password)) {
+//		if (Packet.unsanitize(user.getPassword()).equals(password)) {
+
+//		remember packet sanitizes
+		if (user.getPassword().equals(password)) {
 			return user;
 		}
 		return null;
@@ -543,6 +551,33 @@ public class DBManager {
 
 		chat.removeChatter(userToRemove);
 		userToRemove.removeChat(chat);
+
+		try {
+			File file = new File(this.chatTxtFilename);
+			FileWriter writer = new FileWriter(file, false);
+
+			for (Chat c : chats.values()) {
+				writer.write(c.toString() + "\n");
+			}
+
+			writer.close();
+		} catch (IOException e) {
+			System.out.println("Error writing chat updates: " + e.getMessage());
+			e.printStackTrace();
+		}
+
+		return chat;
+	}
+
+	public Chat renameChat(String senderId, String chatId, String newChatRoomName) {
+		Chat chat = getChatById(chatId);
+
+		// requestor must be the owner of the chat
+		if (!chat.getOwner().getId().equals(senderId)) {
+			return null;
+		}
+
+		chat.setRoomName(newChatRoomName);
 
 		try {
 			File file = new File(this.chatTxtFilename);

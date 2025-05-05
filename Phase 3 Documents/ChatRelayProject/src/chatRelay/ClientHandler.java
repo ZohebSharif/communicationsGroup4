@@ -96,7 +96,6 @@ public class ClientHandler implements Runnable {
 			Packet packet = (Packet) inputStream.readObject();
 
 			if (packet.getActionType() == actionType.LOGIN) {
-//				String[] args = packet.getActionArguments();
 				ArrayList<String> args = packet.getActionArguments();
 				String username = args.get(0);
 				String password = args.get(1);
@@ -105,11 +104,20 @@ public class ClientHandler implements Runnable {
 
 				AbstractUser user = server.getDBManager().checkLoginCredentials(username, password);
 
-				// give rejections w/ responses,
-				// ex: bad password, bad username, etc.
+				//Can't be logged into 2 computers as same user
+				if (server.containsClient(user.getId())) {
+					ArrayList<String> errorArgs = new ArrayList<>();
+					errorArgs.add("Already logged in from another client");
 
+					Packet errorPacket = new Packet(Status.ERROR, actionType.LOGIN, errorArgs, "Server");
+					sendPacket(errorPacket);
+
+					clientSocket.close();
+					return;
+				}
+				
 				// check if user isn't disabled too
-				if (user != null) {
+				if (user != null || !user.isDisabled()) {
 					this.userId = user.getId();
 
 					server.addClient(userId, this); // add this ClientHanlder to Server's HashMap
@@ -126,7 +134,7 @@ public class ClientHandler implements Runnable {
 					userInfoStringed.add(user.getLastName());
 					userInfoStringed.add(String.valueOf(user.isAdmin()));
 					userInfoStringed.add(String.valueOf(user.isDisabled()));
-					Packet userInfoPacket = new Packet(Status.SUCCESS, actionType.LOGIN, userInfoStringed, "SERVER");
+					Packet userInfoPacket = new Packet(Status.SUCCESS, actionType.LOGIN, userInfoStringed, "Server");
 
 					//userInfoStringed.add(server.getDBManager().getUserById(userId).toStringClient());
 					//Packet userInfoPacket = new Packet(Status.SUCCESS, actionType.LOGIN, args, "SERVER");
@@ -161,7 +169,7 @@ public class ClientHandler implements Runnable {
 					ArrayList<String> errorArgs = new ArrayList<>();
 					errorArgs.add("Invalid username or password");
 
-					Packet errorPacket = new Packet(Status.ERROR, actionType.LOGIN, errorArgs, "SERVER");
+					Packet errorPacket = new Packet(Status.ERROR, actionType.LOGIN, errorArgs, "Server");
 					sendPacket(errorPacket);
 
 					clientSocket.close();

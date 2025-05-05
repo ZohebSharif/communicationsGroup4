@@ -8,6 +8,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 
 public class BasicClient {
+//	private static boolean STRESS_TEST = true;
+	private static boolean STRESS_TEST = false;
 
 	private Socket socket;
 	private ObjectOutputStream out;
@@ -176,6 +178,21 @@ public class BasicClient {
 		}
 	}
 
+	public void renameChat(String chatId, String newRoomName) {
+		System.out.println("BasicClient.renameChat() fired");
+		try {
+			ArrayList<String> args = new ArrayList<>();
+			args.add(chatId);
+			args.add(newRoomName);
+
+			Packet renamePacket = new Packet(Status.NONE, actionType.RENAME_CHAT, args, userId);
+			out.writeObject(renamePacket);
+			out.flush();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	public void listen() {
 		System.out.println("in listen() loop");
 		try {
@@ -208,12 +225,14 @@ public class BasicClient {
 
 					// TESTING TO SEND A MESSAGE
 					String chatId = "2";
-					sendMessage(userId, chatId, "TESTING sendMessage() / SEND_MESSAGE");
+					sendMessage(userId, chatId, "TESTING \nsendMessage() / SEND_MESSAGE");
 
 					System.out.println("\n");
 
 					// TESTING TO CREATE A CHAT
-					String[] userIds = { "1", "2", "6" };
+//					!!!
+					String[] userIds = { "1", "2", "6", "8" };
+//					String[] userIds = null; 
 					createChat("test chat created from BasicClient!", true, userIds);
 
 					// TESTING TO CREATE A USER
@@ -243,7 +262,29 @@ public class BasicClient {
 					removeUserFromChat("7", "2"); // remove 'Sarah Connor' w/ user id for 7, from chat room 2
 					System.out.println("\n");
 
-					break;
+// TESTING TO RENAME A CHAT
+					System.out.println("\n");
+					renameChat("4", "Renamed Chat From BasicClient!"); // chatroom id of 4 should get name changed
+					System.out.println("\n");
+
+//					TESTING LOGOUT
+//					logout(userId);
+
+					// ++++++++++++++++++++++++++++++++++++++++++++++
+					// ++++++++++++++++++++++++++++++++++++++++++++++
+					// ++++++++++++++++++++++++++++++++++++++++++++++
+					// ++++++++++++++++++++++++++++++++++++++++++++++
+					// ++++++++++++++++++++++++++++++++++++++++++++++
+					// ++++++++++++++++++++++++++++++++++++++++++++++
+					// THREAD / STRESS TEST
+
+					if (!STRESS_TEST)
+						continue;
+					for (int i = 0; i < 100; ++i) {
+						sendMessage(userId, "2", "message " + i);
+					}
+
+					continue;
 				}
 				case NEW_MESSAGE_BROADCAST: {
 					System.out.println("─────────────────────────────────────");
@@ -307,6 +348,20 @@ public class BasicClient {
 					System.out.println("─────────────────────────────────────");
 					break;
 				}
+				case RENAME_CHAT_BROADCAST: {
+					System.out.println("──────────── CHAT RENAMED BROADCAST ────────────");
+
+					if (incoming.getStatus() == Status.ERROR) {
+						System.out.println("Error: " + args.get(0));
+					} else {
+						System.out.println("Chat ID: " + args.get(0));
+						System.out.println("New Chatroom Name: " + args.get(1));
+					}
+
+					System.out.println("─────────────────────────────────────");
+					break;
+				}
+
 				case GET_ALL_USERS:
 					System.out.println("Handled GET_ALL_USERS\n");
 					break;
@@ -348,26 +403,51 @@ public class BasicClient {
 	}
 
 	public static void main(String[] args) {
-		BasicClient client = new BasicClient("127.0.0.1", 1337); // local host
-//		BasicClient client = new BasicClient("192.168.1.103", 1337); // connect to another computer on network
+//		boolean STRESS_TEST = true;
+//		BasicClient client = new BasicClient("127.0.0.1", 1337);
 
-		System.out.println(
-				"Some users you can log into, otherwise it'll log into \"biljoe\": chrsmi kenkot stearm zohsha talsha biljoe ");
-		System.out.println("juse type in a username into CLI next time");
+		if (STRESS_TEST) {
+			String[] usernames = { "biljoe", "chrsmi", "kenkot", "stearm", "zohsha", "talsha" };
 
-		// default user to log in if no CLI args given
-		String username = "bilJoe"; // non-admin, NOT disabled
-		String password = "asdf/"; // testing "/" is valid
+			for (String username : usernames) {
+				final String user = username;
 
-		if (args.length == 1) {
-			username = args[0];
-			password = "asdf";
+				new Thread(() -> {
+					BasicClient client = new BasicClient("127.0.0.1", 1337);
+//					BasicClient client = new BasicClient("non local ip"", 1337);
+					String password = "asdf";
+					client.login(user, password);
+					client.listen();
+				}).start();
+			}
 		}
 
-		client.login(username, password);
+		else {
+
+//		BasicClient client = new BasicClient("192.168.1.103", 1337); // connect to another computer on network
+			BasicClient client = new BasicClient("127.0.0.1", 1337); // local host
+
+			System.out.println(
+					"Some users you can log into, otherwise it'll log into \"bilsam\": chrsmi kenkot stearm zohsha talsha biljoe ");
+			System.out.println("juse type in a username into CLI next time");
+
+			// default user to log in if no CLI args given
+//			String username = "biljoe"; 
+			String username = "bilsam";
+//			String password = "asdf";
+			String password = "a\nsdf/";
+
+			if (args.length == 1) {
+				username = args[0];
+				password = "asdf";
+			}
+
+			client.login(username, password);
 //		client.login("biljoe", "asdf/"); // non-admin
 //		client.login("chrsmi", "asdf"); // admin
 
-		client.listen();
+			client.listen();
+		}
 	}
+
 }
