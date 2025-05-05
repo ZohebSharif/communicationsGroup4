@@ -143,7 +143,7 @@ public class GUI extends JFrame implements Runnable {
         	}
         });
         
-        outerPanel.addKeyListener(new KeyAdapter() {
+        passwordField.addKeyListener(new KeyAdapter() {
         	@Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
@@ -430,6 +430,7 @@ public class GUI extends JFrame implements Runnable {
 					}
 					chatTitleLabel.setText(chat.getRoomName() + " • " + membersList);
 					loadMessagePanel(chatMessagesPanel, chat);
+					chatMessagesPanel.setName(chat.getId());
 					update(actionType.SUCCESS);
 				}
         	});
@@ -463,9 +464,8 @@ public class GUI extends JFrame implements Runnable {
 	}
 	
 	private void showCreateChatDialog() {
-        JDialog dialog = new JDialog(frame, "Create Chat Pane", true);
+		JDialog dialog = new JDialog(frame, "Create Chat Pane", true);
         dialog.setSize(400, 350);
-	    dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dialog.setLocationRelativeTo(frame);
         dialog.setLayout(new BorderLayout());
 
@@ -491,43 +491,11 @@ public class GUI extends JFrame implements Runnable {
         formPanel.add(Box.createVerticalStrut(20));
 
         JLabel groupLabel = new JLabel("Add to Group:");
-        JTextField searchField = new JTextField();
-        DefaultListModel<String> listModel = new DefaultListModel<>();
-
-        // Example data
-        String[] allUsers = {"Alice", "Bob", "Charlie", "David", "Eve", "Frank"};
-        for (String user : allUsers) listModel.addElement(user);
-
-        JList<String> userList = new JList<>(listModel);
-        userList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        JScrollPane userScrollPane = new JScrollPane(userList);
-
-        // Filter logic
-        searchField.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) { filterList(); }
-            public void removeUpdate(DocumentEvent e) { filterList(); }
-            public void changedUpdate(DocumentEvent e) { filterList(); }
-
-            private void filterList() {
-                String filter = searchField.getText().toLowerCase();
-                listModel.clear();
-                for (String user : allUsers) {
-                    if (user.toLowerCase().contains(filter)) {
-                        listModel.addElement(user);
-                    }
-                }
-            }
-        });
-        
-        JScrollPane groupScrollPane = new JScrollPane(searchField);
+        JTextArea groupArea = new JTextArea(6, 30);
+        groupArea.setLineWrap(true);
+        groupArea.setWrapStyleWord(true);
+        JScrollPane groupScrollPane = new JScrollPane(groupArea);
         groupScrollPane.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1, true));
-
-        // Add to your formPanel instead
-        formPanel.add(new JLabel("Search Users:"));
-        formPanel.add(searchField);
-        formPanel.add(Box.createVerticalStrut(10));
-        formPanel.add(new JLabel("Select Users to Add:"));
-        formPanel.add(userScrollPane);
 
         formPanel.add(groupLabel);
         formPanel.add(Box.createVerticalStrut(5));
@@ -544,10 +512,8 @@ public class GUI extends JFrame implements Runnable {
 
         createButton.addActionListener(e -> {
             String chatName = nameField.getText().trim();
-            String groupMembers = searchField.getText().trim();
-            // Handle your creation logic here
-            System.out.println("Chat Name: " + chatName);
-            System.out.println("Group Members: " + groupMembers);
+            String groupMembers = groupArea.getText().trim();
+            
             dialog.dispose();
         });
 
@@ -693,6 +659,16 @@ public class GUI extends JFrame implements Runnable {
             chatMessagePanel.add(messagePanel);
     	}
 	}
+	
+	private String searchForUser(String name) {
+		for (AbstractUser user : client.getUsers()) {
+			String[] splitName = name.split(" ");
+			if (splitName[0].equals(user.getFirstName()) && splitName[1].equals(user.getLastName())) {
+				return user.getId();
+			}
+		}
+		return null;
+	} 
 
 	public void update(actionType action) {
 		switch (action) {

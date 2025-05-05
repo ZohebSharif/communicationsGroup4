@@ -324,7 +324,7 @@ public class Client {
 
 								String messageId = words[0];
 								long createdAt = Long.parseLong(words[1]);
-								String content = words[2].replace(ESCAPED_SLASH, "/"); // have client replace escaped char instead
+								String content = Packet.unsanitize(words[2]);
 								String authorId = words[3];
 								String chatId = words[4];
 								
