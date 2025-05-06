@@ -22,11 +22,12 @@ public class ClientHandler implements Runnable {
 		this.server = server;
 
 		try {
+			OutputStream outStream = clientSocket.getOutputStream();
+			outputStream = new ObjectOutputStream(outStream);
+			
 			InputStream inStream = clientSocket.getInputStream();
 			inputStream = new ObjectInputStream(inStream);
 
-			OutputStream outStream = clientSocket.getOutputStream();
-			outputStream = new ObjectOutputStream(outStream);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -104,20 +105,32 @@ public class ClientHandler implements Runnable {
 
 				AbstractUser user = server.getDBManager().checkLoginCredentials(username, password);
 
-				//Can't be logged into 2 computers as same user
-				if (server.containsClient(user.getId())) {
-					ArrayList<String> errorArgs = new ArrayList<>();
-					errorArgs.add("Already logged in from another client");
+				if (user != null) {
 
-					Packet errorPacket = new Packet(Status.ERROR, actionType.LOGIN, errorArgs, "Server");
-					sendPacket(errorPacket);
+					// Can't log in if User's account has been disabled
+					if (user.isDisabled()) {
+						ArrayList<String> errorArgs = new ArrayList<>();
+						errorArgs.add("User's account has been disabled");
 
-					clientSocket.close();
-					return;
-				}
-				
-				// check if user isn't disabled too
-				if (user != null || !user.isDisabled()) {
+						Packet errorPacket = new Packet(Status.ERROR, actionType.LOGIN, errorArgs, "Server");
+						sendPacket(errorPacket);
+
+						clientSocket.close();
+						return;
+					}
+
+					// Can't be logged into 2 computers as same user
+					if (server.containsClient(user.getId())) {
+						ArrayList<String> errorArgs = new ArrayList<>();
+						errorArgs.add("Already logged in from another client");
+
+						Packet errorPacket = new Packet(Status.ERROR, actionType.LOGIN, errorArgs, "Server");
+						sendPacket(errorPacket);
+
+						clientSocket.close();
+						return;
+					}
+
 					this.userId = user.getId();
 
 					server.addClient(userId, this); // add this ClientHanlder to Server's HashMap
@@ -125,8 +138,8 @@ public class ClientHandler implements Runnable {
 					System.out.println("User ID being sent to client: " + userId);
 
 					ArrayList<String> userInfoStringed = new ArrayList<>();
-					System.out.println("Login Was Successful - sending user info: " + userId + ", isAdmin() = "
-							+ user.isAdmin());
+					System.out.println(
+							"Login Was Successful - sending user info: " + userId + ", isAdmin() = " + user.isAdmin());
 
 					// basic client version
 					userInfoStringed.add(userId);
@@ -136,8 +149,9 @@ public class ClientHandler implements Runnable {
 					userInfoStringed.add(String.valueOf(user.isDisabled()));
 					Packet userInfoPacket = new Packet(Status.SUCCESS, actionType.LOGIN, userInfoStringed, "Server");
 
-					//userInfoStringed.add(server.getDBManager().getUserById(userId).toStringClient());
-					//Packet userInfoPacket = new Packet(Status.SUCCESS, actionType.LOGIN, args, "SERVER");
+					// userInfoStringed.add(server.getDBManager().getUserById(userId).toStringClient());
+					// Packet userInfoPacket = new Packet(Status.SUCCESS, actionType.LOGIN, args,
+					// "SERVER");
 
 					sendPacket(userInfoPacket);
 

@@ -20,13 +20,15 @@ public class Server {
 
 	public Server(int port, String IP) {
 		this.port = port;
-		this.IP = IP;
-
-//		this.dbManager = new DBManager("./src/chatRelay/dbFiles/development/", "Users.txt", "Chats.txt",
-//				"Messages.txt");
-
-		// use this version why running from terminal
+		this.IP = IP; 
+		
+		
+		
+		// use these versions below when running from terminal
 		this.dbManager = new DBManager("./chatRelay/dbFiles/development/", "Users.txt", "Chats.txt", "Messages.txt");
+		
+		
+		// for presentation
 	}
 
 	public void connect() {
@@ -401,7 +403,7 @@ public class Server {
 
 		System.out.println("Server.java's main() fired\n");
 		System.out.println(
-				"NOTE: Database is currently sensitive. Each .txt file needs 1 blank line under the last record");
+				"NOTE: Database is currently sensitive. Each .txt file needs 1 blank line under the last record\n");
 
 		Server server = new Server(port, IP);
 

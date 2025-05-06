@@ -35,6 +35,7 @@ public class Packet implements Serializable {
 		this.actionArgs = actionArguments;
 		this.senderId = senderId;
 		this.timeCreated = LocalTime.now();
+		
 
 // when Packet is going from Client to Server, remove "\n" and "/" to protect DB
 		if (!senderId.equals("Server")) {

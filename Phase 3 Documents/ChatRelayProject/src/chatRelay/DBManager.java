@@ -10,14 +10,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 
-// TODO: Consider writing to DB first, and then create the object in memory
-// TODO: Consider concurrency/thread blocking stuff
-
 public class DBManager {
-//	private static final String ESCAPED_SLASH = "<<<SLASH>>>"; // maybe make public for outgoing (or have client deal
-	// do
-	// the convert?)
-
 	private ConcurrentHashMap<String, AbstractUser> users = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<String, Chat> chats = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<String, Message> messages = new ConcurrentHashMap<>();

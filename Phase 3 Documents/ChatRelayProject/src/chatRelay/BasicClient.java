@@ -206,6 +206,13 @@ public class BasicClient {
 					System.out.println(" - " + arg);
 				}
 
+				if (incoming.getStatus() == Status.ERROR) {
+					System.out.println("response is an error: " + incoming.getActionType() + ": "
+							+ (incoming.getActionArguments().isEmpty() ? "(no message)"
+									: incoming.getActionArguments().get(0)));
+					continue;
+				}
+
 				switch (incoming.getActionType()) {
 				case LOGIN: {
 					if (incoming.getStatus() == Status.SUCCESS && args.size() >= 3) {
@@ -236,7 +243,8 @@ public class BasicClient {
 					createChat("test chat created from BasicClient!", true, userIds);
 
 					// TESTING TO CREATE A USER
-					createUser("sarcon", "asdf", "Sara", "Connor", false, false);
+//					createUser("sarcon", "asdf", "Sara", "Connor", false, false);
+					createUser("bigbob", "asdf", "big", "bob", false, false);
 					System.out.println("\n");
 
 					// TESTING TO UPDATE USER'S isDisabled()
@@ -432,10 +440,10 @@ public class BasicClient {
 			System.out.println("juse type in a username into CLI next time");
 
 			// default user to log in if no CLI args given
-//			String username = "biljoe"; 
-			String username = "bilsam";
-//			String password = "asdf";
-			String password = "a\nsdf/";
+//			String username = "kenkot"; 
+			String username = "chrsmi";
+			String password = "asdf";
+//			String password = "a\nsdf/";
 
 			if (args.length == 1) {
 				username = args[0];
