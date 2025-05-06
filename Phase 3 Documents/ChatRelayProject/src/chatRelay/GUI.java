@@ -8,6 +8,8 @@ import javax.swing.table.DefaultTableModel;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
@@ -15,7 +17,6 @@ import java.awt.event.KeyEvent;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +30,7 @@ public class GUI extends JFrame implements Runnable {
     private JPanel privateChatsList;
     private JPanel groupChatsList;
     private JPanel chatMessagesPanel;
+    private JScrollPane chatScroll;
     private HashMap<JButton, Chat> chatMap;
 
     public GUI(Client client) {
@@ -230,7 +232,8 @@ public class GUI extends JFrame implements Runnable {
         chatMessagesPanel = new JPanel();
         chatMessagesPanel.setName("panel");
         chatMessagesPanel.setLayout(new BoxLayout(chatMessagesPanel, BoxLayout.Y_AXIS));
-        JScrollPane chatScroll = new JScrollPane(chatMessagesPanel);
+        chatScroll = new JScrollPane(chatMessagesPanel);
+        chatScroll.getVerticalScrollBar().setUnitIncrement(16);
         rightPanel.add(chatScroll, BorderLayout.CENTER);
 
         // Message input area
@@ -393,15 +396,18 @@ public class GUI extends JFrame implements Runnable {
         chatMessagesPanel = new JPanel();
         chatMessagesPanel.setName("panel");
         chatMessagesPanel.setLayout(new BoxLayout(chatMessagesPanel, BoxLayout.Y_AXIS));
-        JScrollPane chatScroll = new JScrollPane(chatMessagesPanel);
+        chatScroll = new JScrollPane(chatMessagesPanel);
+        chatScroll.getVerticalScrollBar().setUnitIncrement(16);
         rightPanel.add(chatScroll, BorderLayout.CENTER);
 
         // Message input area
         JPanel messageInputPanel = new JPanel(new BorderLayout());
         JTextField messageField = new JTextField();
         JButton sendButton = new JButton("Send");
+        JButton saveButton = new JButton("Save");
         messageInputPanel.add(messageField, BorderLayout.CENTER);
         messageInputPanel.add(sendButton, BorderLayout.EAST);
+        messageInputPanel.add(saveButton, BorderLayout.WEST);
         rightPanel.add(messageInputPanel, BorderLayout.SOUTH);
 
         // Split Pane (Left - Right)
@@ -473,6 +479,15 @@ public class GUI extends JFrame implements Runnable {
 			}
         });
         
+        saveButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (!chatMessagesPanel.getName().equals("panel")) {
+					client.saveChatToTxt(client.getChatById(chatMessagesPanel.getName()));
+				}
+			}
+        });
+        
         messageField.addKeyListener(new KeyAdapter() {
         	@Override
             public void keyPressed(KeyEvent e) {
@@ -492,6 +507,19 @@ public class GUI extends JFrame implements Runnable {
         });
         
         frame.setVisible(true);
+	}
+	
+	private void scrollToBottom(JScrollPane scrollPane) {
+	    JScrollBar verticalBar = scrollPane.getVerticalScrollBar();
+	    AdjustmentListener downScroller = new AdjustmentListener() {
+	        @Override
+	        public void adjustmentValueChanged(AdjustmentEvent e) {
+	            Adjustable adjustable = e.getAdjustable();
+	            adjustable.setValue(adjustable.getMaximum());
+	            verticalBar.removeAdjustmentListener(this);
+	        }
+	    };
+	    verticalBar.addAdjustmentListener(downScroller);
 	}
 	
 	private void editChatDialog(Chat chat) {
@@ -944,6 +972,7 @@ public class GUI extends JFrame implements Runnable {
             messagePanel.add(messageLabel, BorderLayout.CENTER);
             chatMessagePanel.add(messagePanel);
     	}
+    	scrollToBottom(chatScroll);
 	}
 	
 	private AbstractUser searchForUser(String name) {

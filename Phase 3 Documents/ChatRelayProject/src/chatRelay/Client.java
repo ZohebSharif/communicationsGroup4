@@ -20,7 +20,6 @@ public class Client {
     private String targetPort;
     
     private String username;
-    private String password;
     private Chat lastChatSent;
     
     private List<Chat> chats;
@@ -66,7 +65,6 @@ public class Client {
     
     public void login(String username, String password) { 
     	this.username = username;
-    	this.password = password;
     	
     	ArrayList<String> args = new ArrayList<>();
     	args.add(username);
@@ -189,7 +187,10 @@ public class Client {
 
                 FileWriter fileWriter = new FileWriter(file);
                 BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-                bufferedWriter.write(chat.toString());
+                bufferedWriter.write(chat.toString() + "\n");
+                for (Message message : chat.getMessages()) {
+                	bufferedWriter.write(message.toString() + "\n");
+                }
                 bufferedWriter.close();
             } catch (IOException e) {
             	e.printStackTrace();
@@ -333,7 +334,6 @@ public class Client {
 								boolean isPrivate = words[3].equals("true") ? true : false;
 								String[] userIds = words[4].split(",");
 
-								// TODO: Consider that this is adding the owner to chatters
 								AbstractUser owner = getUserById(ownerId);
 								
 								List<AbstractUser> chatters = new ArrayList<>();

@@ -40,3 +40,7 @@
 40/1746475824952/keep pushing the size/1/1
 41/1746479899965/test sending message/1/4
 42/1746487053117/Sending messages/1/1
+43/1746515793912/Testing location of new Message/1/2
+44/1746515808735/Test to see if it auto scrolls/1/2
+45/1746516222789/Testing AutoScroll/1/2
+46/1746517054334/Testing Scroll to bottom/1/2
