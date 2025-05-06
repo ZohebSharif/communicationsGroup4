@@ -53,9 +53,6 @@ public class Server {
 
 			System.out.println("Server.receivePacket() fired");
 			switch (packet.getActionType()) {
-//		case LOGIN:
-//		 	takes place on clientHandler
-//			break;
 			case SEND_MESSAGE:
 				System.out.println("Server.receievePacket() SEND_MESSAGE switch fired");
 				handleSendMessage(clientId, packet);
@@ -108,9 +105,7 @@ public class Server {
 
 		if (chat == null) {
 			broadcastingArgs.add("Cannot rename chatroom");
-
 			Packet errorPacket = new Packet(Status.ERROR, actionType.RENAME_CHAT, broadcastingArgs, "Server");
-
 			broadcastToClientById(clientId, errorPacket);
 		} else {
 			broadcastingArgs.add(chat.getId());
@@ -255,7 +250,6 @@ public class Server {
 		AbstractUser newUser = dbManager.writeNewUser(username, password, firstname, lastname, isDisabled, isAdmin);
 
 		if (newUser == null) {
-
 			broadcastingArgs.add("Unable to create new User");
 			Packet errorPacket = new Packet(Status.ERROR, actionType.CREATE_USER, broadcastingArgs, "Server");
 			broadcastToClientById(clientId, errorPacket);
@@ -368,9 +362,7 @@ public class Server {
 	public void sendErrorMessage(String userId, String errorMessage) {
 		ArrayList<String> broadcastingArgs = new ArrayList<>();
 		broadcastingArgs.add(errorMessage);
-
 		Packet errorPacket = new Packet(Status.ERROR, actionType.ERROR, broadcastingArgs, "Server");
-
 		broadcastToClientById(userId, errorPacket);
 	}
 

@@ -432,16 +432,16 @@ public class BasicClient {
 
 		else {
 
-//		BasicClient client = new BasicClient("192.168.1.103", 1337); // connect to another computer on network
-			BasicClient client = new BasicClient("127.0.0.1", 1337); // local host
+		BasicClient client = new BasicClient("192.168.1.103", 1337); // connect to another computer on network
+//			BasicClient client = new BasicClient("127.0.0.1", 1337); // local host
 
 			System.out.println(
 					"Some users you can log into, otherwise it'll log into \"bilsam\": chrsmi kenkot stearm zohsha talsha biljoe ");
 			System.out.println("juse type in a username into CLI next time");
 
 			// default user to log in if no CLI args given
-//			String username = "kenkot"; 
-			String username = "talsha";
+			String username = "kenkot"; 
+//			String username = "talsha";
 			String password = "asdf";
 //			String password = "a\nsdf/";
 

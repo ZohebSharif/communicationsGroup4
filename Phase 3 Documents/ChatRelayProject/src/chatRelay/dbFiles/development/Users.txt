@@ -1,9 +1,9 @@
-chrsmi/asdf/1/chris/smith/false/true
-kenkot/asdf/2/kenneth/kottenstette/false/true
-stearm/asdf/3/steve/armstrong/false/false
-zohsha/asdf/4/zoheb/sharif/false/true
-talsha/asdf/5/talhah/shaik/false/true
-biljoe/asdf498928918204/6/bill/joe/false/false
+chrsmi/asdf/1/Chris/Smith/false/true
+kenkot/asdf/2/Kenneth/Kottenstette/false/true
+stearm/asdf/3/Steve/Armstrong/false/false
+zohsha/asdf/4/Zoheb/Sharif/false/true
+talsha/asdf/5/Talhah/Shaik/false/true
+biljoe/asdf498928918204/6/Bill/Joe/false/false
 sarcon/asdf/7/Sara/Connor/false/false
-bilsam/a<<<NEWLINE>>>sdf<<<SLASH>>>/8/bill/samsung/true/true
-bigbob/asdf/9/big/bob/false/false
+bilsam/a<<<NEWLINE>>>sdf<<<SLASH>>>/8/Bill/Samsung/true/true
+bigbob/asdf/9/Big/Bob/false/false
