@@ -8,7 +8,7 @@ import org.junit.runners.Suite.SuiteClasses;
 
 @SuiteClasses({
 	 DBManagerTesting.class, DBManagerTest.class, ChatTest.class, MessageTesting.class, 
-	 UserTest.class, UserTesting.class, ITAdminTest.class, ClientTesting.class, 
+	 UserTest.class, ITAdminTest.class, ClientTesting.class, 
 	 ServerTesting.class, PacketTesting.class
 })
 
