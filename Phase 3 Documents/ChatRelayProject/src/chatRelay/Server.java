@@ -287,6 +287,8 @@ public class Server {
 
 		broadcastingArgs.add(newChat.getId());
 		broadcastingArgs.add(newChat.getOwner().getId());
+		broadcastingArgs.add(roomName);
+		broadcastingArgs.add(String.valueOf(isPrivate));
 		broadcastingArgs.add(String.join("/", newChat.getChattersIds()));
 
 		Packet chatPacket = new Packet(Status.SUCCESS, actionType.NEW_CHAT_BROADCAST, broadcastingArgs, "Server");
