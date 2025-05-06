@@ -103,6 +103,17 @@ public class ClientHandler implements Runnable {
 				System.out.println("username: " + username + " password: " + password);
 
 				AbstractUser user = server.getDBManager().checkLoginCredentials(username, password);
+				
+				if (user == null) { //Early return for null user
+					ArrayList<String> errorArgs = new ArrayList<>();
+					errorArgs.add("Invalid username or password");
+
+					Packet errorPacket = new Packet(Status.ERROR, actionType.ERROR, errorArgs, "Server");
+					sendPacket(errorPacket);
+
+					clientSocket.close();
+					return;
+				}
 
 				//Can't be logged into 2 computers as same user
 				if (server.containsClient(user.getId())) {
@@ -117,7 +128,7 @@ public class ClientHandler implements Runnable {
 				}
 				
 				// check if user isn't disabled too
-				if (user != null || !user.isDisabled()) {
+				if (!user.isDisabled()) {
 					this.userId = user.getId();
 
 					server.addClient(userId, this); // add this ClientHanlder to Server's HashMap
@@ -165,15 +176,6 @@ public class ClientHandler implements Runnable {
 					System.out.println("\n\nallMessagesStringed: " + allMessagesStringed);
 					sendPacket(messagesPacket);
 
-				} else {
-					ArrayList<String> errorArgs = new ArrayList<>();
-					errorArgs.add("Invalid username or password");
-
-					Packet errorPacket = new Packet(Status.ERROR, actionType.LOGIN, errorArgs, "Server");
-					sendPacket(errorPacket);
-
-					clientSocket.close();
-					return;
 				}
 			} else {
 				return;

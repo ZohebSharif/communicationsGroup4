@@ -115,6 +115,7 @@ public class Client {
         	args.add(password);
         	args.add(firstname);
         	args.add(lastname);
+        	args.add(String.valueOf(false));
         	args.add(String.valueOf(isAdmin));
     		Packet createUser = new Packet(Status.NONE, actionType.CREATE_USER, args, userId);
     		try {
@@ -177,6 +178,10 @@ public class Client {
     
     public Boolean getIsConnected() {
     	return isConnected;
+    }
+    
+    public String getThisUserId() {
+    	return userId;
     }
     
     public AbstractUser getThisUser() {
@@ -255,6 +260,9 @@ public class Client {
 					switch(incoming.getActionType()) {
 						// Parsing each Action Type
 						case LOGIN -> {
+							if (incoming.getStatus() == Status.ERROR) { 
+								clientGUI.showMessageDialog(actionType.ERROR);
+							}
 							client.isConnected = true;
 							List<String> args = incoming.getActionArguments();
 							
@@ -365,6 +373,7 @@ public class Client {
 								newUser = new User(true, userId, username, firstname, lastname, isDisabled, isAdmin);
 							}
 							users.add(newUser);
+							clientGUI.showMessageDialog(actionType.SUCCESS);
 							updateState(actionType.SUCCESS);
 						}
 						case NEW_CHAT_BROADCAST -> {
@@ -373,8 +382,8 @@ public class Client {
 							String chatId = args.get(0);
 							String ownerId = args.get(1);
 							String roomName = args.get(2);
-							boolean isPrivate = true;
-							String[] userIds = args.get(3).split(",");
+							boolean isPrivate = args.get(3).equals("true");
+							String[] userIds = args.get(4).split("/");
 
 							AbstractUser owner = null;
 							List<AbstractUser> chatters;
@@ -391,6 +400,7 @@ public class Client {
 							
 							Chat newChat = new Chat(owner, roomName, chatId, chatters, isPrivate);
 							chats.add(newChat);
+							clientGUI.showMessageDialog(actionType.SUCCESS);
 							updateState(actionType.NEW_CHAT_BROADCAST);
 						}
 						case NEW_MESSAGE_BROADCAST -> {
@@ -420,12 +430,14 @@ public class Client {
 							objectStream.close();
 							objectInStream.close();
 							socket.close();
+							clientGUI.showMessageDialog(actionType.ERROR);
 			                break;
 						}
 						default -> {
 							if (incoming.getStatus() == Status.SUCCESS) {
 								updateState(actionType.NEW_MESSAGE_BROADCAST);
 							} else {
+								clientGUI.showMessageDialog(actionType.ERROR);
 								System.out.println("Invalid Action Type: " + String.valueOf(incoming.getActionType()));
 							}
 							break;
