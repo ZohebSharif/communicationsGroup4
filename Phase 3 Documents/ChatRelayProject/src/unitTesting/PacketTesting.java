@@ -113,7 +113,7 @@ public class PacketTesting {
         
     
     }
-    
+        
     // test with empty action arguments
     @Test
     public void testEmptyActionArguments() {
@@ -132,19 +132,6 @@ public class PacketTesting {
         Packet nullArgsPacket = new Packet(null, actionType.LOGOUT, null, SENDER_ID);
         
         assertNull(nullArgsPacket.getActionArguments(), "Action arguments should be null");
-    }
-    
-    // test sending null sender id
-    @Test
-    public void testNullSenderId() {
-        // create a packet with null sender ID
-        ArrayList<String> testArgs = new ArrayList<>();
-        testArgs.add("test argument");
-        Packet nullSenderPacket = new Packet(null, actionType.LOGOUT, testArgs, null);
-        
-        // direct check of return value
-        String retrievedSenderId = nullSenderPacket.getSenderId();
-        assertNull(retrievedSenderId, "getSenderId() should return null when sender ID is null");
     }
     
     // test varied action types

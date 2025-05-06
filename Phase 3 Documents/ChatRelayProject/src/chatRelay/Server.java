@@ -1,6 +1,7 @@
 package chatRelay;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -20,23 +21,22 @@ public class Server {
 		this.IP = IP; 
 		
 		
-		
 		// DEVELOPMENT DB - "/savedStates/dev state 1"
 		this.dbManager = new DBManager("./chatRelay/dbFiles/development/", "Users.txt", "Chats.txt", "Messages.txt");
-		
-	
 		
 		// PRODUCTION DB - "/savedStates/prod state 1"
 		// USE THIS FOR PRESENTATION:
 //		this.dbManager = new DBManager("./chatRelay/dbFiles/production/", "Users.txt", "Chats.txt", "Messages.txt");
-		
-		
+	
 	}
 
 	public void connect() {
 		System.out.println("Server.connect() fired");
 		try (ServerSocket serverSocket = new ServerSocket(port)) {
 			serverSocket.setReuseAddress(true);
+			InetAddress ip = InetAddress.getLocalHost();
+            String currentIp = ip.getHostAddress();
+            System.out.println("Current IP address: " + currentIp);
 			while (true) {
 				Socket socket = serverSocket.accept();
 				ClientHandler clientHandler = new ClientHandler(socket, this);
@@ -292,6 +292,8 @@ public class Server {
 
 		broadcastingArgs.add(newChat.getId());
 		broadcastingArgs.add(newChat.getOwner().getId());
+		broadcastingArgs.add(roomName);
+		broadcastingArgs.add(String.valueOf(isPrivate));
 		broadcastingArgs.add(String.join("/", newChat.getChattersIds()));
 
 		Packet chatPacket = new Packet(Status.SUCCESS, actionType.NEW_CHAT_BROADCAST, broadcastingArgs, "Server");

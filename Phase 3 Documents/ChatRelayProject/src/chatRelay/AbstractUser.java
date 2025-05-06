@@ -128,13 +128,4 @@ public abstract class AbstractUser {
 	public void updateIsDisabled(boolean isDisabled) {
 		this.isDisabled = isDisabled;
 	}
-
-	public void CreateChat(User[] users) {
-	}
-
-	public void addUserToChat(User user) {
-	}
-
-	public void sendMessage() {
-	}
 }

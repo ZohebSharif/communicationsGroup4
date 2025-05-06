@@ -9,8 +9,7 @@ import chatRelay.Client;
 public class ClientMainTesting {
 //    @Test
     public static void testLogin() {
-//        Client client = new Client("192.168.4.213", "1234");
-        Client client = new Client("localhost", "1337");
+        Client client = new Client("localhost", "1234");
         client.startUp();
     }
     

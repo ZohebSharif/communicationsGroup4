@@ -2,6 +2,7 @@ package chatRelay;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class Chat {
@@ -57,6 +58,7 @@ public class Chat {
     // add message
     public void addMessage(Message msg) {
         messages.add(msg);
+		Collections.sort(messages, (m1, m2) -> (int) m1.getCreatedAt() - (int) m2.getCreatedAt());
     }
     
     // change privacy
