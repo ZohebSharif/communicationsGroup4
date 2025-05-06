@@ -8,9 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-// TODO: Don't send passwords to frontend! 
-// TODO: Add something that deletes STALE connections? 
-
 public class Server {
 	private static final ConcurrentHashMap<String, ClientHandler> clients = new ConcurrentHashMap<>();
 
@@ -24,11 +21,16 @@ public class Server {
 		
 		
 		
-		// use these versions below when running from terminal
-		this.dbManager = new DBManager("./chatRelay/dbFiles/development/", "Users.txt", "Chats.txt", "Messages.txt");
+		// DEVELOPMENT DB - "/savedStates/dev state 1"
+//		this.dbManager = new DBManager("./chatRelay/dbFiles/development/", "Users.txt", "Chats.txt", "Messages.txt");
+		
+	
+		
+		// PRODUCTION DB - "/savedStates/prod state 1"
+		// USE THIS FOR PRESENTATION:
+		this.dbManager = new DBManager("./chatRelay/dbFiles/production/", "Users.txt", "Chats.txt", "Messages.txt");
 		
 		
-		// for presentation
 	}
 
 	public void connect() {
@@ -300,7 +302,6 @@ public class Server {
 
 		Packet chatPacket = new Packet(Status.SUCCESS, actionType.NEW_CHAT_BROADCAST, broadcastingArgs, "Server");
 
-//		TODO: if not private, broadcast to every, if private, broadcast to only some
 
 		if (newChat.isPrivate()) {
 			broadcastToUsers(newChat.getChatters(), chatPacket);
