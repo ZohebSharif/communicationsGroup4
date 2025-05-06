@@ -441,7 +441,7 @@ public class BasicClient {
 
 			// default user to log in if no CLI args given
 //			String username = "kenkot"; 
-			String username = "chrsmi";
+			String username = "talsha";
 			String password = "asdf";
 //			String password = "a\nsdf/";
 

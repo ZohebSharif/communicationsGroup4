@@ -22,13 +22,13 @@ public class Server {
 		
 		
 		// DEVELOPMENT DB - "/savedStates/dev state 1"
-//		this.dbManager = new DBManager("./chatRelay/dbFiles/development/", "Users.txt", "Chats.txt", "Messages.txt");
+		this.dbManager = new DBManager("./chatRelay/dbFiles/development/", "Users.txt", "Chats.txt", "Messages.txt");
 		
 	
 		
 		// PRODUCTION DB - "/savedStates/prod state 1"
 		// USE THIS FOR PRESENTATION:
-		this.dbManager = new DBManager("./chatRelay/dbFiles/production/", "Users.txt", "Chats.txt", "Messages.txt");
+//		this.dbManager = new DBManager("./chatRelay/dbFiles/production/", "Users.txt", "Chats.txt", "Messages.txt");
 		
 		
 	}
