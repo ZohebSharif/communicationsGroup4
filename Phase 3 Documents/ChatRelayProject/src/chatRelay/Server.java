@@ -1,6 +1,7 @@
 package chatRelay;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -26,13 +27,16 @@ public class Server {
 //				"Messages.txt");
 
 		// use this version why running from terminal
-		this.dbManager = new DBManager("./chatRelay/dbFiles/development/", "Users.txt", "Chats.txt", "Messages.txt");
+		this.dbManager = new DBManager("./src/chatRelay/dbFiles/development/", "Users.txt", "Chats.txt", "Messages.txt");
 	}
 
 	public void connect() {
 		System.out.println("Server.connect() fired");
 		try (ServerSocket serverSocket = new ServerSocket(port)) {
 			serverSocket.setReuseAddress(true);
+			InetAddress ip = InetAddress.getLocalHost();
+            String currentIp = ip.getHostAddress();
+            System.out.println("Current IP address: " + currentIp);
 			while (true) {
 				Socket socket = serverSocket.accept();
 				ClientHandler clientHandler = new ClientHandler(socket, this);
