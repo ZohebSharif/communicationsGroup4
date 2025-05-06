@@ -21,6 +21,12 @@ public class Packet implements Serializable {
 		return output;
 	}
 
+	public static boolean isAlphanumeric(String s) {
+		if (s == null) return false;
+		return s.matches("[A-Za-z0-9]+");
+	}
+	
+
 	private static int count = 0;
 	private String id;
 	private actionType acType;
@@ -35,7 +41,6 @@ public class Packet implements Serializable {
 		this.actionArgs = actionArguments;
 		this.senderId = senderId;
 		this.timeCreated = LocalTime.now();
-		
 
 // when Packet is going from Client to Server, remove "\n" and "/" to protect DB
 		if (!senderId.equals("Server")) {
@@ -50,13 +55,15 @@ public class Packet implements Serializable {
 			case CREATE_CHAT:
 				actionArguments.set(1, sanitize(actionArguments.get(1)));
 				break;
+
+			case RENAME_CHAT:
+				actionArguments.set(1, sanitize(actionArguments.get(1)));
+				break;
+
+			// ADMIN ACTIONS
 			case CREATE_USER:
 				actionArguments.set(0, sanitize(actionArguments.get(0)));
 				actionArguments.set(1, sanitize(actionArguments.get(1)));
-				break;
-			case UPDATE_USER:
-				break;
-			case ADD_USER_TO_CHAT:
 				break;
 			default:
 				break;

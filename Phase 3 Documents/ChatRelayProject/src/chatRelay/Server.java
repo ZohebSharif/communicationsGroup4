@@ -243,6 +243,13 @@ public class Server {
 			return;
 		}
 
+		// Firstname, Lastname and Username must be letters or numbers only (alpha numeric)
+		if (!Packet.isAlphanumeric(firstname) || !Packet.isAlphanumeric(lastname) || !Packet.isAlphanumeric(username) ) {
+			broadcastingArgs.add("Firstname, lastname & username must be letters and numbers only");
+			Packet errorPacket = new Packet(Status.ERROR, actionType.CREATE_USER, broadcastingArgs, "Server");
+			broadcastToClientById(clientId, errorPacket);
+			return;
+		}
 		AbstractUser newUser = dbManager.writeNewUser(username, password, firstname, lastname, isDisabled, isAdmin);
 
 		if (newUser == null) {
