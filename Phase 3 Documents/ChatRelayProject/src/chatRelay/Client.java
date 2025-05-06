@@ -91,7 +91,7 @@ public class Client {
     	} catch (IOException e) {
     		e.printStackTrace();
     	}
-    	lastChatSent = input.getChatById(chatId);
+    	lastChatSent = getChatById(chatId);
     }
     
     public void createChat(String[] userIds, String chatName, Boolean isPrivate) {
@@ -138,6 +138,45 @@ public class Client {
         		e.printStackTrace();
         	}
     	}
+    }
+    
+    public void addUserToChat(String userId, String chatId) {
+    	ArrayList<String> args = new ArrayList<>();
+    	args.add(userId);
+    	args.add(chatId);
+    	Packet addUser = new Packet(Status.NONE, actionType.ADD_USER_TO_CHAT, args, this.userId);
+    	try {
+    		objectStream.writeObject(addUser);
+    	} catch (IOException e) {
+    		e.printStackTrace();
+    	}
+    	lastChatSent = getChatById(chatId);
+    }
+    
+    public void removeUserFromChat(String userId, String chatId) {
+    	ArrayList<String> args = new ArrayList<>();
+    	args.add(userId);
+    	args.add(chatId);
+    	Packet removeUser = new Packet(Status.NONE, actionType.REMOVE_USER_FROM_CHAT, args, this.userId);
+    	try {
+    		objectStream.writeObject(removeUser);
+    	} catch (IOException e) {
+    		e.printStackTrace();
+    	}
+    	lastChatSent = getChatById(chatId);
+    }
+    
+    public void renameChat(String chatId, String chatName) {
+    	ArrayList<String> args = new ArrayList<>();
+    	args.add(chatId);
+    	args.add(chatName);
+    	Packet renameChat = new Packet(Status.NONE, actionType.RENAME_CHAT, args, this.userId);
+    	try {
+    		objectStream.writeObject(renameChat);
+    	} catch (IOException e) {
+    		e.printStackTrace();
+    	}
+    	lastChatSent = getChatById(chatId);
     }
     
     public void saveChatToTxt(Chat chat) {
@@ -223,6 +262,24 @@ public class Client {
     	}
     }
     
+	private AbstractUser getUserById(String userId) {
+		for (AbstractUser user : users) {
+			if (userId.equals(user.getId())) {
+				return user;
+			}
+		}
+		return null;
+	}
+	
+	Chat getChatById(String chatId) {
+		for (Chat chat : chats) {
+			if (chatId.equals(chat.getId())) {
+				return chat;
+			}
+		}
+		return null;
+	}
+    
     private class ClientInput implements Runnable { // Added
     	private static final String ESCAPED_SLASH = "498928918204";
     	
@@ -232,24 +289,6 @@ public class Client {
     	public ClientInput(ObjectInputStream input, Client client) {
     		this.inputStream = input;
     		this.client = client;
-    	}
-    	
-    	private AbstractUser getUserById(String userId) {
-    		for (AbstractUser user : users) {
-    			if (userId.equals(user.getId())) {
-					return user;
-				}
-			}
-    		return null;
-    	}
-    	
-    	private Chat getChatById(String chatId) {
-    		for (Chat chat : chats) {
-    			if (chatId.equals(chat.getId())) {
-    				return chat;
-    			}
-    		}
-    		return null;
     	}
 
 		@Override

@@ -4,6 +4,8 @@ import java.awt.*;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableModel;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -169,11 +171,13 @@ public class GUI extends JFrame implements Runnable {
         JPanel topPanel = new JPanel(new BorderLayout());
         
         JLabel userLabel = new JLabel(client.getThisUser().getFirstName() + " " + client.getThisUser().getLastName());
-        JButton addChatButton = new JButton("Create Chat"); // Opens create chat dialog
         JPanel userInfoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JButton addChatButton = new JButton("Create Chat"); // Opens create chat dialog
+        JButton editChatButton = new JButton("Edit Chat");
         JButton logoutButton = new JButton("Logout");
         userInfoPanel.add(userLabel);
         userInfoPanel.add(addChatButton);
+        userInfoPanel.add(editChatButton);
         userInfoPanel.add(logoutButton);
 
         JLabel chatTitleLabel = new JLabel("Team/Chat Name • Member List", SwingConstants.CENTER); // Updated with information
@@ -282,6 +286,15 @@ public class GUI extends JFrame implements Runnable {
 			}
         });
         
+        editChatButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (!chatMessagesPanel.getName().equals("panel")) {
+					editChatDialog(client.getChatById(chatMessagesPanel.getName()));
+				}
+			}
+        });
+        
         messageField.addKeyListener(new KeyAdapter() {
         	@Override
             public void keyPressed(KeyEvent e) {
@@ -316,11 +329,15 @@ public class GUI extends JFrame implements Runnable {
         JLabel fullNameLabel = new JLabel("<html>" + client.getThisUser().getFirstName() + " " + client.getThisUser().getLastName() + "<br></html>");
         JButton addChatButton = new JButton("Create Chat");
         JButton addUserButton = new JButton("Create User");
+        JButton editUserButton = new JButton("Edit User");
+        JButton editChatButton = new JButton("Edit Chat");
         JButton logoutButton = new JButton("Logout");
         fullNameLabel.setForeground(Color.RED);
         userInfoPanel.add(fullNameLabel);
         userInfoPanel.add(addChatButton);
         userInfoPanel.add(addUserButton);
+        userInfoPanel.add(editUserButton);
+        userInfoPanel.add(editChatButton);
         userInfoPanel.add(logoutButton); 
 
         JLabel chatTitleLabel = new JLabel("Team/Chat Name • Member List", SwingConstants.CENTER);
@@ -430,6 +447,22 @@ public class GUI extends JFrame implements Runnable {
 			}
         });
         
+        editUserButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				editUserDialog();
+			}
+        });
+        
+        editChatButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (!chatMessagesPanel.getName().equals("panel")) {
+					editChatDialog(client.getChatById(chatMessagesPanel.getName()));
+				}
+			}
+        });
+        
         sendButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -459,6 +492,189 @@ public class GUI extends JFrame implements Runnable {
         });
         
         frame.setVisible(true);
+	}
+	
+	private void editChatDialog(Chat chat) {
+		JDialog dialog = new JDialog(frame, "Edit Chat Pane", true);
+        dialog.setSize(400, 500);
+        dialog.setLocationRelativeTo(frame);
+        dialog.setLayout(new BorderLayout());
+
+        // Header Label
+        JLabel headerLabel = new JLabel("Edit Chat", SwingConstants.CENTER);
+        headerLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        headerLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        dialog.add(headerLabel, BorderLayout.NORTH);
+
+        // Form Panel
+        JPanel formPanel = new JPanel();
+        formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
+        formPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+
+        JLabel nameLabel = new JLabel("Name:");
+        JTextField nameField = new JTextField();
+        nameField.setText(chat.getRoomName());
+        nameField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        nameField.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1, true));
+
+        formPanel.add(nameLabel);
+        formPanel.add(Box.createVerticalStrut(5));
+        formPanel.add(nameField);
+        formPanel.add(Box.createVerticalStrut(10));
+
+        JTextField searchField = new JTextField();
+        searchField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        searchField.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1, true));
+        DefaultListModel<String> listModel = new DefaultListModel<>();
+
+        String[] allUsers = new String[client.getUsers().size()];
+        for (int i = 0; i < client.getUsers().size(); i++) {
+			AbstractUser user = client.getUsers().get(i);
+			allUsers[i] = user.getFirstName() + " " + user.getLastName();
+		}
+        for (String user : allUsers) {
+        	listModel.addElement(user);
+        }
+
+        JList<String> userList = new JList<>(listModel);
+        userList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        JScrollPane userScrollPane = new JScrollPane(userList);
+
+        // Filter logic
+        searchField.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { filterList(); }
+            public void removeUpdate(DocumentEvent e) { filterList(); }
+            public void changedUpdate(DocumentEvent e) { filterList(); }
+
+            private void filterList() {
+                String filter = searchField.getText().toLowerCase();
+                listModel.clear();
+                for (String user : allUsers) {
+                    if (user.toLowerCase().contains(filter)) {
+                        listModel.addElement(user);
+                    }
+                }
+            }
+        });
+        
+        for (AbstractUser user : chat.getChatters()) {
+        	String name = user.getFirstName() + " " + user.getLastName();
+        	userList.setSelectedValue(name, true);
+        }
+        
+        formPanel.add(new JLabel("Search Users:"));
+        formPanel.add(searchField);
+        formPanel.add(Box.createVerticalStrut(10));
+        formPanel.add(new JLabel("Select Users to Add:"));
+        formPanel.add(userScrollPane);
+
+        dialog.add(formPanel, BorderLayout.CENTER);
+
+        // Buttons Panel
+        JPanel buttonPanel = new JPanel();
+        JButton saveButton = new JButton("Save");
+        JButton cancelButton = new JButton("Cancel");
+
+        cancelButton.addActionListener(e -> dialog.dispose());
+
+        saveButton.addActionListener(e -> {
+            String chatName = nameField.getText().trim();
+            if (chatName.isBlank()) { chatName = "Chat Room"; }
+            if (!chatName.equals(chat.getRoomName())) {
+                client.renameChat(chat.getId(), chatName);
+            }
+            List<String> namedUsers = userList.getSelectedValuesList();
+            
+            List<AbstractUser> selectedUsers = new ArrayList<>();
+            selectedUsers.add(client.getThisUser());
+            for (int i = 1; i < namedUsers.size(); i++) {
+            	selectedUsers.add(searchForUser(namedUsers.get(i)));
+            }
+            
+            for(AbstractUser user : selectedUsers) {
+            	if (!chat.getChatters().contains(user)) {
+            		client.addUserToChat(user.getId(), chat.getId());
+            	}
+            }
+            
+            for (AbstractUser user : chat.getChatters()) {
+            	if (!selectedUsers.contains(user)) {
+            		client.removeUserFromChat(user.getId(), chat.getId());
+            	}
+            }
+            dialog.dispose();
+        });
+
+        buttonPanel.add(saveButton);
+        buttonPanel.add(cancelButton);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        dialog.getRootPane().setBorder(BorderFactory.createLineBorder(Color.BLACK, 2, true));
+        dialog.setVisible(true);
+	}
+	
+	private void editUserDialog() {
+		JDialog dialog = new JDialog(frame, "Edit A User", true);
+	    dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+	    dialog.setLayout(new BorderLayout(10, 10));
+
+	    // Title
+	    JLabel titleLabel = new JLabel("Edit A User", SwingConstants.CENTER);
+	    titleLabel.setFont(new Font("Arial", Font.BOLD, 22));
+	    dialog.add(titleLabel, BorderLayout.NORTH);
+
+	    // Table Data
+	    String[] columnNames = {"IsDisabled", "Names"};
+	    Object[][] data = new Object[client.getUsers().size()][2];
+	    
+	    for (int i = 0; i < client.getUsers().size(); i++) {
+	    	data[i][0] = client.getUsers().get(i).isDisabled();
+	    	data[i][1] = client.getUsers().get(i).getFirstName() + " " + client.getUsers().get(i).getLastName();
+	    }
+
+	    DefaultTableModel model = new DefaultTableModel(data, columnNames) {
+	        @Override
+	        public Class<?> getColumnClass(int columnIndex) {
+	            return columnIndex == 0 ? Boolean.class : String.class;
+	        }
+
+	        @Override
+	        public boolean isCellEditable(int row, int column) {
+	            return column == 0; // Only allow editing the checkbox
+	        }
+	    };
+
+	    JTable table = new JTable(model);
+	    table.setRowHeight(25);
+	    JScrollPane scrollPane = new JScrollPane(table);
+	    dialog.add(scrollPane, BorderLayout.CENTER);
+
+	    // Buttons
+	    JPanel buttonPanel = new JPanel();
+	    JButton saveButton = new JButton("Save");
+	    JButton cancelButton = new JButton("Cancel");
+
+	    saveButton.addActionListener(e -> {
+	        for (int i = 0; i < model.getRowCount(); i++) {
+	        	String name = (String) model.getValueAt(i, 1);
+	            boolean isDisabled = (Boolean) model.getValueAt(i, 0);
+	            AbstractUser user = searchForUser(name);
+	            if (user.isDisabled() != isDisabled) {
+	            	client.updateUser(user.getId(), isDisabled);
+	            }
+	        }
+	        dialog.dispose();
+	    });
+
+	    cancelButton.addActionListener(e -> dialog.dispose());
+
+	    buttonPanel.add(saveButton);
+	    buttonPanel.add(cancelButton);
+	    dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+	    dialog.pack();
+	    dialog.setLocationRelativeTo(frame);
+	    dialog.setVisible(true);
 	}
 	
 	private void showCreateChatDialog() { // Needs work
@@ -544,7 +760,7 @@ public class GUI extends JFrame implements Runnable {
             String[] selectedUsers = new String[namedUsers.size()];
             selectedUsers[0] = client.getThisUserId();
             for (int i = 1; i < namedUsers.size() + 1; i++) {
-            	selectedUsers[i] = searchForUser(namedUsers.get(i));
+            	selectedUsers[i] = searchForUser(namedUsers.get(i)).getId();
             }
             
             client.createChat(selectedUsers, chatName, true);
@@ -730,11 +946,11 @@ public class GUI extends JFrame implements Runnable {
     	}
 	}
 	
-	private String searchForUser(String name) {
+	private AbstractUser searchForUser(String name) {
 		for (AbstractUser user : client.getUsers()) {
 			String[] splitName = name.split(" ");
 			if (splitName[0].equals(user.getFirstName()) && splitName[1].equals(user.getLastName())) {
-				return user.getId();
+				return user;
 			}
 		}
 		return null;
