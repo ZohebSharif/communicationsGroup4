@@ -1,5 +1,6 @@
 package chatRelay;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -181,17 +182,17 @@ public class ClientHandler implements Runnable {
 				return;
 			}
 
-// Step 2 - Now that user is logged in, process their subsequent steps			
-			while (true) {
-
+// Step 2 - Now that user is logged in, process their subsequent steps		
+			Packet nextPacket = (Packet) inputStream.readObject();
+			do {
 				System.out.println("Inside 'step 2' loop for after login");
-				Packet nextPacket = (Packet) inputStream.readObject();
 				server.receivePacket(userId, nextPacket);
-			}
+			} while ((nextPacket = (Packet) inputStream.readObject()) != null);
 
-		} catch (Exception e) {
+		} catch (IOException | ClassNotFoundException e) {
 			e.printStackTrace();
-		} finally {
+		} 
+		finally {
 			try {
 				clientSocket.close();
 			} catch (IOException e) {

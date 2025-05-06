@@ -784,15 +784,17 @@ public class GUI extends JFrame implements Runnable {
             if (chatName.isBlank()) { chatName = "Chat Room"; }
             
             boolean added = false;
+            int index = 0;
             List<String> namedUsers = userList.getSelectedValuesList();
             for (String name : namedUsers) {
             	if(searchForUser(name).getId().equals(client.getThisUserId())) {
             		added = true;
             	}
-            	name = searchForUser(name).getId();
+            	namedUsers.set(index, searchForUser(name).getId());
+            	index++;
             }
             if (!added && !client.getAdminStatus()) {
-            	namedUsers.addFirst(client.getThisUserId());
+            	namedUsers.add(client.getThisUserId());
             }
             
             String[] selectedUsers = new String[namedUsers.size()];
