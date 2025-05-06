@@ -10,14 +10,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 
-// TODO: Consider writing to DB first, and then create the object in memory
-// TODO: Consider concurrency/thread blocking stuff
-
 public class DBManager {
-//	private static final String ESCAPED_SLASH = "<<<SLASH>>>"; // maybe make public for outgoing (or have client deal
-	// do
-	// the convert?)
-
 	private ConcurrentHashMap<String, AbstractUser> users = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<String, Chat> chats = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<String, Message> messages = new ConcurrentHashMap<>();
@@ -341,7 +334,7 @@ public class DBManager {
 	// public List<Chat> getChatsForUser(String userId) {}
 
 //	private void writeNewUser(String username, String password, String firstname, String lastname, boolean isDisabled,
-	public AbstractUser writeNewUser(String username, String password, String firstname, String lastname,
+	public synchronized AbstractUser writeNewUser(String username, String password, String firstname, String lastname,
 			boolean isDisabled, boolean isAdmin) {
 		// TODO: consider if "/" char is ever used. Have server reject the packet if
 		// anything except password has a "/".
@@ -374,7 +367,7 @@ public class DBManager {
 	}
 
 //	private void writeNewChat(String ownerId, String roomName, String[] chatterIds, boolean isPrivate) {
-	public Chat writeNewChat(String ownerId, String roomName, ArrayList<String> chatterIds, boolean isPrivate) {
+	public synchronized Chat writeNewChat(String ownerId, String roomName, ArrayList<String> chatterIds, boolean isPrivate) {
 		AbstractUser owner = getUserById(ownerId);
 //		String sanitizedRoomName = roomName.replace("/", ESCAPED_SLASH); // a "/" inside content will break the DB
 		String sanitizedRoomName = Packet.sanitize(roomName);
@@ -414,7 +407,7 @@ public class DBManager {
 	// by returning new message, it lets my Server have access to that message which
 	// is needed!
 //	public void writeNewMessage(String content, String authorId, String chatId) {
-	public Message writeNewMessage(String content, String authorId, String chatId) {
+	public synchronized Message writeNewMessage(String content, String authorId, String chatId) {
 		AbstractUser author = getUserById(authorId);
 		Chat chat = getChatById(chatId);
 
@@ -480,7 +473,7 @@ public class DBManager {
 		return null;
 	}
 
-	public AbstractUser updateUserIsDisabled(String userId, boolean isDisabled) {
+	public synchronized AbstractUser updateUserIsDisabled(String userId, boolean isDisabled) {
 		AbstractUser user = getUserById(userId);
 		if (user == null)
 			return null;
@@ -505,7 +498,7 @@ public class DBManager {
 
 	}
 
-	public Chat addUserToChat(String userId, String chatId, String packetSenderUserId) {
+	public synchronized Chat addUserToChat(String userId, String chatId, String packetSenderUserId) {
 		AbstractUser userToAdd = getUserById(userId);
 		AbstractUser packetSender = getUserById(packetSenderUserId);
 		Chat chat = getChatById(chatId);
@@ -537,7 +530,7 @@ public class DBManager {
 		return chat;
 	}
 
-	public Chat removeUserFromChat(String userId, String chatId, String packetSenderUserId) {
+	public synchronized Chat removeUserFromChat(String userId, String chatId, String packetSenderUserId) {
 		AbstractUser userToRemove = getUserById(userId);
 		AbstractUser packetSender = getUserById(packetSenderUserId);
 		Chat chat = getChatById(chatId);
@@ -569,7 +562,7 @@ public class DBManager {
 		return chat;
 	}
 
-	public Chat renameChat(String senderId, String chatId, String newChatRoomName) {
+	public synchronized Chat renameChat(String senderId, String chatId, String newChatRoomName) {
 		Chat chat = getChatById(chatId);
 
 		// requestor must be the owner of the chat

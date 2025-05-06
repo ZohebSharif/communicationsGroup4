@@ -9,9 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-// TODO: Don't send passwords to frontend! 
-// TODO: Add something that deletes STALE connections? 
-
 public class Server {
 	private static final ConcurrentHashMap<String, ClientHandler> clients = new ConcurrentHashMap<>();
 
@@ -21,13 +18,16 @@ public class Server {
 
 	public Server(int port, String IP) {
 		this.port = port;
-		this.IP = IP;
-
-//		this.dbManager = new DBManager("./src/chatRelay/dbFiles/development/", "Users.txt", "Chats.txt",
-//				"Messages.txt");
-
-		// use this version why running from terminal
-		this.dbManager = new DBManager("./src/chatRelay/dbFiles/development/", "Users.txt", "Chats.txt", "Messages.txt");
+		this.IP = IP; 
+		
+		
+		// DEVELOPMENT DB - "/savedStates/dev state 1"
+		this.dbManager = new DBManager("./chatRelay/dbFiles/development/", "Users.txt", "Chats.txt", "Messages.txt");
+		
+		// PRODUCTION DB - "/savedStates/prod state 1"
+		// USE THIS FOR PRESENTATION:
+//		this.dbManager = new DBManager("./chatRelay/dbFiles/production/", "Users.txt", "Chats.txt", "Messages.txt");
+	
 	}
 
 	public void connect() {
@@ -53,9 +53,6 @@ public class Server {
 
 			System.out.println("Server.receivePacket() fired");
 			switch (packet.getActionType()) {
-//		case LOGIN:
-//		 	takes place on clientHandler
-//			break;
 			case SEND_MESSAGE:
 				System.out.println("Server.receievePacket() SEND_MESSAGE switch fired");
 				handleSendMessage(clientId, packet);
@@ -108,9 +105,7 @@ public class Server {
 
 		if (chat == null) {
 			broadcastingArgs.add("Cannot rename chatroom");
-
 			Packet errorPacket = new Packet(Status.ERROR, actionType.RENAME_CHAT, broadcastingArgs, "Server");
-
 			broadcastToClientById(clientId, errorPacket);
 		} else {
 			broadcastingArgs.add(chat.getId());
@@ -245,10 +240,16 @@ public class Server {
 			return;
 		}
 
+		// Firstname, Lastname and Username must be letters or numbers only (alpha numeric)
+		if (!Packet.isAlphanumeric(firstname) || !Packet.isAlphanumeric(lastname) || !Packet.isAlphanumeric(username) ) {
+			broadcastingArgs.add("Firstname, lastname & username must be letters and numbers only");
+			Packet errorPacket = new Packet(Status.ERROR, actionType.CREATE_USER, broadcastingArgs, "Server");
+			broadcastToClientById(clientId, errorPacket);
+			return;
+		}
 		AbstractUser newUser = dbManager.writeNewUser(username, password, firstname, lastname, isDisabled, isAdmin);
 
 		if (newUser == null) {
-
 			broadcastingArgs.add("Unable to create new User");
 			Packet errorPacket = new Packet(Status.ERROR, actionType.CREATE_USER, broadcastingArgs, "Server");
 			broadcastToClientById(clientId, errorPacket);
@@ -297,7 +298,6 @@ public class Server {
 
 		Packet chatPacket = new Packet(Status.SUCCESS, actionType.NEW_CHAT_BROADCAST, broadcastingArgs, "Server");
 
-//		TODO: if not private, broadcast to every, if private, broadcast to only some
 
 		if (newChat.isPrivate()) {
 			broadcastToUsers(newChat.getChatters(), chatPacket);
@@ -364,9 +364,7 @@ public class Server {
 	public void sendErrorMessage(String userId, String errorMessage) {
 		ArrayList<String> broadcastingArgs = new ArrayList<>();
 		broadcastingArgs.add(errorMessage);
-
 		Packet errorPacket = new Packet(Status.ERROR, actionType.ERROR, broadcastingArgs, "Server");
-
 		broadcastToClientById(userId, errorPacket);
 	}
 
@@ -407,7 +405,7 @@ public class Server {
 
 		System.out.println("Server.java's main() fired\n");
 		System.out.println(
-				"NOTE: Database is currently sensitive. Each .txt file needs 1 blank line under the last record");
+				"NOTE: Database is currently sensitive. Each .txt file needs 1 blank line under the last record\n");
 
 		Server server = new Server(port, IP);
 

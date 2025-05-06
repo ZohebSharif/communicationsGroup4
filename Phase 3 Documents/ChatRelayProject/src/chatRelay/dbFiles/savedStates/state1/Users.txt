@@ -1,3 +1,0 @@
-chrsmi/asdf/1/chris/smith/false/true
-kenkot/asdf/2/kenneth/kottenstette/false/true
-stearm/asdf/3/steve/armstrong/false/false
